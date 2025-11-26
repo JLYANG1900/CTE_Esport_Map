@@ -4,5 +4,6 @@
     "version": "1.0.0",
     "description": "京港市CTE电竞战队周边地图扩展，支持拖拽坐标、查看地点详情及通过 slash command 发送出行指令。",
     "js": "index.js",
-    "css": "style.css"
+    "css": "style.css",
+    "html": "map.html"
 }
