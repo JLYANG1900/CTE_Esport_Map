@@ -45,7 +45,7 @@
 }
 #cte-close-btn:hover { color: #fff; }
 
-/* --- 2. 滚动区域 (仅包含地图) --- */
+/* --- 2. 滚动区域 (包含地图) --- */
 #cte-scroll-container {
     flex: 1;
     overflow: auto; /* 开启滚动 */
