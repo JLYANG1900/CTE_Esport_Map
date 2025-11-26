@@ -1,246 +1,250 @@
-import { extension_settings, getContext } from "../../../extensions.js";
+/* 引入字体 */
+@import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;700&family=Noto+Serif+SC:wght@400;700&display=swap');
 
-const extensionName = "cte-esport-map";
-const extensionFolderPath = `scripts/extensions/third-party/${extensionName}`;
+#cte-esport-root {
+    --cte-bg-dark: #121212;
+    --cte-panel-bg: #1e1e1e;
+    --cte-accent-gold: #c5a065;
+    --cte-text-main: #e0e0e0;
+    --cte-text-sub: #888;
+    --cte-border-color: #3d3d3d;
+    --cte-pin-bg: rgba(0, 0, 0, 0.85);
+    --cte-btn-text-hover: #000;
+}
 
-// 独立的命名空间对象
-const CTEEscape = {
-    settings: {
-        theme: 0, // 0:黑金, 1:蓝白, 2:粉白
-    },
+/* 主面板 - Z轴层级极高 */
+#cte-esport-panel {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 90vh;
+    height: 90vh;
+    max-width: 900px;
+    max-height: 900px;
+    background-color: var(--cte-bg-dark);
+    border: 2px solid var(--cte-accent-gold);
+    box-shadow: 0 0 50px rgba(0,0,0,0.9);
+    z-index: 2147483646; /* 仅次于 Toggle 按钮 */
+    display: none;
+    flex-direction: column;
+    overflow: hidden;
+    font-family: 'Noto Serif SC', serif;
+    color: var(--cte-text-main);
+    border-radius: 8px;
+}
 
-    async init() {
-        console.log("[CTE Esport] 正在初始化独立地图插件...");
-        
-        // 1. 加载 HTML
-        await this.loadHTML();
-        
-        // 2. 加载设置
-        this.loadSettings();
-        
-        // 3. 注入独立的 Toggle 按钮 (位置设为 right: 60px 避免重叠)
-        this.injectToggleButton();
-        
-        // 4. 绑定事件
-        this.bindEvents();
-        
-        // 5. 应用初始主题
-        this.applyTheme(this.settings.theme);
-        
-        console.log("[CTE Esport] 初始化完成。");
-    },
+/* 顶部标题栏 */
+.cte-esport-header {
+    padding: 12px 20px;
+    background: var(--cte-panel-bg);
+    border-bottom: 1px solid var(--cte-border-color);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-shrink: 0;
+    user-select: none;
+}
 
-    async loadHTML() {
-        try {
-            const response = await fetch(`${extensionFolderPath}/map.html`);
-            if (!response.ok) throw new Error("无法加载 map.html");
-            const html = await response.text();
-            
-            // 将 HTML 注入到 body
-            const container = document.createElement("div");
-            container.innerHTML = html;
-            document.body.appendChild(container.firstElementChild);
-        } catch (e) {
-            console.error("[CTE Esport] HTML 加载失败:", e);
-        }
-    },
+.cte-esport-title {
+    font-family: 'Cormorant Garamond', serif;
+    color: var(--cte-accent-gold);
+    font-size: 1.4rem;
+    margin: 0;
+    letter-spacing: 2px;
+}
 
-    injectToggleButton() {
-        // 检查是否已存在
-        if (document.getElementById("cte-esport-toggle-btn")) return;
+.cte-esport-controls {
+    display: flex;
+    gap: 10px;
+}
 
-        const btn = document.createElement("div");
-        btn.id = "cte-esport-toggle-btn";
-        btn.innerHTML = "🏆"; // 使用不同的图标区分
-        btn.title = "打开 CTE 战队地图";
-        // 样式：固定在右上角，但在原版地图按钮的左边或下边
-        btn.style.cssText = `
-            position: fixed; 
-            top: 10px; 
-            right: 340px; /* 调整位置避免重叠 */
-            z-index: 20001; 
-            font-size: 24px; 
-            cursor: pointer; 
-            filter: drop-shadow(0 0 2px black);
-            transition: transform 0.2s;
-        `;
-        btn.onmouseover = () => btn.style.transform = "scale(1.1)";
-        btn.onmouseout = () => btn.style.transform = "scale(1)";
-        btn.onclick = () => this.togglePanel();
-        
-        document.body.appendChild(btn);
-    },
+.cte-esport-icon-btn {
+    background: transparent;
+    border: 1px solid var(--cte-accent-gold);
+    color: var(--cte-accent-gold);
+    cursor: pointer;
+    width: 32px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 4px;
+    transition: all 0.2s;
+    font-size: 16px;
+}
+.cte-esport-icon-btn:hover {
+    background: var(--cte-accent-gold);
+    color: var(--cte-btn-text-hover);
+}
 
-    togglePanel() {
-        const panel = document.getElementById("cte-esport-panel");
-        if (panel) {
-            const isVisible = panel.style.display === "flex";
-            panel.style.display = isVisible ? "none" : "flex";
-        }
-    },
+/* 内容区域 */
+.cte-esport-body {
+    position: relative;
+    flex-grow: 1;
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+}
 
-    bindEvents() {
-        const panel = document.getElementById("cte-esport-panel");
-        if (!panel) return;
+/* 地图滚动层 */
+.cte-esport-scroll-layer {
+    width: 100%;
+    height: 100%;
+    overflow: auto;
+    position: relative;
+    background-color: #000;
+}
+.cte-esport-scroll-layer::-webkit-scrollbar { width: 8px; height: 8px; }
+.cte-esport-scroll-layer::-webkit-scrollbar-track { background: var(--cte-bg-dark); }
+.cte-esport-scroll-layer::-webkit-scrollbar-thumb { background: var(--cte-border-color); border-radius: 4px; }
 
-        // 关闭按钮
-        panel.querySelector("#cte-btn-close").addEventListener("click", () => {
-            panel.style.display = "none";
-        });
+.cte-esport-map-canvas {
+    position: relative;
+    width: 800px;
+    height: 800px;
+    background-image: url('https://files.catbox.moe/b6p3mq.png'); 
+    background-size: cover;
+    background-position: center;
+    box-shadow: 0 0 40px rgba(0,0,0,0.5);
+    margin: 0 auto;
+}
 
-        // 主题切换
-        panel.querySelector("#cte-btn-theme").addEventListener("click", () => {
-            this.settings.theme = (this.settings.theme + 1) % 3;
-            this.applyTheme(this.settings.theme);
-            this.saveSettings();
-        });
+/* 地标点 */
+.cte-esport-pin {
+    position: absolute;
+    transform: translate(-50%, -50%);
+    cursor: pointer;
+    z-index: 10;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    transition: transform 0.3s ease;
+}
+.cte-esport-pin:hover {
+    z-index: 50;
+    transform: translate(-50%, -60%) scale(1.1);
+}
+.cte-esport-pin-label {
+    background-color: var(--cte-pin-bg);
+    border: 1px solid var(--cte-accent-gold);
+    color: var(--cte-accent-gold);
+    padding: 5px 12px;
+    border-radius: 4px;
+    font-size: 13px;
+    white-space: nowrap;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.8);
+    font-weight: bold;
+}
+#cte-pin-base .cte-esport-pin-label {
+    background-color: var(--cte-accent-gold);
+    color: #000;
+    border: 2px solid #fff;
+    font-size: 15px;
+}
 
-        // 点击地图背景关闭所有弹窗
-        panel.querySelector("#cte-map-canvas").addEventListener("click", (e) => {
-            if (e.target.id === "cte-map-canvas") {
-                this.closeAllPopups();
-            }
-        });
+/* UI 弹窗层 */
+.cte-esport-ui-layer {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    z-index: 100;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
 
-        // 地标点击事件 (事件委托)
-        panel.querySelector("#cte-map-canvas").addEventListener("click", (e) => {
-            const pin = e.target.closest(".cte-esport-pin");
-            if (pin) {
-                const popupId = pin.getAttribute("data-popup");
-                this.showPopup(popupId);
-                e.stopPropagation(); // 防止冒泡关闭弹窗
-            }
-        });
+.cte-esport-popup {
+    pointer-events: auto;
+    background-color: var(--cte-panel-bg);
+    border: 1px solid var(--cte-accent-gold);
+    border-left: 5px solid var(--cte-accent-gold);
+    padding: 25px;
+    width: 400px;
+    max-width: 90%;
+    max-height: 80%;
+    overflow-y: auto;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.9);
+    display: none;
+    animation: ctePopIn 0.3s cubic-bezier(0.18, 0.89, 0.32, 1.28);
+}
+.cte-esport-popup.active { display: block; }
 
-        // 弹窗内部关闭按钮
-        panel.addEventListener("click", (e) => {
-            if (e.target.matches(".cte-close-btn")) {
-                e.target.closest(".cte-esport-popup").classList.remove("active");
-            }
-        });
+@keyframes ctePopIn {
+    from { opacity: 0; transform: scale(0.95) translateY(10px); }
+    to { opacity: 1; transform: scale(1) translateY(0); }
+}
 
-        // 功能按钮逻辑
-        panel.addEventListener("click", (e) => {
-            const target = e.target;
-            
-            // 1. 前往地点 (Travel)
-            const travelDest = target.getAttribute("data-travel") || target.closest("[data-travel]")?.getAttribute("data-travel");
-            if (travelDest) {
-                this.handleTravel(travelDest);
-            }
+.cte-popup-header {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 15px;
+    border-bottom: 1px solid var(--cte-border-color);
+    padding-bottom: 10px;
+}
+.cte-popup-title {
+    color: var(--cte-accent-gold);
+    font-size: 1.2rem;
+    font-weight: bold;
+}
+.cte-close-btn { cursor: pointer; font-size: 1.5rem; line-height: 1; }
+.cte-popup-content img { width: 100%; border: 1px solid var(--cte-border-color); margin: 10px 0; }
 
-            // 2. 内部按钮 (Show Interior)
-            if (target.getAttribute("data-action") === "interior") {
-                this.showPopup("popup-interior");
-            }
+.cte-action-btn {
+    display: block;
+    width: 100%;
+    padding: 10px;
+    margin-top: 10px;
+    background: transparent;
+    border: 1px solid var(--cte-accent-gold);
+    color: var(--cte-accent-gold);
+    cursor: pointer;
+    text-align: center;
+    transition: all 0.2s;
+}
+.cte-action-btn:hover { background: var(--cte-accent-gold); color: #000; }
 
-            // 3. 返回按钮 (Back)
-            if (target.getAttribute("data-action") === "back-base") {
-                this.showPopup("popup-cte");
-            }
+.cte-loc-list { list-style: none; padding: 0; }
+.cte-loc-item {
+    padding: 8px 10px;
+    border-left: 2px solid var(--cte-text-sub);
+    background: rgba(255,255,255,0.05);
+    margin-bottom: 5px;
+    cursor: pointer;
+}
+.cte-loc-item:hover {
+    border-left-color: var(--cte-accent-gold);
+    background: var(--cte-accent-gold);
+    color: #000;
+}
 
-            // 4. 楼层切换 (Floor Toggle)
-            const floorBtn = target.closest(".cte-floor-btn");
-            if (floorBtn) {
-                const floorId = floorBtn.getAttribute("data-target");
-                this.toggleFloor(floorId, floorBtn);
-            }
-        });
-
-        // 自定义前往
-        const customBtn = document.getElementById("cte-btn-custom-go");
-        if (customBtn) {
-            customBtn.addEventListener("click", () => {
-                const val = document.getElementById("cte-custom-input").value.trim();
-                if (val) this.handleTravel(val);
-            });
-        }
-    },
-
-    showPopup(id) {
-        this.closeAllPopups();
-        const popup = document.getElementById(id);
-        if (popup) popup.classList.add("active");
-    },
-
-    closeAllPopups() {
-        document.querySelectorAll(".cte-esport-popup").forEach(p => p.classList.remove("active"));
-    },
-
-    toggleFloor(floorId, btn) {
-        const panel = document.getElementById(floorId);
-        // 关闭其他楼层
-        document.querySelectorAll(".cte-floor-panel").forEach(p => {
-            if(p.id !== floorId) p.style.display = "none";
-        });
-        document.querySelectorAll(".cte-floor-btn").forEach(b => b.classList.remove("active"));
-
-        if (panel.style.display === "block") {
-            panel.style.display = "none";
-            btn.classList.remove("active");
-        } else {
-            panel.style.display = "block";
-            btn.classList.add("active");
-        }
-    },
-
-    handleTravel(destination) {
-        this.togglePanel(); // 关闭地图
-        
-        // 获取上下文并发送指令
-        const context = getContext();
-        const charName = context.characterId ? context.characters[context.characterId].name : "System";
-        
-        // 发送给 SillyTavern 输入框
-        const textarea = document.getElementById('send_textarea');
-        if (textarea) {
-            textarea.value = `[系统提示：用户已移动至地点“${destination}”。请描述该地点的环境、氛围以及可能发生的事件。]`;
-            // 触发输入事件以便 ST 检测到变化
-            textarea.dispatchEvent(new Event('input', { bubbles: true }));
-            
-            // 可选：自动点击发送 (如果需要自动发送，取消下面注释)
-            // const sendBtn = document.getElementById('send_but');
-            // if (sendBtn) sendBtn.click();
-        }
-
-        if (typeof toastr !== 'undefined') {
-            toastr.success(`正在前往：${destination}`);
-        }
-    },
-
-    applyTheme(theme) {
-        const root = document.getElementById("cte-esport-root");
-        if (!root) return;
-        
-        if (theme === 0) { // 黑金
-            root.style.setProperty('--cte-bg-dark', '#121212');
-            root.style.setProperty('--cte-panel-bg', '#1e1e1e');
-            root.style.setProperty('--cte-accent-gold', '#c5a065');
-            root.style.setProperty('--cte-text-main', '#e0e0e0');
-        } else if (theme === 1) { // 蓝白
-            root.style.setProperty('--cte-bg-dark', '#f4f7f6');
-            root.style.setProperty('--cte-panel-bg', '#ffffff');
-            root.style.setProperty('--cte-accent-gold', '#5d9cec');
-            root.style.setProperty('--cte-text-main', '#333');
-        } else { // 粉白
-            root.style.setProperty('--cte-bg-dark', '#fff0f3');
-            root.style.setProperty('--cte-panel-bg', '#ffffff');
-            root.style.setProperty('--cte-accent-gold', '#f06292');
-            root.style.setProperty('--cte-text-main', '#4a2c36');
-        }
-    },
-
-    saveSettings() {
-        localStorage.setItem("cte-esport-settings", JSON.stringify(this.settings));
-    },
-
-    loadSettings() {
-        const data = localStorage.getItem("cte-esport-settings");
-        if (data) this.settings = JSON.parse(data);
-    }
-};
-
-// 启动插件
-jQuery(async () => {
-    await CTEEscape.init();
-});
+.cte-floor-group { margin-top: 15px; }
+.cte-floor-btn {
+    width: 100%;
+    padding: 8px;
+    background: rgba(255,255,255,0.05);
+    border: none;
+    border-left: 3px solid transparent;
+    color: var(--cte-text-main);
+    text-align: left;
+    margin-top: 5px;
+    cursor: pointer;
+}
+.cte-floor-btn.active {
+    border-left-color: var(--cte-accent-gold);
+    background: linear-gradient(90deg, rgba(197, 160, 101, 0.2), transparent);
+}
+.cte-floor-panel { display: none; padding: 10px; background: rgba(0,0,0,0.3); }
+.cte-room-tag {
+    display: inline-block;
+    font-size: 12px;
+    padding: 4px 8px;
+    margin: 3px;
+    border: 1px solid var(--cte-border-color);
+    cursor: pointer;
+}
+.cte-room-tag:hover {
+    border-color: var(--cte-accent-gold);
+    background: var(--cte-accent-gold);
+    color: #000;
+}
