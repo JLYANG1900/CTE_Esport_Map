@@ -1,160 +1,180 @@
 import { extension_settings, getContext } from "../../../extensions.js";
-import { loadExtensionSettings, saveExtensionSettings } from "../../../extensions.js";
 
 const extensionName = "cte-esport-map";
 const extensionFolderPath = `scripts/extensions/third-party/${extensionName}`;
 
-// Core Logic Controller
-const CTEMap = {
+// 独立的命名空间对象
+const CTEEscape = {
     settings: {
-        theme: 0, // 0: Dark, 1: Blue, 2: Pink
+        theme: 0, // 0:黑金, 1:蓝白, 2:粉白
     },
-    
-    // Initialize the extension
+
     async init() {
-        console.log("[CTE Map] Initializing...");
+        console.log("[CTE Esport] 正在初始化独立地图插件...");
         
-        // Load UI
+        // 1. 加载 HTML
         await this.loadHTML();
-        await this.loadSettings();
         
-        // Inject Toggle Button into ST
+        // 2. 加载设置
+        this.loadSettings();
+        
+        // 3. 注入独立的 Toggle 按钮 (位置设为 right: 60px 避免重叠)
         this.injectToggleButton();
         
-        // Bind Events
+        // 4. 绑定事件
         this.bindEvents();
         
-        // Apply Initial Theme
+        // 5. 应用初始主题
         this.applyTheme(this.settings.theme);
         
-        console.log("[CTE Map] Ready.");
+        console.log("[CTE Esport] 初始化完成。");
     },
 
     async loadHTML() {
         try {
             const response = await fetch(`${extensionFolderPath}/map.html`);
-            if (!response.ok) throw new Error("Failed to load map.html");
+            if (!response.ok) throw new Error("无法加载 map.html");
             const html = await response.text();
             
-            // Inject panel into body
-            const div = document.createElement("div");
-            div.innerHTML = html;
-            document.body.appendChild(div.firstElementChild);
+            // 将 HTML 注入到 body
+            const container = document.createElement("div");
+            container.innerHTML = html;
+            document.body.appendChild(container.firstElementChild);
         } catch (e) {
-            console.error("[CTE Map] HTML Load Error:", e);
+            console.error("[CTE Esport] HTML 加载失败:", e);
         }
     },
 
     injectToggleButton() {
-        // Find a suitable place in ST UI to add the button (e.g., Top Bar)
+        // 检查是否已存在
+        if (document.getElementById("cte-esport-toggle-btn")) return;
+
         const btn = document.createElement("div");
-        btn.id = "cte-toggle-btn";
-        btn.innerHTML = "🗺️";
-        btn.title = "打开CTE战队地图";
+        btn.id = "cte-esport-toggle-btn";
+        btn.innerHTML = "🏆"; // 使用不同的图标区分
+        btn.title = "打开 CTE 战队地图";
+        // 样式：固定在右上角，但在原版地图按钮的左边或下边
         btn.style.cssText = `
-            position: fixed; top: 10px; right: 280px; z-index: 2001; 
-            font-size: 24px; cursor: pointer; filter: drop-shadow(0 0 2px black);
+            position: fixed; 
+            top: 10px; 
+            right: 340px; /* 调整位置避免重叠 */
+            z-index: 20001; 
+            font-size: 24px; 
+            cursor: pointer; 
+            filter: drop-shadow(0 0 2px black);
+            transition: transform 0.2s;
         `;
+        btn.onmouseover = () => btn.style.transform = "scale(1.1)";
+        btn.onmouseout = () => btn.style.transform = "scale(1)";
         btn.onclick = () => this.togglePanel();
+        
         document.body.appendChild(btn);
     },
 
     togglePanel() {
-        const panel = document.getElementById("cte-root-panel");
+        const panel = document.getElementById("cte-esport-panel");
         if (panel) {
-            panel.style.display = panel.style.display === "flex" ? "none" : "flex";
+            const isVisible = panel.style.display === "flex";
+            panel.style.display = isVisible ? "none" : "flex";
         }
     },
 
     bindEvents() {
-        const panel = document.getElementById("cte-root-panel");
+        const panel = document.getElementById("cte-esport-panel");
         if (!panel) return;
 
-        // 1. Close Button
-        panel.querySelector("#cte-close-main").addEventListener("click", () => {
+        // 关闭按钮
+        panel.querySelector("#cte-btn-close").addEventListener("click", () => {
             panel.style.display = "none";
         });
 
-        // 2. Theme Toggle
-        panel.querySelector("#cte-theme-toggle").addEventListener("click", () => {
+        // 主题切换
+        panel.querySelector("#cte-btn-theme").addEventListener("click", () => {
             this.settings.theme = (this.settings.theme + 1) % 3;
             this.applyTheme(this.settings.theme);
             this.saveSettings();
         });
 
-        // 3. Pin Clicks (Delegation)
-        panel.querySelector("#cte-map-bg").addEventListener("click", (e) => {
-            const pin = e.target.closest(".cte-pin");
+        // 点击地图背景关闭所有弹窗
+        panel.querySelector("#cte-map-canvas").addEventListener("click", (e) => {
+            if (e.target.id === "cte-map-canvas") {
+                this.closeAllPopups();
+            }
+        });
+
+        // 地标点击事件 (事件委托)
+        panel.querySelector("#cte-map-canvas").addEventListener("click", (e) => {
+            const pin = e.target.closest(".cte-esport-pin");
             if (pin) {
                 const popupId = pin.getAttribute("data-popup");
                 this.showPopup(popupId);
+                e.stopPropagation(); // 防止冒泡关闭弹窗
             }
         });
 
-        // 4. Popup Close Buttons
-        panel.querySelectorAll(".cte-close-btn").forEach(btn => {
-            btn.addEventListener("click", () => {
-                btn.closest(".cte-popup").classList.remove("active");
-            });
-        });
-
-        // 5. Travel Actions (Go To...)
+        // 弹窗内部关闭按钮
         panel.addEventListener("click", (e) => {
-            // Handle Direct Travel Buttons
-            if (e.target.matches("[data-travel]")) {
-                const dest = e.target.getAttribute("data-travel");
-                this.handleTravel(dest);
+            if (e.target.matches(".cte-close-btn")) {
+                e.target.closest(".cte-esport-popup").classList.remove("active");
             }
-            // Handle Interior Button
-            if (e.target.matches('[data-action="show-interior"]')) {
-                this.showPopup("popup-cte-interior");
+        });
+
+        // 功能按钮逻辑
+        panel.addEventListener("click", (e) => {
+            const target = e.target;
+            
+            // 1. 前往地点 (Travel)
+            const travelDest = target.getAttribute("data-travel") || target.closest("[data-travel]")?.getAttribute("data-travel");
+            if (travelDest) {
+                this.handleTravel(travelDest);
             }
-            // Handle Back Button
-            if (e.target.matches('[data-action="back-to-cte"]')) {
+
+            // 2. 内部按钮 (Show Interior)
+            if (target.getAttribute("data-action") === "interior") {
+                this.showPopup("popup-interior");
+            }
+
+            // 3. 返回按钮 (Back)
+            if (target.getAttribute("data-action") === "back-base") {
                 this.showPopup("popup-cte");
             }
-            // Handle Floor Toggles
-            const floorBtn = e.target.closest(".cte-floor-btn");
+
+            // 4. 楼层切换 (Floor Toggle)
+            const floorBtn = target.closest(".cte-floor-btn");
             if (floorBtn) {
-                this.toggleFloor(floorBtn);
+                const floorId = floorBtn.getAttribute("data-target");
+                this.toggleFloor(floorId, floorBtn);
             }
         });
 
-        // 6. Custom Travel
-        const customBtn = document.getElementById("cte-custom-go");
+        // 自定义前往
+        const customBtn = document.getElementById("cte-btn-custom-go");
         if (customBtn) {
             customBtn.addEventListener("click", () => {
-                const input = document.getElementById("cte-custom-input");
-                if (input.value.trim()) {
-                    this.handleTravel(input.value.trim());
-                    input.value = "";
-                }
+                const val = document.getElementById("cte-custom-input").value.trim();
+                if (val) this.handleTravel(val);
             });
         }
     },
 
     showPopup(id) {
-        // Hide all popups first
-        document.querySelectorAll(".cte-popup").forEach(p => p.classList.remove("active"));
-        const target = document.getElementById(id);
-        if (target) {
-            target.classList.add("active");
-        }
+        this.closeAllPopups();
+        const popup = document.getElementById(id);
+        if (popup) popup.classList.add("active");
     },
 
-    toggleFloor(btn) {
-        const targetId = btn.getAttribute("data-target");
-        const panel = document.getElementById(targetId);
-        
-        // Close others
-        document.querySelectorAll(".cte-floor-panel").forEach(p => {
-            if (p.id !== targetId) p.style.display = "none";
-        });
-        document.querySelectorAll(".cte-floor-btn").forEach(b => {
-            if (b !== btn) b.classList.remove("active");
-        });
+    closeAllPopups() {
+        document.querySelectorAll(".cte-esport-popup").forEach(p => p.classList.remove("active"));
+    },
 
-        // Toggle current
+    toggleFloor(floorId, btn) {
+        const panel = document.getElementById(floorId);
+        // 关闭其他楼层
+        document.querySelectorAll(".cte-floor-panel").forEach(p => {
+            if(p.id !== floorId) p.style.display = "none";
+        });
+        document.querySelectorAll(".cte-floor-btn").forEach(b => b.classList.remove("active"));
+
         if (panel.style.display === "block") {
             panel.style.display = "none";
             btn.classList.remove("active");
@@ -165,49 +185,44 @@ const CTEMap = {
     },
 
     handleTravel(destination) {
-        // 1. Close UI
-        this.togglePanel();
-
-        // 2. Interact with SillyTavern
+        this.togglePanel(); // 关闭地图
+        
+        // 获取上下文并发送指令
         const context = getContext();
-        const userName = context.name2 || "我"; // Current User Name
+        const charName = context.characterId ? context.characters[context.characterId].name : "System";
         
-        // Option A: Send command to chat input
-        // const command = `/setinput ${userName}前往了${destination}，并观察周围的环境。`;
-        
-        // Option B: Directly trigger generation (Immersive)
-        const prompt = `\n[系统提示: ${userName} 移动到了 ${destination}。请描述新的场景和环境。]`;
-        
-        // Use ST API to insert prompt or input
-        if (context.chat && context.chat.length > 0) {
-            // Using jQuery API commonly available in ST extensions or direct Input manipulation
-            const textarea = document.getElementById('send_textarea');
-            if (textarea) {
-                textarea.value = `[前往地点：${destination}]`;
-                // Trigger input event to resize/notify ST
-                textarea.dispatchEvent(new Event('input', { bubbles: true }));
-            }
+        // 发送给 SillyTavern 输入框
+        const textarea = document.getElementById('send_textarea');
+        if (textarea) {
+            textarea.value = `[系统提示：用户已移动至地点“${destination}”。请描述该地点的环境、氛围以及可能发生的事件。]`;
+            // 触发输入事件以便 ST 检测到变化
+            textarea.dispatchEvent(new Event('input', { bubbles: true }));
+            
+            // 可选：自动点击发送 (如果需要自动发送，取消下面注释)
+            // const sendBtn = document.getElementById('send_but');
+            // if (sendBtn) sendBtn.click();
         }
-        
-        console.log(`[CTE Map] Traveling to ${destination}`);
-        toastr.info(`正在前往：${destination}`);
+
+        if (typeof toastr !== 'undefined') {
+            toastr.success(`正在前往：${destination}`);
+        }
     },
 
-    applyTheme(themeIndex) {
-        const root = document.getElementById("cte-root-panel");
+    applyTheme(theme) {
+        const root = document.getElementById("cte-esport-root");
         if (!root) return;
-
-        if (themeIndex === 0) { // Black Gold (Default)
+        
+        if (theme === 0) { // 黑金
             root.style.setProperty('--cte-bg-dark', '#121212');
             root.style.setProperty('--cte-panel-bg', '#1e1e1e');
             root.style.setProperty('--cte-accent-gold', '#c5a065');
             root.style.setProperty('--cte-text-main', '#e0e0e0');
-        } else if (themeIndex === 1) { // Blue White
+        } else if (theme === 1) { // 蓝白
             root.style.setProperty('--cte-bg-dark', '#f4f7f6');
             root.style.setProperty('--cte-panel-bg', '#ffffff');
             root.style.setProperty('--cte-accent-gold', '#5d9cec');
             root.style.setProperty('--cte-text-main', '#333');
-        } else if (themeIndex === 2) { // Pink White
+        } else { // 粉白
             root.style.setProperty('--cte-bg-dark', '#fff0f3');
             root.style.setProperty('--cte-panel-bg', '#ffffff');
             root.style.setProperty('--cte-accent-gold', '#f06292');
@@ -215,21 +230,17 @@ const CTEMap = {
         }
     },
 
-    async loadSettings() {
-        // Mock setting load if direct ST extension API isn't fully exposed, 
-        // or use localStorage as per requirement
-        const data = localStorage.getItem("cte-map-settings");
-        if (data) {
-            this.settings = JSON.parse(data);
-        }
+    saveSettings() {
+        localStorage.setItem("cte-esport-settings", JSON.stringify(this.settings));
     },
 
-    saveSettings() {
-        localStorage.setItem("cte-map-settings", JSON.stringify(this.settings));
+    loadSettings() {
+        const data = localStorage.getItem("cte-esport-settings");
+        if (data) this.settings = JSON.parse(data);
     }
 };
 
-// Start
+// 启动插件
 jQuery(async () => {
-    await CTEMap.init();
+    await CTEEscape.init();
 });
