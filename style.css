@@ -97,11 +97,13 @@
 .cte-esport-scroll-layer::-webkit-scrollbar-track { background: var(--cte-bg-dark); }
 .cte-esport-scroll-layer::-webkit-scrollbar-thumb { background: var(--cte-border-color); border-radius: 4px; }
 
-/* 地图画布 */
+/* 地图画布 - 强制 1:1 比例 */
 .cte-esport-map-canvas {
     position: relative;
     width: 800px;
     height: 800px;
+    min-width: 800px; /* 防止被挤压 */
+    min-height: 800px; /* 防止被挤压 */
     background-image: url('https://files.catbox.moe/b6p3mq.png'); 
     background-size: cover;
     background-position: center;
@@ -132,6 +134,20 @@
     white-space: nowrap;
     box-shadow: 0 4px 10px rgba(0,0,0,0.8);
     font-weight: bold;
+    position: relative;
+}
+
+.cte-esport-pin-label::after {
+    content: '';
+    position: absolute;
+    bottom: -5px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 0; 
+    height: 0; 
+    border-left: 5px solid transparent;
+    border-right: 5px solid transparent;
+    border-top: 5px solid var(--cte-accent-gold);
 }
 
 #cte-pin-base .cte-esport-pin-label {
@@ -139,6 +155,9 @@
     color: #000;
     border: 2px solid #fff;
     font-size: 15px;
+}
+#cte-pin-base .cte-esport-pin-label::after {
+    border-top-color: #fff;
 }
 
 /* 弹窗覆盖层 */
@@ -182,7 +201,7 @@
     border-bottom: 1px solid var(--cte-border-color);
     padding-bottom: 10px;
 }
-.cte-popup-title { color: var(--cte-accent-gold); font-size: 1.2rem; font-weight: bold; }
+.cte-popup-title { color: var(--cte-accent-gold); font-size: 1.2rem; font-weight: bold; font-family: 'Cormorant Garamond', serif; }
 .cte-close-btn { cursor: pointer; font-size: 1.5rem; line-height: 1; }
 .cte-popup-content img { width: 100%; border: 1px solid var(--cte-border-color); margin: 10px 0; }
 
@@ -197,6 +216,7 @@
     cursor: pointer;
     text-align: center;
     transition: all 0.2s;
+    font-family: 'Noto Serif SC', serif;
 }
 .cte-action-btn:hover { background: var(--cte-accent-gold); color: #000; }
 
@@ -208,11 +228,13 @@
     margin-bottom: 5px;
     cursor: pointer;
 }
+.cte-loc-item span { display: block; font-size: 0.8em; color: var(--cte-text-sub); margin-top: 2px; }
 .cte-loc-item:hover {
     border-left-color: var(--cte-accent-gold);
     background: var(--cte-accent-gold);
     color: #000;
 }
+.cte-loc-item:hover span { color: rgba(0,0,0,0.7); }
 
 .cte-floor-group { margin-top: 15px; }
 .cte-floor-btn {
@@ -226,6 +248,7 @@
     margin-top: 5px;
     cursor: pointer;
 }
+.cte-floor-btn:hover { opacity: 0.8; }
 .cte-floor-btn.active {
     border-left-color: var(--cte-accent-gold);
     background: linear-gradient(90deg, rgba(197, 160, 101, 0.2), transparent);
