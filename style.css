@@ -121,8 +121,17 @@
     justify-content: center;
     align-items: center;
     transition: transform 0.3s ease;
+    /* 允许拖动时改变鼠标样式 */
 }
 .cte-esport-pin:hover { z-index: 50; transform: translate(-50%, -60%) scale(1.1); }
+/* 拖拽态 */
+.cte-esport-pin.dragging {
+    cursor: grabbing;
+    opacity: 0.8;
+    transform: translate(-50%, -50%) scale(1.1);
+    transition: none; /* 拖拽时移除平滑过渡，确保跟手 */
+    z-index: 999;
+}
 
 .cte-esport-pin-label {
     background-color: var(--cte-pin-bg);
@@ -135,6 +144,7 @@
     box-shadow: 0 4px 10px rgba(0,0,0,0.8);
     font-weight: bold;
     position: relative;
+    pointer-events: none; /* 确保拖拽时鼠标事件穿透到 pin 容器 */
 }
 
 .cte-esport-pin-label::after {
@@ -187,10 +197,10 @@
     animation: ctePopIn 0.3s cubic-bezier(0.18, 0.89, 0.32, 1.28);
 }
 
-/* --- 新增：特定弹窗加宽规则 --- */
+/* 特定弹窗加宽规则 */
 #popup-cte, 
 #popup-interior {
-    width: 700px; /* 扩大宽度 */
+    width: 700px; 
     max-width: 95%;
 }
 
