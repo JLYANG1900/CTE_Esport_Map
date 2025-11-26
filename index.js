@@ -1,5 +1,5 @@
-// --- CTE Esport Map 核心逻辑 (v3.7) ---
-// 移除了文件路径依赖，使用全局 API 确保稳定性
+// --- CTE Esport Map 核心逻辑 (v4.0) ---
+// 更新内容：增强地点信息，Travel 逻辑弹窗化，UI 1:1锁定
 
 const extensionName = "cte-esport-map";
 
@@ -8,11 +8,12 @@ const CTEEscape = {
         theme: 0, 
     },
     panelLoaded: false,
+    currentDestination: null, // 存储当前选中的目的地
 
     async init() {
         console.log("🏆 [CTE Esport] 插件正在启动...");
         
-        // 1. 第一步：先强行把按钮显示出来，不管其他报不报错
+        // 1. 注入开关按钮
         this.injectToggleButton();
         
         // 2. 加载设置
@@ -30,16 +31,13 @@ const CTEEscape = {
     },
 
     injectToggleButton() {
-        // 防止重复创建
         if (document.getElementById("cte-esport-toggle-btn")) return;
 
-        console.log("🏆 [CTE Esport] 正在注入图标...");
         const btn = document.createElement("div");
         btn.id = "cte-esport-toggle-btn";
         btn.innerHTML = "🏆"; 
         btn.title = "打开 CTE 战队地图";
         
-        // 使用内联样式确保图标一定可见，不依赖 CSS 文件
         btn.style.cssText = `
             position: fixed; 
             top: 10px; 
@@ -72,7 +70,6 @@ const CTEEscape = {
 
     async loadHTML() {
         try {
-            // 动态获取同目录下的 map.html
             const panelUrl = new URL('./map.html', import.meta.url).href;
             const response = await fetch(panelUrl);
             
@@ -94,16 +91,11 @@ const CTEEscape = {
 
     togglePanel() {
         const panel = document.getElementById("cte-esport-panel");
-        if (!panel) {
-            // 如果面板没加载出来，再次尝试提示
-            if (typeof toastr !== "undefined") toastr.warning("地图面板未加载，请刷新页面重试。");
-            return;
-        }
+        if (!panel) return;
 
         const currentDisplay = window.getComputedStyle(panel).display;
         if (currentDisplay === "none") {
             panel.style.display = "flex";
-            // 简单的淡入效果
             panel.style.opacity = "0";
             setTimeout(() => {
                 panel.style.opacity = "1"; 
@@ -116,40 +108,59 @@ const CTEEscape = {
 
     // 获取 ST 上下文的辅助函数
     getContext() {
-        // 尝试从全局对象获取，兼容不同版本
         if (typeof SillyTavern !== 'undefined' && SillyTavern.getContext) {
             return SillyTavern.getContext();
         }
-        // 回退策略：检查 window 对象
         if (window.SillyTavern && window.SillyTavern.getContext) {
             return window.SillyTavern.getContext();
         }
         return null;
     },
 
-    handleTravel(destination) {
-        this.togglePanel();
+    // 1. 触发旅行弹窗 (第一步)
+    prepareTravel(destination) {
+        this.currentDestination = destination;
+        const modalTitle = document.getElementById("cte-travel-dest-name");
+        if(modalTitle) modalTitle.innerText = destination;
+        
+        // 显示确认弹窗
+        this.showPopup("cte-travel-modal");
+    },
+
+    // 2. 执行旅行 (第二步：发送到聊天框)
+    executeTravel(companionName = null) {
+        this.togglePanel(); // 关闭地图
         
         const context = this.getContext();
-        // 尝试获取输入框
-        const textarea = document.getElementById('send_textarea');
+        const userName = context ? context.name2 : "{{user}}"; // 获取当前用户名
+        const destination = this.currentDestination;
         
+        let outputText = "";
+        
+        if (companionName) {
+            // 邀请模式
+            outputText = `${userName} 邀请 ${companionName} 前往 ${destination}`;
+        } else {
+            // 独行模式
+            outputText = `${userName} 前往 ${destination}`;
+        }
+
+        // 插入到 ST 输入框
+        const textarea = document.getElementById('send_textarea');
         if (textarea) {
-            const userName = context ? context.name2 : "用户";
-            // 插入系统提示
-            const prompt = `\n[系统提示：${userName} 前往了“${destination}”。请描述该地点的环境。]\n`;
-            
-            // 简单的插入逻辑，避免复杂的光标操作导致报错
-            textarea.value = prompt;
-            
-            // 触发 input 事件让 ST 知道内容变了
+            textarea.value = outputText;
             textarea.dispatchEvent(new Event('input', { bubbles: true }));
             textarea.focus();
         }
 
         if (typeof toastr !== 'undefined') {
-            toastr.success(`正在前往：${destination}`);
+            toastr.success(`已设置出发指令: ${destination}`);
         }
+        
+        // 清空状态
+        this.currentDestination = null;
+        const companionInput = document.getElementById("cte-companion-input");
+        if(companionInput) companionInput.value = "";
     },
 
     bindEvents() {
@@ -172,10 +183,8 @@ const CTEEscape = {
         const mapCanvas = panel.querySelector("#cte-map-canvas");
         if(mapCanvas) {
             mapCanvas.onclick = (e) => {
-                // 点击背景关闭弹窗
                 if (e.target.id === "cte-map-canvas") this.closeAllPopups();
                 
-                // 点击地标
                 const pin = e.target.closest(".cte-esport-pin");
                 if (pin) {
                     e.stopPropagation();
@@ -194,9 +203,14 @@ const CTEEscape = {
                 target.closest(".cte-esport-popup").classList.remove("active");
             }
             
-            // 前往逻辑
+            // 点击含有 data-travel 的元素 (准备出发)
             const travelDest = target.getAttribute("data-travel") || target.closest("[data-travel]")?.getAttribute("data-travel");
-            if (travelDest) this.handleTravel(travelDest);
+            if (travelDest) {
+                // 如果是在 Travel Modal 里的按钮，不要递归触发，直接return
+                if (!target.closest("#cte-travel-modal")) {
+                    this.prepareTravel(travelDest);
+                }
+            }
 
             // 内部功能
             if (target.getAttribute("data-action") === "interior") this.showPopup("popup-interior");
@@ -210,17 +224,38 @@ const CTEEscape = {
             }
         };
 
-        // 自定义前往按钮
+        // 绑定旅行确认弹窗的具体按钮
+        const btnAlone = document.getElementById("cte-travel-alone");
+        const btnCompanion = document.getElementById("cte-travel-companion");
+        const inputCompanion = document.getElementById("cte-companion-input");
+
+        if (btnAlone) {
+            btnAlone.onclick = () => this.executeTravel(null);
+        }
+
+        if (btnCompanion) {
+            btnCompanion.onclick = () => {
+                const name = inputCompanion.value.trim();
+                if (!name) {
+                    if (typeof toastr !== "undefined") toastr.warning("请输入同伴名字");
+                    return;
+                }
+                this.executeTravel(name);
+            };
+        }
+
+        // 自定义前往按钮 (输入框 -> 准备出发)
         const customBtn = document.getElementById("cte-btn-custom-go");
         if (customBtn) {
             customBtn.onclick = () => {
                 const input = document.getElementById("cte-custom-input");
-                if (input && input.value.trim()) this.handleTravel(input.value.trim());
+                if (input && input.value.trim()) this.prepareTravel(input.value.trim());
             };
         }
     },
 
     showPopup(id) {
+        // 关闭所有其他，打开指定
         this.closeAllPopups();
         const popup = document.getElementById(id);
         if (popup) popup.classList.add("active");
@@ -234,13 +269,11 @@ const CTEEscape = {
         const panel = document.getElementById(floorId);
         if(!panel) return;
         
-        // 隐藏其他
         document.querySelectorAll(".cte-floor-panel").forEach(p => {
             if(p.id !== floorId) p.style.display = "none";
         });
         document.querySelectorAll(".cte-floor-btn").forEach(b => b.classList.remove("active"));
 
-        // 切换当前
         if (panel.style.display === "block") {
             panel.style.display = "none";
             btn.classList.remove("active");
@@ -277,8 +310,6 @@ const CTEEscape = {
     }
 };
 
-// 启动入口 (兼容性写法)
 (function() {
-    // 立即执行初始化
     CTEEscape.init();
 })();
