@@ -1,7 +1,8 @@
-// --- CTE Esport Map 核心逻辑 (v4.5) ---
-// 更新内容：弹窗加宽，背景更换，强制{{user}}占位符
+// --- CTE Esport Map 核心逻辑 (v5.0) ---
+// 更新内容：背景重置、可拖动地标、内部档案新布局
 
 const extensionName = "cte-esport-map";
+const defaultMapBg = "https://files.catbox.moe/b6p3mq.png"; // 原始地图链接
 
 const CTEEscape = {
     settings: {
@@ -9,6 +10,7 @@ const CTEEscape = {
     },
     panelLoaded: false,
     currentDestination: null, // 存储当前选中的目的地
+    isDraggingPin: false, // 标记是否正在拖动地标
 
     async init() {
         console.log("🏆 [CTE Esport] 插件正在启动...");
@@ -25,6 +27,7 @@ const CTEEscape = {
         // 4. 绑定事件
         if (this.panelLoaded) {
             this.bindEvents();
+            this.enablePinDragging(); // 启用拖拽
             this.applyTheme(this.settings.theme);
             console.log("✅ [CTE Esport] 初始化成功。");
         }
@@ -121,21 +124,16 @@ const CTEEscape = {
         this.togglePanel(); // 关闭地图
         
         const destination = this.currentDestination;
-        // 强制使用 {{user}} 占位符，不读取 context 变量
         const userPlaceholder = "{{user}}"; 
         
         let outputText = "";
         
         if (companionName) {
-            // 邀请模式：{{user}} 邀请 某人 前往 目的地
             outputText = `${userPlaceholder} 邀请 ${companionName} 前往 ${destination}`;
         } else {
-            // 独行模式：{{user}} 决定独自前往 目的地
-            // 参考图片格式: {{user}} 决定独自前往${dest}。
             outputText = `${userPlaceholder} 决定独自前往${destination}。`;
         }
 
-        // 插入到 ST 输入框
         const textarea = document.getElementById('send_textarea');
         if (textarea) {
             textarea.value = outputText;
@@ -147,7 +145,6 @@ const CTEEscape = {
             toastr.success(`已设置出发指令: ${destination}`);
         }
         
-        // 清空状态
         this.currentDestination = null;
         const companionInput = document.getElementById("cte-companion-input");
         if(companionInput) companionInput.value = "";
@@ -169,6 +166,83 @@ const CTEEscape = {
         reader.readAsDataURL(file);
     },
 
+    // 4. 处理背景恢复
+    handleResetBackground() {
+        const mapCanvas = document.getElementById("cte-map-canvas");
+        if (mapCanvas) {
+            mapCanvas.style.backgroundImage = `url(${defaultMapBg})`;
+            if (typeof toastr !== 'undefined') toastr.info("已恢复原始地图背景。");
+        }
+    },
+
+    // 5. 启用 Pin 拖动功能
+    enablePinDragging() {
+        const mapCanvas = document.getElementById("cte-map-canvas");
+        if (!mapCanvas) return;
+
+        let activePin = null;
+        let startX, startY, startLeft, startTop;
+        let hasMoved = false;
+
+        // 监听鼠标按下
+        mapCanvas.addEventListener("mousedown", (e) => {
+            const pin = e.target.closest(".cte-esport-pin");
+            if (!pin) return;
+
+            e.preventDefault(); // 防止选中文本
+            activePin = pin;
+            hasMoved = false;
+            
+            // 记录初始位置
+            startX = e.clientX;
+            startY = e.clientY;
+            startLeft = parseInt(activePin.style.left || 0);
+            startTop = parseInt(activePin.style.top || 0);
+
+            activePin.classList.add("dragging");
+            
+            document.addEventListener("mousemove", onMouseMove);
+            document.addEventListener("mouseup", onMouseUp);
+        });
+
+        const onMouseMove = (e) => {
+            if (!activePin) return;
+            
+            const dx = e.clientX - startX;
+            const dy = e.clientY - startY;
+
+            // 只有移动距离超过阈值才视为拖动
+            if (Math.abs(dx) > 3 || Math.abs(dy) > 3) {
+                hasMoved = true;
+                this.isDraggingPin = true; // 设置全局标志位，阻止弹窗触发
+
+                let newLeft = startLeft + dx;
+                let newTop = startTop + dy;
+
+                // 边界限制 (800x800)
+                newLeft = Math.max(0, Math.min(newLeft, 800));
+                newTop = Math.max(0, Math.min(newTop, 800));
+
+                activePin.style.left = `${newLeft}px`;
+                activePin.style.top = `${newTop}px`;
+            }
+        };
+
+        const onMouseUp = () => {
+            if (activePin) {
+                activePin.classList.remove("dragging");
+                activePin = null;
+            }
+            document.removeEventListener("mousemove", onMouseMove);
+            document.removeEventListener("mouseup", onMouseUp);
+            
+            // 延迟重置拖拽标志，确保 click 事件能读取到 true
+            setTimeout(() => {
+                this.isDraggingPin = false;
+            }, 50);
+        };
+    },
+
     bindEvents() {
         const panel = document.getElementById("cte-esport-panel");
         if (!panel) return;
@@ -185,16 +259,28 @@ const CTEEscape = {
             this.saveSettings();
         };
 
-        // 新增：背景上传监听
+        // 背景上传监听
         const uploadInput = document.getElementById("cte-bg-upload");
         if (uploadInput) {
             uploadInput.addEventListener("change", (e) => this.handleMapUpload(e));
         }
 
-        // 地图点击
+        // 背景恢复监听
+        const resetBtn = document.getElementById("cte-btn-reset-bg");
+        if (resetBtn) {
+            resetBtn.onclick = () => this.handleResetBackground();
+        }
+
+        // 地图点击 (含防拖拽误触)
         const mapCanvas = panel.querySelector("#cte-map-canvas");
         if(mapCanvas) {
             mapCanvas.onclick = (e) => {
+                // 如果刚刚发生了拖动，则忽略此次点击
+                if (this.isDraggingPin) {
+                    e.stopPropagation();
+                    return;
+                }
+
                 if (e.target.id === "cte-map-canvas") this.closeAllPopups();
                 
                 const pin = e.target.closest(".cte-esport-pin");
