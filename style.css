@@ -171,7 +171,7 @@
     align-items: center;
 }
 
-/* 弹窗本体 */
+/* 弹窗本体 (通用) */
 .cte-esport-popup {
     pointer-events: auto;
     background-color: var(--cte-panel-bg);
@@ -186,6 +186,14 @@
     display: none;
     animation: ctePopIn 0.3s cubic-bezier(0.18, 0.89, 0.32, 1.28);
 }
+
+/* --- 新增：特定弹窗加宽规则 --- */
+#popup-cte, 
+#popup-interior {
+    width: 700px; /* 扩大宽度 */
+    max-width: 95%;
+}
+
 .cte-esport-popup.active { display: block; }
 
 @keyframes ctePopIn {
