@@ -1,170 +1,180 @@
-<div id="cte-root-panel">
-    <!-- 1. Header Control Bar -->
-    <div class="cte-header">
-        <h2 class="cte-title">CTE E-SPORTS MAP</h2>
-        <div class="cte-controls-group">
-            <button class="cte-btn-icon" id="cte-theme-toggle" title="切换主题">🎨</button>
-            <button class="cte-btn-icon" id="cte-close-main" title="关闭地图">✕</button>
-        </div>
-    </div>
-
-    <!-- 2. Main Body (Stacked) -->
-    <div class="cte-body">
-        
-        <!-- Layer A: Scrollable Map (Bottom) -->
-        <div class="cte-map-scroll-container">
-            <div class="cte-map-content" id="cte-map-bg">
-                <!-- Pins are injected here via logic or statically defined -->
-                <!-- Center Base -->
-                <div class="cte-pin" id="cte-pin-base" style="left: 400px; top: 400px;" data-popup="popup-cte">
-                    <div class="cte-pin-label">CTE战队基地</div>
-                </div>
-                <!-- Baibu Street -->
-                <div class="cte-pin" style="left: 600px; top: 480px;" data-popup="popup-baibu">
-                    <div class="cte-pin-label">百步街</div>
-                </div>
-                <!-- Snack Street -->
-                <div class="cte-pin" style="left: 700px; top: 720px;" data-popup="popup-snack">
-                    <div class="cte-pin-label">小吃街</div>
-                </div>
-                <!-- Wanda -->
-                <div class="cte-pin" style="left: 650px; top: 320px;" data-popup="popup-wanda">
-                    <div class="cte-pin-label">万达广场</div>
-                </div>
-                <!-- Aurora Esport -->
-                <div class="cte-pin" style="left: 700px; top: 400px;" data-popup="popup-aurora">
-                    <div class="cte-pin-label">极光电竞馆</div>
-                </div>
-                <!-- Netbar -->
-                <div class="cte-pin" style="left: 150px; top: 500px;" data-popup="popup-netbar">
-                    <div class="cte-pin-label">星夜网吧</div>
-                </div>
-                <!-- Park -->
-                <div class="cte-pin" style="left: 400px; top: 100px;" data-popup="popup-park">
-                    <div class="cte-pin-label">蓝海公园</div>
-                </div>
-                <!-- Wancheng -->
-                <div class="cte-pin" style="left: 80px; top: 400px;" data-popup="popup-wancheng">
-                    <div class="cte-pin-label">万城娱乐总部</div>
-                </div>
-                <!-- Night Market -->
-                <div class="cte-pin" style="left: 100px; top: 100px;" data-popup="popup-nightmarket">
-                    <div class="cte-pin-label">老街区夜市</div>
-                </div>
-                <!-- School -->
-                <div class="cte-pin" style="left: 700px; top: 100px;" data-popup="popup-school">
-                    <div class="cte-pin-label">京港第三高中</div>
-                </div>
-                <!-- Library -->
-                <div class="cte-pin" style="left: 100px; top: 700px;" data-popup="popup-library">
-                    <div class="cte-pin-label">城市图书馆</div>
-                </div>
-                <!-- Hotel -->
-                <div class="cte-pin" style="left: 180px; top: 680px;" data-popup="popup-hotel">
-                    <div class="cte-pin-label">电竞酒店</div>
-                </div>
-                 <!-- Custom -->
-                 <div class="cte-pin" style="left: 600px; top: 650px;" data-popup="popup-custom">
-                    <div class="cte-pin-label">其他地点</div>
-                </div>
+<div id="cte-esport-root">
+    <div id="cte-esport-panel">
+        <!-- 1. 标题栏 -->
+        <div class="cte-esport-header">
+            <h2 class="cte-esport-title">CTE E-SPORTS MAP</h2>
+            <div class="cte-esport-controls">
+                <button class="cte-esport-icon-btn" id="cte-btn-theme" title="切换主题">🎨</button>
+                <button class="cte-esport-icon-btn" id="cte-btn-close" title="关闭">✕</button>
             </div>
         </div>
 
-        <!-- Layer B: UI Overlay (Top, Non-scrolling, Centered) -->
-        <div class="cte-ui-overlay" id="cte-ui-overlay">
+        <!-- 2. 主体区域 (层叠) -->
+        <div class="cte-esport-body">
             
-            <!-- Popup: CTE Base -->
-            <div class="cte-popup" id="popup-cte">
-                <div class="cte-popup-header">
-                    <h3 class="cte-popup-title">CTE 战队基地</h3>
-                    <span class="cte-close-btn">×</span>
-                </div>
-                <div class="cte-popup-content">
-                    <p>坐标核心：由独立别墅改造的现代建筑。这里是梦想开始的地方。</p>
-                    <img src="https://files.catbox.moe/t0f84b.png" alt="Base">
-                    <button class="cte-btn" data-action="show-interior">📂 查看内部布局</button>
-                    <button class="cte-btn" data-travel="CTE战队基地">🚀 前往此处</button>
-                </div>
-            </div>
-
-            <!-- Popup: CTE Interior -->
-            <div class="cte-popup" id="popup-cte-interior">
-                <div class="cte-popup-header">
-                    <h3 class="cte-popup-title">基地内部档案</h3>
-                    <span class="cte-close-btn">×</span>
-                </div>
-                <div class="cte-popup-content">
-                    <img src="https://files.catbox.moe/lhw7xk.png" alt="Interior">
-                    
-                    <!-- Floors -->
-                    <div class="cte-floor-group">
-                        <button class="cte-floor-btn" data-target="floor-5">🛏️ 五层：居住区 <span>▼</span></button>
-                        <div class="cte-floor-panel" id="floor-5">
-                            <span class="cte-room-tag" data-travel="CTE基地-魏月华的房间">魏月华</span>
-                            <span class="cte-room-tag" data-travel="CTE基地-秦述的房间">秦述</span>
-                            <span class="cte-room-tag" data-travel="CTE基地-司洛的房间">司洛</span>
-                            <span class="cte-room-tag" data-travel="CTE基地-鹿言的房间">鹿言</span>
-                            <span class="cte-room-tag" data-travel="CTE基地-你的房间">你</span>
-                        </div>
-
-                        <button class="cte-floor-btn" data-target="floor-3">🖥️ 三层：训练区 <span>▼</span></button>
-                        <div class="cte-floor-panel" id="floor-3">
-                            <span class="cte-room-tag" data-travel="CTE基地-主训练室">主训练室</span>
-                            <span class="cte-room-tag" data-travel="CTE基地-战术会议室">会议室</span>
-                        </div>
-
-                         <button class="cte-floor-btn" data-target="floor-1">🛋️ 一层：生活区 <span>▼</span></button>
-                        <div class="cte-floor-panel" id="floor-1">
-                            <span class="cte-room-tag" data-travel="CTE基地-餐厅">餐厅</span>
-                            <span class="cte-room-tag" data-travel="CTE基地-前院">前院</span>
-                        </div>
+            <!-- 底层：可滚动的地图层 -->
+            <div class="cte-esport-scroll-layer">
+                <div class="cte-esport-map-canvas" id="cte-map-canvas">
+                    <!-- 地标点 (数据驱动) -->
+                    <div class="cte-esport-pin" id="cte-pin-base" style="left: 400px; top: 400px;" data-popup="popup-cte">
+                        <div class="cte-esport-pin-label">CTE战队基地</div>
                     </div>
-
-                    <button class="cte-btn" data-action="back-to-cte">⬅ 返回外观</button>
+                    <div class="cte-esport-pin" style="left: 600px; top: 480px;" data-popup="popup-baibu">
+                        <div class="cte-esport-pin-label">百步街</div>
+                    </div>
+                    <div class="cte-esport-pin" style="left: 700px; top: 720px;" data-popup="popup-snack">
+                        <div class="cte-esport-pin-label">小吃街</div>
+                    </div>
+                    <div class="cte-esport-pin" style="left: 650px; top: 320px;" data-popup="popup-wanda">
+                        <div class="cte-esport-pin-label">万达广场</div>
+                    </div>
+                    <div class="cte-esport-pin" style="left: 700px; top: 400px;" data-popup="popup-aurora">
+                        <div class="cte-esport-pin-label">极光电竞馆</div>
+                    </div>
+                    <div class="cte-esport-pin" style="left: 150px; top: 500px;" data-popup="popup-netbar">
+                        <div class="cte-esport-pin-label">星夜网吧</div>
+                    </div>
+                    <div class="cte-esport-pin" style="left: 400px; top: 100px;" data-popup="popup-park">
+                        <div class="cte-esport-pin-label">蓝海公园</div>
+                    </div>
+                    <div class="cte-esport-pin" style="left: 80px; top: 400px;" data-popup="popup-wancheng">
+                        <div class="cte-esport-pin-label">万城娱乐总部</div>
+                    </div>
+                    <div class="cte-esport-pin" style="left: 100px; top: 100px;" data-popup="popup-nightmarket">
+                        <div class="cte-esport-pin-label">老街区夜市</div>
+                    </div>
+                    <div class="cte-esport-pin" style="left: 700px; top: 100px;" data-popup="popup-school">
+                        <div class="cte-esport-pin-label">京港第三高中</div>
+                    </div>
+                    <div class="cte-esport-pin" style="left: 100px; top: 700px;" data-popup="popup-library">
+                        <div class="cte-esport-pin-label">城市图书馆</div>
+                    </div>
+                     <div class="cte-esport-pin" style="left: 180px; top: 680px;" data-popup="popup-hotel">
+                        <div class="cte-esport-pin-label">电竞酒店</div>
+                    </div>
+                    <div class="cte-esport-pin" style="left: 600px; top: 650px;" data-popup="popup-custom">
+                        <div class="cte-esport-pin-label">其他地点</div>
+                    </div>
                 </div>
             </div>
 
-            <!-- Popup: Baibu Street -->
-            <div class="cte-popup" id="popup-baibu">
-                <div class="cte-popup-header"><h3>百步街</h3><span class="cte-close-btn">×</span></div>
-                <ul class="cte-loc-list">
-                    <li class="cte-loc-item" data-travel="猫咪咖啡馆"><strong>🐱 猫咪咖啡馆</strong><span>周锦宁常去。</span></li>
-                    <li class="cte-loc-item" data-travel="老张文具店"><strong>🖊️ 老张文具店</strong><span>旧时光记忆。</span></li>
-                    <li class="cte-loc-item" data-travel="404便利店"><strong>🏪 404便利店</strong><span>24h补给。</span></li>
-                </ul>
-            </div>
+            <!-- 顶层：UI 弹窗层 (不跟随地图滚动) -->
+            <div class="cte-esport-ui-layer" id="cte-ui-layer">
+                
+                <!-- 弹窗：CTE 基地 -->
+                <div class="cte-esport-popup" id="popup-cte">
+                    <div class="cte-popup-header">
+                        <span class="cte-popup-title">CTE 战队基地</span>
+                        <span class="cte-close-btn">×</span>
+                    </div>
+                    <div class="cte-popup-content">
+                        <p>坐标核心：由独立别墅改造的现代建筑，外墙印有巨型CTE战队标识。</p>
+                        <img src="https://files.catbox.moe/t0f84b.png" alt="Base">
+                        <button class="cte-action-btn" data-action="interior">📂 查看内部布局</button>
+                        <button class="cte-action-btn" data-travel="CTE战队基地">🚀 前往此处</button>
+                    </div>
+                </div>
 
-            <!-- Popup: Wanda -->
-            <div class="cte-popup" id="popup-wanda">
-                <div class="cte-popup-header"><h3>万达广场</h3><span class="cte-close-btn">×</span></div>
-                <ul class="cte-loc-list">
-                    <li class="cte-loc-item" data-travel="海底捞火锅"><strong>🍲 海底捞</strong></li>
-                    <li class="cte-loc-item" data-travel="电玩城"><strong>🎮 电玩城</strong></li>
-                    <li class="cte-loc-item" data-travel="星光书店"><strong>📖 星光书店</strong></li>
-                </ul>
-            </div>
+                <!-- 弹窗：基地内部 -->
+                <div class="cte-esport-popup" id="popup-interior">
+                    <div class="cte-popup-header">
+                        <span class="cte-popup-title">基地内部档案</span>
+                        <span class="cte-close-btn">×</span>
+                    </div>
+                    <div class="cte-popup-content">
+                        <img src="https://files.catbox.moe/lhw7xk.png" alt="FloorPlan">
+                        <div class="cte-floor-group">
+                            <button class="cte-floor-btn" data-target="f5">🛏️ 五层：居住区</button>
+                            <div class="cte-floor-panel" id="f5">
+                                <span class="cte-room-tag" data-travel="CTE基地-魏月华房间">魏月华</span>
+                                <span class="cte-room-tag" data-travel="CTE基地-秦述房间">秦述</span>
+                                <span class="cte-room-tag" data-travel="CTE基地-司洛房间">司洛</span>
+                                <span class="cte-room-tag" data-travel="CTE基地-鹿言房间">鹿言</span>
+                                <span class="cte-room-tag" data-travel="CTE基地-你的房间">你</span>
+                            </div>
 
-             <!-- Generic Popups -->
-             <div class="cte-popup" id="popup-snack">
-                <div class="cte-popup-header"><h3>小吃街</h3><span class="cte-close-btn">×</span></div>
-                <button class="cte-btn" data-travel="小吃街">🚀 前往小吃街</button>
-            </div>
-            <div class="cte-popup" id="popup-aurora">
-                <div class="cte-popup-header"><h3>极光电竞馆</h3><span class="cte-close-btn">×</span></div>
-                <button class="cte-btn" data-travel="极光电竞馆">🚀 前往</button>
-            </div>
-            <div class="cte-popup" id="popup-netbar">
-                <div class="cte-popup-header"><h3>星夜网吧</h3><span class="cte-close-btn">×</span></div>
-                <button class="cte-btn" data-travel="星夜网吧">🚀 前往</button>
-            </div>
-            
-            <!-- Custom Travel -->
-            <div class="cte-popup" id="popup-custom">
-                <div class="cte-popup-header"><h3>自定义行程</h3><span class="cte-close-btn">×</span></div>
-                <input type="text" id="cte-custom-input" placeholder="输入地点..." style="width:100%; padding:8px; margin-bottom:10px; background:#333; border:1px solid #555; color:#fff;">
-                <button class="cte-btn" id="cte-custom-go">🚀 出发</button>
-            </div>
+                            <button class="cte-floor-btn" data-target="f3">🖥️ 三层：训练区</button>
+                            <div class="cte-floor-panel" id="f3">
+                                <span class="cte-room-tag" data-travel="CTE基地-主训练室">主训练室</span>
+                                <span class="cte-room-tag" data-travel="CTE基地-战术室">战术室</span>
+                            </div>
 
+                            <button class="cte-floor-btn" data-target="f1">🛋️ 一层：生活区</button>
+                            <div class="cte-floor-panel" id="f1">
+                                <span class="cte-room-tag" data-travel="CTE基地-餐厅">餐厅</span>
+                                <span class="cte-room-tag" data-travel="CTE基地-大厅">大厅</span>
+                            </div>
+                        </div>
+                        <button class="cte-action-btn" data-action="back-base">⬅ 返回外观</button>
+                    </div>
+                </div>
+
+                <!-- 弹窗：百步街 -->
+                <div class="cte-esport-popup" id="popup-baibu">
+                    <div class="cte-popup-header"><span>百步街</span><span class="cte-close-btn">×</span></div>
+                    <ul class="cte-loc-list">
+                        <li class="cte-loc-item" data-travel="猫咪咖啡馆"><strong>🐱 猫咪咖啡馆</strong></li>
+                        <li class="cte-loc-item" data-travel="老张文具店"><strong>🖊️ 老张文具店</strong></li>
+                        <li class="cte-loc-item" data-travel="404便利店"><strong>🏪 404便利店 (24h)</strong></li>
+                    </ul>
+                </div>
+
+                <!-- 弹窗：万达广场 -->
+                <div class="cte-esport-popup" id="popup-wanda">
+                    <div class="cte-popup-header"><span>万达广场</span><span class="cte-close-btn">×</span></div>
+                    <ul class="cte-loc-list">
+                        <li class="cte-loc-item" data-travel="海底捞火锅"><strong>🍲 海底捞</strong></li>
+                        <li class="cte-loc-item" data-travel="电玩城"><strong>🎮 电玩城</strong></li>
+                        <li class="cte-loc-item" data-travel="星光书店"><strong>📖 星光书店</strong></li>
+                    </ul>
+                </div>
+
+                <!-- 通用弹窗 -->
+                <div class="cte-esport-popup" id="popup-snack">
+                    <div class="cte-popup-header"><span>小吃街</span><span class="cte-close-btn">×</span></div>
+                    <button class="cte-action-btn" data-travel="小吃街">🚀 前往小吃街</button>
+                </div>
+                <div class="cte-esport-popup" id="popup-aurora">
+                    <div class="cte-popup-header"><span>极光电竞馆</span><span class="cte-close-btn">×</span></div>
+                    <button class="cte-action-btn" data-travel="极光电竞馆">🚀 前往</button>
+                </div>
+                <div class="cte-esport-popup" id="popup-netbar">
+                    <div class="cte-popup-header"><span>星夜网吧</span><span class="cte-close-btn">×</span></div>
+                    <button class="cte-action-btn" data-travel="星夜网吧">🚀 前往</button>
+                </div>
+                 <div class="cte-esport-popup" id="popup-park">
+                    <div class="cte-popup-header"><span>蓝海公园</span><span class="cte-close-btn">×</span></div>
+                    <button class="cte-action-btn" data-travel="蓝海公园">🚀 前往</button>
+                </div>
+                 <div class="cte-esport-popup" id="popup-wancheng">
+                    <div class="cte-popup-header"><span>万城娱乐总部</span><span class="cte-close-btn">×</span></div>
+                    <button class="cte-action-btn" data-travel="万城娱乐总部">🚀 前往</button>
+                </div>
+                 <div class="cte-esport-popup" id="popup-nightmarket">
+                    <div class="cte-popup-header"><span>老街区夜市</span><span class="cte-close-btn">×</span></div>
+                    <button class="cte-action-btn" data-travel="老街区夜市">🚀 前往</button>
+                </div>
+                 <div class="cte-esport-popup" id="popup-school">
+                    <div class="cte-popup-header"><span>京港第三高中</span><span class="cte-close-btn">×</span></div>
+                    <button class="cte-action-btn" data-travel="京港第三高中">🚀 前往</button>
+                </div>
+                 <div class="cte-esport-popup" id="popup-library">
+                    <div class="cte-popup-header"><span>城市图书馆</span><span class="cte-close-btn">×</span></div>
+                    <button class="cte-action-btn" data-travel="城市图书馆">🚀 前往</button>
+                </div>
+                 <div class="cte-esport-popup" id="popup-hotel">
+                    <div class="cte-popup-header"><span>电竞酒店</span><span class="cte-close-btn">×</span></div>
+                    <button class="cte-action-btn" data-travel="电竞酒店">🚀 前往</button>
+                </div>
+
+                <!-- 自定义弹窗 -->
+                <div class="cte-esport-popup" id="popup-custom">
+                    <div class="cte-popup-header"><span>自定义地点</span><span class="cte-close-btn">×</span></div>
+                    <input type="text" id="cte-custom-input" placeholder="输入你想去的地方..." style="width:100%; padding:10px; margin-bottom:10px; background:#333; border:1px solid #555; color:#fff;">
+                    <button class="cte-action-btn" id="cte-btn-custom-go">🚀 出发</button>
+                </div>
+
+            </div>
         </div>
     </div>
 </div>
