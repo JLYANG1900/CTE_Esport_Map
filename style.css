@@ -1,243 +1,293 @@
-/* --- 1. 扩展面板容器 (主窗口) --- */
-#cte-map-panel {
+/* --- Core Panel Container --- */
+#cte-root-panel {
     position: fixed;
     top: 50%;
     left: 50%;
     transform: translate(-50%, -50%);
-    width: 850px; /* 略宽于地图，留出滚动条空间 */
-    height: 85vh;
-    background: var(--panel-bg, #1e1e1e);
-    border: 2px solid var(--accent-gold, #c5a065);
-    z-index: 20000;
-    display: none;
-    box-shadow: 0 0 50px rgba(0,0,0,0.9);
-    border-radius: 8px;
-    display: flex;
+    width: 90vh; /* Responsive size */
+    height: 90vh;
+    max-width: 850px;
+    max-height: 850px;
+    background-color: var(--cte-bg-dark, #121212);
+    border: 2px solid var(--cte-accent-gold, #c5a065);
+    box-shadow: 0 0 50px rgba(0,0,0,0.8);
+    z-index: 20000; /* High z-index to sit on top of ST */
+    display: none; /* Hidden by default */
     flex-direction: column;
-    overflow: hidden; /* 面板本身不滚动，防止弹窗跑偏 */
-    font-family: 'Noto Serif SC', 'Cormorant Garamond', serif;
-    color: var(--text-main, #e0e0e0);
-    transition: background-color 0.3s, border-color 0.3s;
+    overflow: hidden;
+    font-family: 'Noto Serif SC', serif;
+    color: var(--cte-text-main, #e0e0e0);
+    border-radius: 8px;
+    /* User Requirement: Cannot be dragged (CSS fixed position ensures this visually unless JS overrides) */
 }
 
-/* 顶部拖拽条 */
-#cte-drag-handle {
-    width: 100%;
-    height: 40px;
-    background: var(--bg-dark, #121212);
-    cursor: move;
+/* --- CSS Variables (Theming) --- */
+:root {
+    --cte-bg-dark: #121212;
+    --cte-panel-bg: #1e1e1e;
+    --cte-accent-gold: #c5a065;
+    --cte-text-main: #e0e0e0;
+    --cte-text-sub: #888;
+    --cte-border-color: #3d3d3d;
+    --cte-pin-bg: rgba(0, 0, 0, 0.85);
+    --cte-btn-text-hover: #000;
+}
+
+/* --- Header Controls --- */
+.cte-header {
+    padding: 10px 20px;
+    background: var(--cte-panel-bg);
+    border-bottom: 1px solid var(--cte-border-color);
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 0 15px;
-    border-bottom: 1px solid var(--accent-gold, #c5a065);
-    color: var(--accent-gold, #c5a065);
-    font-weight: bold;
     flex-shrink: 0;
-    z-index: 20003;
-    box-sizing: border-box;
 }
 
-#cte-close-btn {
-    cursor: pointer;
-    font-size: 18px;
-    transition: color 0.2s;
+.cte-title {
+    font-family: 'Cormorant Garamond', serif;
+    color: var(--cte-accent-gold);
+    font-size: 1.2rem;
+    letter-spacing: 2px;
+    margin: 0;
 }
-#cte-close-btn:hover { color: #fff; }
 
-/* --- 2. 滚动区域 (包含地图) --- */
-#cte-scroll-container {
-    flex: 1;
-    overflow: auto; /* 开启滚动 */
-    position: relative;
-    background-color: var(--bg-dark, #121212);
-    padding: 20px;
+.cte-controls-group {
     display: flex;
-    justify-content: center; /* 地图小于窗口时居中 */
-    align-items: flex-start;
+    gap: 10px;
 }
 
-/* 滚动条样式 */
-#cte-scroll-container::-webkit-scrollbar { width: 10px; height: 10px; }
-#cte-scroll-container::-webkit-scrollbar-track { background: var(--bg-dark, #121212); }
-#cte-scroll-container::-webkit-scrollbar-thumb { 
-    background: #444; 
-    border-radius: 4px; 
-    border: 1px solid var(--bg-dark, #121212);
+.cte-btn-icon {
+    background: transparent;
+    border: 1px solid var(--cte-accent-gold);
+    color: var(--cte-accent-gold);
+    cursor: pointer;
+    padding: 5px 10px;
+    border-radius: 4px;
+    transition: all 0.2s;
 }
-#cte-scroll-container::-webkit-scrollbar-thumb:hover { background: var(--accent-gold, #c5a065); }
 
-/* --- 3. 地图核心 (1:1 比例固定) --- */
-.cte-map-wrapper {
+.cte-btn-icon:hover {
+    background: var(--cte-accent-gold);
+    color: var(--cte-btn-text-hover);
+}
+
+/* --- Main Layout: Stacked Context --- */
+.cte-body {
     position: relative;
-    width: 800px; 
-    height: 800px; 
-    flex-shrink: 0; /* 防止被压缩 */
-    background-color: var(--panel-bg, #1e1e1e);
-    background-image: url('https://files.catbox.moe/b6p3mq.png'); 
+    flex-grow: 1;
+    overflow: hidden; /* Prevent body scroll, we scroll internal container */
+    width: 100%;
+    height: 100%;
+}
+
+/* 1. Map Scroll Layer */
+.cte-map-scroll-container {
+    width: 100%;
+    height: 100%;
+    overflow: auto; /* Scrollbars for long image */
+    position: relative;
+    background-color: #000;
+}
+
+/* Custom Scrollbar */
+.cte-map-scroll-container::-webkit-scrollbar { width: 8px; height: 8px; }
+.cte-map-scroll-container::-webkit-scrollbar-track { background: var(--cte-bg-dark); }
+.cte-map-scroll-container::-webkit-scrollbar-thumb { background: var(--cte-border-color); border-radius: 4px; }
+.cte-map-scroll-container::-webkit-scrollbar-thumb:hover { background: var(--cte-accent-gold); }
+
+/* The Map Image Wrapper (Fixed 1:1 Logic is inherent in the image dimension, handled here) */
+.cte-map-content {
+    position: relative;
+    width: 800px;  /* Fixed logic width */
+    height: 800px; /* Fixed logic height */
     background-size: cover;
     background-position: center;
-    border: 2px solid var(--accent-gold, #c5a065);
-    box-shadow: 0 0 40px rgba(0,0,0,0.5);
-    border-radius: 4px;
-    transition: border-color 0.3s;
+    background-image: url('https://files.catbox.moe/b6p3mq.png'); 
 }
 
-/* --- 4. 地标点 (Pins) --- */
-.cte-pin {
+/* 2. UI Overlay Layer (Pointer events logic) */
+.cte-ui-overlay {
     position: absolute;
-    transform: translate(-50%, -50%); 
-    cursor: pointer;
-    transition: transform 0.2s ease, z-index 0s;
+    inset: 0;
+    pointer-events: none; /* Let clicks pass through to map */
+    z-index: 100;
     display: flex;
     justify-content: center;
     align-items: center;
+}
+
+/* --- Map Pins --- */
+.cte-pin {
+    position: absolute;
+    transform: translate(-50%, -50%);
+    cursor: pointer;
     z-index: 10;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    transition: all 0.3s ease;
 }
+
 .cte-pin:hover {
-    z-index: 100;
+    z-index: 50;
     transform: translate(-50%, -60%) scale(1.1);
-}
-.cte-pin.dragging {
-    opacity: 0.7;
-    cursor: grabbing;
-    transition: none;
 }
 
 .cte-pin-label {
-    background-color: var(--pin-bg, rgba(0, 0, 0, 0.85));
-    border: 1px solid var(--accent-gold, #c5a065);
-    color: var(--accent-gold, #c5a065);
+    background-color: var(--cte-pin-bg);
+    border: 1px solid var(--cte-accent-gold);
+    color: var(--cte-accent-gold);
     padding: 4px 10px;
     border-radius: 4px;
     font-size: 13px;
     white-space: nowrap;
     box-shadow: 0 2px 8px rgba(0,0,0,0.6);
     font-weight: bold;
-    position: relative;
-    pointer-events: none; /* 防止文字干扰拖拽 */
-}
-/* 标签小三角 */
-.cte-pin-label::after {
-    content: '';
-    position: absolute;
-    bottom: -5px;
-    left: 50%;
-    transform: translateX(-50%);
-    border-left: 5px solid transparent;
-    border-right: 5px solid transparent;
-    border-top: 5px solid var(--accent-gold, #c5a065);
+    pointer-events: auto; /* Re-enable clicks for pins */
 }
 
-/* CTE基地特殊样式 */
-#cte-base .cte-pin-label { 
-    background-color: var(--accent-gold, #c5a065); 
-    color: var(--cte-pin-text, #000); 
+/* CTE Base Special Style */
+#cte-pin-base .cte-pin-label {
+    background-color: var(--cte-accent-gold);
+    color: var(--cte-btn-text-hover);
+    border: 2px solid #fff;
     font-size: 15px;
     padding: 6px 14px;
-    border: 2px solid #fff;
-}
-#cte-base .cte-pin-label::after { border-top-color: #fff; }
-
-/* --- 5. 弹窗系统 (关键：脱离文档流，居中于Panel) --- */
-.cte-popup-overlay {
-    display: none;
-    position: absolute; /* 相对于 Panel 定位 */
-    top: 0; left: 0; width: 100%; height: 100%;
-    background: rgba(0, 0, 0, 0.7);
-    backdrop-filter: blur(2px);
-    z-index: 20005;
 }
 
+/* --- Popups (Pinned to Center of Panel) --- */
 .cte-popup {
-    display: none;
-    position: absolute; /* 相对于 Panel 定位 */
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%); /* 完美的居中 */
-    width: clamp(350px, 80%, 600px);
-    max-height: 80%; /* 限制高度 */
-    background-color: var(--panel-bg, #1e1e1e);
-    border: 1px solid var(--accent-gold, #c5a065);
-    border-left: 5px solid var(--accent-gold, #c5a065);
+    pointer-events: auto; /* Enable interaction inside popup */
+    background-color: var(--cte-panel-bg);
+    border: 1px solid var(--cte-accent-gold);
+    border-left: 5px solid var(--cte-accent-gold);
     padding: 25px;
-    z-index: 20010;
+    width: clamp(300px, 70%, 500px);
+    max-height: 80%;
+    overflow-y: auto;
     box-shadow: 0 10px 40px rgba(0,0,0,0.8);
-    overflow-y: auto; /* 内容过长出现滚动条 */
-    color: var(--text-main, #e0e0e0);
+    display: none; /* Hidden by default */
+    animation: cte-fade-in 0.3s ease;
+    
+    /* Centering logic handled by Flexbox in .cte-ui-overlay */
 }
 
-/* 弹窗内部样式 */
-.cte-popup h3 {
-    color: var(--accent-gold, #c5a065);
-    border-bottom: 1px solid var(--border-color, #3d3d3d);
+@keyframes cte-fade-in {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.cte-popup.active {
+    display: block;
+}
+
+.cte-popup-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid var(--cte-border-color);
     padding-bottom: 10px;
-    margin-top: 0;
+    margin-bottom: 15px;
+}
+
+.cte-popup-title {
+    color: var(--cte-accent-gold);
+    font-size: 1.4rem;
+    margin: 0;
+}
+
+.cte-close-btn {
+    cursor: pointer;
+    font-size: 1.5rem;
+    color: var(--cte-text-sub);
+}
+.cte-close-btn:hover { color: var(--cte-accent-gold); }
+
+.cte-popup-content img {
+    width: 100%;
+    height: auto;
+    border: 1px solid var(--cte-border-color);
+    margin: 10px 0;
+}
+
+.cte-btn {
+    background: transparent;
+    border: 1px solid var(--cte-accent-gold);
+    color: var(--cte-accent-gold);
+    padding: 8px 16px;
+    cursor: pointer;
+    font-size: 14px;
+    margin-top: 10px;
+    transition: all 0.2s;
+    width: 100%;
+}
+.cte-btn:hover {
+    background: var(--cte-accent-gold);
+    color: var(--cte-btn-text-hover);
+}
+
+/* List Items */
+.cte-loc-list { list-style: none; padding: 0; }
+.cte-loc-item {
+    padding: 8px;
+    border-left: 2px solid var(--cte-text-sub);
+    background: rgba(255,255,255,0.05);
+    margin-bottom: 5px;
+    cursor: pointer;
+}
+.cte-loc-item:hover {
+    border-left-color: var(--cte-accent-gold);
+    background: var(--cte-accent-gold);
+    color: var(--cte-btn-text-hover);
+}
+.cte-loc-item strong { display: block; }
+.cte-loc-item span { font-size: 0.85em; opacity: 0.8; }
+
+/* Floor Plan Styles */
+.cte-floor-btn {
+    width: 100%;
+    text-align: left;
+    background: transparent;
+    color: var(--cte-text-main);
+    padding: 10px;
+    border: 1px solid var(--cte-border-color);
+    margin-top: 5px;
+    cursor: pointer;
     display: flex;
     justify-content: space-between;
 }
-.cte-popup p { line-height: 1.6; font-size: 14px; margin-bottom: 12px; }
-.cte-popup img { max-width: 100%; border: 1px solid var(--border-color, #3d3d3d); margin: 10px 0; }
-
-.cte-close-icon { cursor: pointer; float: right; }
-.cte-close-icon:hover { color: var(--accent-gold, #c5a065); }
-
-/* --- 6. 交互组件 --- */
-.cte-btn-group { display: flex; gap: 10px; justify-content: center; margin-top: 20px; flex-wrap: wrap; }
-.cte-btn {
-    background: transparent;
-    border: 1px solid var(--accent-gold, #c5a065);
-    color: var(--accent-gold, #c5a065);
-    padding: 6px 16px;
-    cursor: pointer;
-    font-family: inherit;
-    transition: all 0.3s;
+.cte-floor-btn.active {
+    background: linear-gradient(90deg, var(--cte-accent-gold), transparent);
+    color: var(--cte-btn-text-hover);
 }
-.cte-btn:hover { background: var(--accent-gold, #c5a065); color: var(--btn-text-hover, #000); }
-
-/* 列表样式 */
-.cte-loc-list { list-style: none; padding: 0; }
-.cte-loc-list li {
-    background: rgba(125,125,125,0.05);
-    border-left: 2px solid var(--text-sub, #888);
-    padding: 8px 12px;
-    margin-bottom: 8px;
-    cursor: pointer;
-    transition: all 0.2s;
+.cte-floor-panel {
+    display: none;
+    padding: 10px;
+    background: rgba(0,0,0,0.2);
 }
-.cte-loc-list li:hover {
-    background: var(--accent-gold, #c5a065);
-    color: var(--btn-text-hover, #000);
-    border-left-color: var(--accent-gold, #c5a065);
-}
-.cte-loc-list li strong { display: block; margin-bottom: 3px; }
-.cte-loc-list li span { font-size: 12px; color: var(--text-sub, #888); }
-.cte-loc-list li:hover span { color: var(--btn-text-hover, #000); opacity: 0.8; }
-
-/* 楼层/房间标签 */
 .cte-room-tag {
     display: inline-block;
-    background: rgba(255,255,255,0.05);
-    border: 1px solid var(--border-color, #3d3d3d);
-    padding: 5px 10px;
+    padding: 4px 8px;
+    border: 1px solid var(--cte-border-color);
     margin: 3px;
     font-size: 12px;
     cursor: pointer;
 }
 .cte-room-tag:hover {
-    background: var(--accent-gold, #c5a065);
-    color: var(--btn-text-hover, #000);
-    border-color: var(--accent-gold, #c5a065);
+    border-color: var(--cte-accent-gold);
+    background: var(--cte-accent-gold);
+    color: var(--cte-btn-text-hover);
 }
 
-/* 控制栏 */
-.cte-controls {
-    display: flex;
-    justify-content: flex-end;
-    padding: 10px 20px;
-    background: var(--bg-dark, #121212);
-    border-bottom: 1px solid var(--border-color, #3d3d3d);
-    gap: 10px;
+/* Extension Toggle Button on ST UI */
+#cte-toggle-btn {
+    position: fixed;
+    top: 5px;
+    left: 200px; /* Adjust based on ST layout */
+    z-index: 9000;
+    cursor: pointer;
+    opacity: 0.5;
+    transition: opacity 0.2s;
 }
-.cte-file-input { position: relative; overflow: hidden; display: inline-block; }
-.cte-file-input input { position: absolute; top: 0; right: 0; opacity: 0; cursor: pointer; height: 100%; width: 100%;}
+#cte-toggle-btn:hover { opacity: 1; }
