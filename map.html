@@ -1,0 +1,139 @@
+<div class="cte-wrapper">
+    <h1>京港市地图 - CTE战队版</h1>
+    <h2>双击标签查看详情，长按拖拽标签移动</h2>
+
+    <div class="controls-bar">
+        <span>更换背景：</span>
+        <div class="file-input-wrapper cte-btn">
+            <span>📂 选择图片...</span>
+            <input type="file" id="bg-upload" accept="image/*" onchange="window.CTEMap.changeBackground(this)">
+        </div>
+        <span style="margin-left:auto; font-size: 12px; color: #888;">提示：坐标位置会自动保存</span>
+    </div>
+
+    <div class="map-container" id="cte-map-container">
+        <!-- 核心基地 -->
+        <div class="location" id="cte-base" style="top: 50%; left: 50%; border-color: #ffd700;" data-popup="cte-base-popup"><span class="label">🏆 CTE基地</span></div>
+        
+        <!-- 紧邻区域 -->
+        <div class="location" id="store-404" style="top: 52%; left: 47%;" data-popup="store-404-popup"><span class="label">404便利店</span></div>
+        <div class="location" id="baibu-street" style="top: 58%; left: 50%;" data-popup="baibu-street-popup"><span class="label">百步街</span></div>
+        <div class="location" id="snack-street" style="top: 65%; left: 50%;" data-popup="snack-street-popup"><span class="label">小吃街</span></div>
+        
+        <!-- 餐饮娱乐 -->
+        <div class="location" id="bar-bedrunk" style="top: 65%; left: 45%;" data-popup="bar-bedrunk-popup"><span class="label">be drunk酒吧</span></div>
+        <div class="location" id="noodle-shop" style="top: 58%; left: 55%;" data-popup="noodle-shop-popup"><span class="label">老字号面馆</span></div>
+        <div class="location" id="cafe-cat" style="top: 56%; left: 48%;" data-popup="cafe-cat-popup"><span class="label">猫咪咖啡馆</span></div>
+        <div class="location" id="dessert-house" style="top: 63%; left: 52%;" data-popup="dessert-house-popup"><span class="label">甜品屋</span></div>
+        <div class="location" id="flower-tea" style="top: 59%; left: 52%;" data-popup="flower-tea-popup"><span class="label">花间茶社</span></div>
+
+        <!-- 商业区 -->
+        <div class="location" id="wanda-plaza" style="top: 50%; left: 70%;" data-popup="wanda-plaza-popup"><span class="label">🛍️ 万达广场</span></div>
+        <div class="location" id="fitness-club" style="top: 53%; left: 72%;" data-popup="fitness-club-popup"><span class="label">健身俱乐部</span></div>
+        
+        <!-- 电竞相关 -->
+        <div class="location" id="aurora-hall" style="top: 45%; left: 75%;" data-popup="aurora-hall-popup"><span class="label">🎮 极光电竞馆</span></div>
+        <div class="location" id="esport-cafe" style="top: 48%; left: 75%;" data-popup="esport-cafe-popup"><span class="label">电竞咖啡厅</span></div>
+        <div class="location" id="netbar-xingye" style="top: 50%; left: 35%;" data-popup="netbar-xingye-popup"><span class="label">星夜网吧</span></div>
+        <div class="location" id="esport-hotel" style="top: 45%; left: 55%;" data-popup="esport-hotel-popup"><span class="label">电竞主题酒店</span></div>
+        <div class="location" id="wancheng-ent" style="top: 20%; left: 80%;" data-popup="wancheng-ent-popup"><span class="label">🏢 万城娱乐总部</span></div>
+
+        <!-- 公共/生活 -->
+        <div class="location" id="blue-ocean-park" style="top: 30%; left: 50%;" data-popup="blue-ocean-park-popup"><span class="label">🌲 蓝海公园</span></div>
+        <div class="location" id="basketball-court" style="top: 32%; left: 53%;" data-popup="basketball-court-popup"><span class="label">露天篮球场</span></div>
+        <div class="location" id="night-market" style="top: 35%; left: 35%;" data-popup="night-market-popup"><span class="label">🏮 老街区夜市</span></div>
+        <div class="location" id="handmade-shop" style="top: 37%; left: 33%;" data-popup="handmade-shop-popup"><span class="label">手作工坊</span></div>
+        <div class="location" id="school-high" style="top: 80%; left: 40%;" data-popup="school-high-popup"><span class="label">🏫 京港第三高中</span></div>
+        <div class="location" id="city-library" style="top: 70%; left: 30%;" data-popup="city-library-popup"><span class="label">📚 城市图书馆</span></div>
+        <div class="location" id="pet-hospital" style="top: 55%; left: 45%;" data-popup="pet-hospital-popup"><span class="label">宠物医院</span></div>
+
+        <!-- 自定义 -->
+        <div class="location" id="other-places" style="top: 85%; left: 85%;" data-popup="other-places-popup"><span class="label">➕ 其他地点</span></div>
+    </div>
+
+    <!-- 遮罩层 -->
+    <div class="popup-overlay" id="cte-overlay" onclick="window.CTEMap.closeAllPopups()"></div>
+
+    <!-- 出行菜单 -->
+    <div id="travel-menu-overlay" onclick="if(event.target === this) window.CTEMap.closeTravelMenu()">
+        <div class="travel-menu-box">
+            <span class="close-btn" onclick="window.CTEMap.closeTravelMenu()">&times;</span>
+            <div id="travel-title" style="color:#e0c5a1; margin-bottom:20px;">前往目的地</div>
+            <div id="travel-content" class="travel-options"></div>
+        </div>
+    </div>
+
+    <!-- 自定义地点弹窗 -->
+    <div id="other-places-popup" class="cte-popup">
+        <span class="close-btn" onclick="window.CTEMap.closeAllPopups()">&times;</span>
+        <h3>🗺️ 自定义目的地</h3>
+        <p>请输入您想前往的任意地点：</p>
+        <div style="text-align: center;">
+            <input type="text" id="custom-destination-input" class="travel-input" style="width: 90%; margin-top:10px;" placeholder="例如：海边">
+            <button class="cte-btn" onclick="window.CTEMap.goToCustomDestination()">🚀 前往</button>
+        </div>
+    </div>
+
+    <!-- CTE基地弹窗 (已更新图片) -->
+    <div id="cte-base-popup" class="cte-popup">
+        <span class="close-btn" onclick="window.CTEMap.closeAllPopups()">&times;</span>
+        <h3>🏆 CTE团队基地</h3>
+        <p>地图中心的独立别墅改造建筑，外墙印有巨型CTE标识，是团队的核心驻地。</p>
+        <img src="https://files.catbox.moe/t0f84b.png" class="popup-image" alt="CTE Base External">
+        <div style="text-align: center;">
+            <button class="cte-btn" onclick="window.CTEMap.showPopup('cte-internal-popup')">🚪 进入基地内部</button>
+            <button class="cte-btn" onclick="window.CTEMap.openTravelMenu('CTE基地大门')">🚀 前往大门</button>
+        </div>
+    </div>
+
+    <!-- CTE内部详情 (已更新图片) -->
+    <div id="cte-internal-popup" class="cte-popup">
+        <span class="close-btn" onclick="window.CTEMap.closeAllPopups()">&times;</span>
+        <h3>🛋️ 基地楼层导览</h3>
+        <div class="interior-container">
+            <!-- 插入内部详情图 -->
+            <img src="https://files.catbox.moe/lhw7xk.png" class="interior-image" alt="CTE Base Internal">
+            <div class="floor-nav">
+                <button class="floor-btn" onclick="window.CTEMap.openSubMenu('顶楼：休闲景观区', ['露台咖啡厅', '屋顶花园'])">1. 顶楼：休闲景观区</button>
+                <button class="floor-btn" onclick="window.CTEMap.openSubMenu('五层：宿舍生活区', ['球员宿舍', '其他宿舍', '五层公共休憩区'])">2. 五层：宿舍生活区</button>
+                <button class="floor-btn" onclick="window.CTEMap.openSubMenu('四层：身心恢复区', ['健身房', '瑜伽室', '按摩理疗室'])">3. 四层：身心恢复区</button>
+                <button class="floor-btn" onclick="window.CTEMap.openSubMenu('三层：专业训练区', ['主训练室', '副训练室', '战术会议室', '球员休息室'])">4. 三层：专业训练区</button>
+                <button class="floor-btn" onclick="window.CTEMap.openSubMenu('二层：运营与内容区', ['采访室', '直播间', '内容创作工作室', '教练与分析师办公室', '经理办公室', '档案室', '观赛区'])">5. 二层：运营与内容区</button>
+                <button class="floor-btn" onclick="window.CTEMap.openSubMenu('一层：接待与后勤区', ['前院', '接待区', '休息厅', '厨房餐厅', '储物室', '洗衣房', '医务室', '一层储物区', '后院'])">6. 一层：接待与后勤区</button>
+            </div>
+            <div id="interior-sub-menu" class="sub-menu-overlay">
+                <div id="sub-menu-title" style="color:#b38b59; font-size:20px; margin-bottom:20px;"></div>
+                <div id="sub-menu-content" class="sub-menu-grid"></div>
+                <div class="sub-menu-close" style="margin-top:20px; cursor:pointer;" onclick="window.CTEMap.closeSubMenu()">[ 关闭菜单 ]</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 周边地点弹窗 -->
+    <div id="wanda-plaza-popup" class="cte-popup"><span class="close-btn" onclick="window.CTEMap.closeAllPopups()">&times;</span><h3>🛍️ 万达广场</h3><p>步行10分钟可达的大型商业综合体。</p><div style="text-align:center"><button class="cte-btn" onclick="window.CTEMap.openSubMenu('万达广场', ['CGV影城', '海底捞火锅', '电玩城', '星光书店', '星空天台酒吧', '潮玩集合店'])">🔍 查看内部</button> <button class="cte-btn" onclick="window.CTEMap.openTravelMenu('万达广场')">🚀 前往</button></div></div>
+    
+    <div id="baibu-street-popup" class="cte-popup"><span class="close-btn" onclick="window.CTEMap.closeAllPopups()">&times;</span><h3>🏘️ 百步街</h3><p>充满活力的住宅区，遍布小商铺。</p><div style="text-align:center"><button class="cte-btn" onclick="window.CTEMap.openSubMenu('百步街', ['老张文具店', '猫咪咖啡馆', '老字号面馆', '宠物医院', '花间茶社'])">🔍 逛逛商铺</button> <button class="cte-btn" onclick="window.CTEMap.openTravelMenu('百步街')">🚀 前往</button></div></div>
+    
+    <div id="snack-street-popup" class="cte-popup"><span class="close-btn" onclick="window.CTEMap.closeAllPopups()">&times;</span><h3>🍢 小吃街</h3><p>深夜觅食的首选之地。</p><div style="text-align:center"><button class="cte-btn" onclick="window.CTEMap.openSubMenu('小吃街', ['老王烧烤', '糖葫芦摊', '麻辣烫小店', '甜品屋'])">🔍 查看美食</button> <button class="cte-btn" onclick="window.CTEMap.openTravelMenu('小吃街')">🚀 前往</button></div></div>
+
+    <!-- 简单弹窗 -->
+    <div id="store-404-popup" class="cte-popup"><span class="close-btn" onclick="window.CTEMap.closeAllPopups()">&times;</span><h3>🏪 404便利店</h3><p>CTE基地正门旁，24小时营业。</p><div style="text-align:center"><button class="cte-btn" onclick="window.CTEMap.openTravelMenu('404便利店')">🚀 前往</button></div></div>
+    <div id="bar-bedrunk-popup" class="cte-popup"><span class="close-btn" onclick="window.CTEMap.closeAllPopups()">&times;</span><h3>🍸 be drunk酒吧</h3><p>小吃街旁，电竞主题酒吧，CTE战队庆功常驻地。</p><div style="text-align:center"><button class="cte-btn" onclick="window.CTEMap.openTravelMenu('be drunk酒吧')">🚀 前往</button></div></div>
+    <div id="aurora-hall-popup" class="cte-popup"><span class="close-btn" onclick="window.CTEMap.closeAllPopups()">&times;</span><h3>🎮 极光电竞馆</h3><p>大型电竞场馆，定期举办赛事。</p><div style="text-align:center"><button class="cte-btn" onclick="window.CTEMap.openTravelMenu('极光电竞馆')">🚀 前往</button></div></div>
+    <div id="blue-ocean-park-popup" class="cte-popup"><span class="close-btn" onclick="window.CTEMap.closeAllPopups()">&times;</span><h3>🌲 蓝海公园</h3><p>静谧湖畔公园，秦述晨跑地标。</p><div style="text-align:center"><button class="cte-btn" onclick="window.CTEMap.openTravelMenu('蓝海公园')">🚀 前往</button></div></div>
+    <div id="night-market-popup" class="cte-popup"><span class="close-btn" onclick="window.CTEMap.closeAllPopups()">&times;</span><h3>🏮 老街区夜市</h3><p>传统夜市，浓郁的本土生活气息。</p><div style="text-align:center"><button class="cte-btn" onclick="window.CTEMap.openTravelMenu('老街区夜市')">🚀 前往</button></div></div>
+    <div id="wancheng-ent-popup" class="cte-popup"><span class="close-btn" onclick="window.CTEMap.closeAllPopups()">&times;</span><h3>🏢 万城娱乐总部</h3><p>距CTE基地2公里处。</p><div style="text-align:center"><button class="cte-btn" onclick="window.CTEMap.openTravelMenu('万城娱乐总部')">🚀 前往</button></div></div>
+    <div id="school-high-popup" class="cte-popup"><span class="close-btn" onclick="window.CTEMap.closeAllPopups()">&times;</span><h3>🏫 京港第三高中</h3><p>省重点高中，谌绪就读地。</p><div style="text-align:center"><button class="cte-btn" onclick="window.CTEMap.openTravelMenu('京港第三高中')">🚀 前往</button></div></div>
+    <div id="netbar-xingye-popup" class="cte-popup"><span class="close-btn" onclick="window.CTEMap.closeAllPopups()">&times;</span><h3>💻 星夜网吧</h3><p>高端网吧，司洛常光顾。</p><div style="text-align:center"><button class="cte-btn" onclick="window.CTEMap.openTravelMenu('星夜网吧')">🚀 前往</button></div></div>
+    <div id="esport-hotel-popup" class="cte-popup"><span class="close-btn" onclick="window.CTEMap.closeAllPopups()">&times;</span><h3>🏨 电竞主题酒店</h3><p>设有电竞主题客房及观赛厅。</p><div style="text-align:center"><button class="cte-btn" onclick="window.CTEMap.openTravelMenu('电竞主题酒店')">🚀 前往</button></div></div>
+    <div id="city-library-popup" class="cte-popup"><span class="close-btn" onclick="window.CTEMap.closeAllPopups()">&times;</span><h3>📚 城市图书馆</h3><p>现代化图书馆，设有电竞文化专区。</p><div style="text-align:center"><button class="cte-btn" onclick="window.CTEMap.openTravelMenu('城市图书馆')">🚀 前往</button></div></div>
+    <div id="fitness-club-popup" class="cte-popup"><span class="close-btn" onclick="window.CTEMap.closeAllPopups()">&times;</span><h3>💪 健身俱乐部</h3><p>配备专业健身器材及私人教练。</p><div style="text-align:center"><button class="cte-btn" onclick="window.CTEMap.openTravelMenu('健身俱乐部')">🚀 前往</button></div></div>
+    <div id="basketball-court-popup" class="cte-popup"><span class="close-btn" onclick="window.CTEMap.closeAllPopups()">&times;</span><h3>🏀 露天篮球场</h3><p>公园旁社区开放球场。</p><div style="text-align:center"><button class="cte-btn" onclick="window.CTEMap.openTravelMenu('露天篮球场')">🚀 前往</button></div></div>
+    <div id="handmade-shop-popup" class="cte-popup"><span class="close-btn" onclick="window.CTEMap.closeAllPopups()">&times;</span><h3>🎨 手作工坊</h3><p>提供陶艺与手工首饰DIY体验。</p><div style="text-align:center"><button class="cte-btn" onclick="window.CTEMap.openTravelMenu('手作工坊')">🚀 前往</button></div></div>
+    <div id="esport-cafe-popup" class="cte-popup"><span class="close-btn" onclick="window.CTEMap.closeAllPopups()">&times;</span><h3>☕ 电竞咖啡厅</h3><p>极光电竞馆对面，适合粉丝聚会。</p><div style="text-align:center"><button class="cte-btn" onclick="window.CTEMap.openTravelMenu('电竞咖啡厅')">🚀 前往</button></div></div>
+    <div id="noodle-shop-popup" class="cte-popup"><span class="close-btn" onclick="window.CTEMap.closeAllPopups()">&times;</span><h3>🍜 老字号面馆</h3><p>经营数十年的手擀面馆，队员常在此早餐。</p><div style="text-align:center"><button class="cte-btn" onclick="window.CTEMap.openTravelMenu('老字号面馆')">🚀 前往</button></div></div>
+    <div id="cafe-cat-popup" class="cte-popup"><span class="close-btn" onclick="window.CTEMap.closeAllPopups()">&times;</span><h3>🐱 猫咪咖啡馆</h3><p>常有周锦宁与魏星泽光顾。</p><div style="text-align:center"><button class="cte-btn" onclick="window.CTEMap.openTravelMenu('猫咪咖啡馆')">🚀 前往</button></div></div>
+    <div id="dessert-house-popup" class="cte-popup"><span class="close-btn" onclick="window.CTEMap.closeAllPopups()">&times;</span><h3>🍰 甜品屋</h3><p>主打蛋糕与奶茶，深受团队成员喜爱。</p><div style="text-align:center"><button class="cte-btn" onclick="window.CTEMap.openTravelMenu('甜品屋')">🚀 前往</button></div></div>
+    <div id="flower-tea-popup" class="cte-popup"><span class="close-btn" onclick="window.CTEMap.closeAllPopups()">&times;</span><h3>🍵 花间茶社</h3><p>深藏于巷内，适合静心谈心或下棋。</p><div style="text-align:center"><button class="cte-btn" onclick="window.CTEMap.openTravelMenu('花间茶社')">🚀 前往</button></div></div>
+    <div id="pet-hospital-popup" class="cte-popup"><span class="close-btn" onclick="window.CTEMap.closeAllPopups()">&times;</span><h3>🏥 宠物医院</h3><p>与猫咪咖啡馆合作的宠物诊所。</p><div style="text-align:center"><button class="cte-btn" onclick="window.CTEMap.openTravelMenu('宠物医院')">🚀 前往</button></div></div>
+</div>
