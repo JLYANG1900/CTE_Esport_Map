@@ -1,5 +1,5 @@
-// --- CTE Esport Map 核心逻辑 (v4.0) ---
-// 更新内容：增强地点信息，Travel 逻辑弹窗化，UI 1:1锁定
+// --- CTE Esport Map 核心逻辑 (v4.5) ---
+// 更新内容：弹窗加宽，背景更换，强制{{user}}占位符
 
 const extensionName = "cte-esport-map";
 
@@ -106,18 +106,7 @@ const CTEEscape = {
         }
     },
 
-    // 获取 ST 上下文的辅助函数
-    getContext() {
-        if (typeof SillyTavern !== 'undefined' && SillyTavern.getContext) {
-            return SillyTavern.getContext();
-        }
-        if (window.SillyTavern && window.SillyTavern.getContext) {
-            return window.SillyTavern.getContext();
-        }
-        return null;
-    },
-
-    // 1. 触发旅行弹窗 (第一步)
+    // 1. 触发旅行弹窗
     prepareTravel(destination) {
         this.currentDestination = destination;
         const modalTitle = document.getElementById("cte-travel-dest-name");
@@ -127,22 +116,23 @@ const CTEEscape = {
         this.showPopup("cte-travel-modal");
     },
 
-    // 2. 执行旅行 (第二步：发送到聊天框)
+    // 2. 执行旅行 (已修改：强制使用 {{user}})
     executeTravel(companionName = null) {
         this.togglePanel(); // 关闭地图
         
-        const context = this.getContext();
-        const userName = context ? context.name2 : "{{user}}"; // 获取当前用户名
         const destination = this.currentDestination;
+        // 强制使用 {{user}} 占位符，不读取 context 变量
+        const userPlaceholder = "{{user}}"; 
         
         let outputText = "";
         
         if (companionName) {
-            // 邀请模式
-            outputText = `${userName} 邀请 ${companionName} 前往 ${destination}`;
+            // 邀请模式：{{user}} 邀请 某人 前往 目的地
+            outputText = `${userPlaceholder} 邀请 ${companionName} 前往 ${destination}`;
         } else {
-            // 独行模式
-            outputText = `${userName} 前往 ${destination}`;
+            // 独行模式：{{user}} 决定独自前往 目的地
+            // 参考图片格式: {{user}} 决定独自前往${dest}。
+            outputText = `${userPlaceholder} 决定独自前往${destination}。`;
         }
 
         // 插入到 ST 输入框
@@ -163,6 +153,22 @@ const CTEEscape = {
         if(companionInput) companionInput.value = "";
     },
 
+    // 3. 处理地图背景上传
+    handleMapUpload(e) {
+        const file = e.target.files[0];
+        if (!file) return;
+
+        const reader = new FileReader();
+        reader.onload = (event) => {
+            const mapCanvas = document.getElementById("cte-map-canvas");
+            if (mapCanvas) {
+                mapCanvas.style.backgroundImage = `url(${event.target.result})`;
+                if (typeof toastr !== 'undefined') toastr.success("地图背景更换成功！");
+            }
+        };
+        reader.readAsDataURL(file);
+    },
+
     bindEvents() {
         const panel = document.getElementById("cte-esport-panel");
         if (!panel) return;
@@ -178,6 +184,12 @@ const CTEEscape = {
             this.applyTheme(this.settings.theme);
             this.saveSettings();
         };
+
+        // 新增：背景上传监听
+        const uploadInput = document.getElementById("cte-bg-upload");
+        if (uploadInput) {
+            uploadInput.addEventListener("change", (e) => this.handleMapUpload(e));
+        }
 
         // 地图点击
         const mapCanvas = panel.querySelector("#cte-map-canvas");
