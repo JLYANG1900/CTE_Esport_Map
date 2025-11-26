@@ -4,7 +4,9 @@
         <div class="cte-esport-header">
             <h2 class="cte-esport-title">CTE E-SPORTS MAP</h2>
             <div class="cte-esport-controls">
-                <!-- 新增：上传地图背景按钮 -->
+                <!-- 原始背景恢复按钮 -->
+                <button class="cte-esport-icon-btn" id="cte-btn-reset-bg" title="恢复原始背景">🔄</button>
+                <!-- 上传地图背景按钮 -->
                 <label for="cte-bg-upload" class="cte-esport-icon-btn" title="更换地图背景" style="display:flex; align-items:center; justify-content:center;">🖼️</label>
                 <input type="file" id="cte-bg-upload" accept="image/*" style="display: none;">
                 
@@ -107,77 +109,78 @@
                     </div>
                 </div>
 
-                <!-- 弹窗：基地内部 (宽版) -->
+                <!-- 弹窗：基地内部 (宽版 + 垂直布局) -->
                 <div class="cte-esport-popup" id="popup-interior">
                     <div class="cte-popup-header">
                         <span class="cte-popup-title">基地内部档案</span>
                         <span class="cte-close-btn">×</span>
                     </div>
-                    <div class="cte-popup-content">
-                        <div style="display:flex; gap:20px; align-items: flex-start;">
-                            <!-- 左侧：楼层选择 -->
-                            <div class="cte-floor-group" style="flex: 1; margin-top:0;">
-                                <button class="cte-floor-btn" data-target="f-roof">☁️ 顶楼：休闲天台</button>
-                                <div class="cte-floor-panel" id="f-roof">
-                                    <span class="cte-room-tag" data-travel="CTE基地-顶楼天台">顶楼天台</span>
-                                </div>
+                    <div class="cte-popup-content" style="display: flex; flex-direction: column;">
+                        
+                        <!-- 上方：图片 -->
+                        <div style="width: 100%; margin-bottom: 20px;">
+                            <img src="https://files.catbox.moe/lhw7xk.png" alt="FloorPlan" style="width:100%;">
+                            <button class="cte-action-btn" data-action="back-base" style="margin-top: 5px; font-size: 12px; padding: 5px;">⬅ 返回外观</button>
+                        </div>
 
-                                <button class="cte-floor-btn" data-target="f5">🛏️ 五层：居住区</button>
-                                <div class="cte-floor-panel" id="f5">
-                                    <span class="cte-room-tag" data-travel="CTE基地-魏月华房间">魏月华</span>
-                                    <span class="cte-room-tag" data-travel="CTE基地-秦述房间">秦述</span>
-                                    <span class="cte-room-tag" data-travel="CTE基地-司洛房间">司洛</span>
-                                    <span class="cte-room-tag" data-travel="CTE基地-鹿言房间">鹿言</span>
-                                    <span class="cte-room-tag" data-travel="CTE基地-魏星泽房间">魏星泽</span>
-                                    <span class="cte-room-tag" data-travel="CTE基地-周锦宁房间">周锦宁</span>
-                                    <span class="cte-room-tag" data-travel="CTE基地-谌绪房间">谌绪</span>
-                                    <span class="cte-room-tag" data-travel="CTE基地-孟明赫房间">孟明赫</span>
-                                    <span class="cte-room-tag" data-travel="CTE基地-亓谢房间">亓谢</span>
-                                    <span class="cte-room-tag" data-travel="CTE基地-桑洛凡房间">桑洛凡</span>
-                                    <span class="cte-room-tag" data-travel="CTE基地-你的房间">你的房间</span>
-                                    <span class="cte-room-tag" data-travel="CTE基地-五楼休憩区">公共休憩区</span>
-                                </div>
+                        <!-- 下方：楼层选择 -->
+                        <div class="cte-floor-group" style="width: 100%; margin-top: 0;">
+                            <p style="font-size:12px; color:var(--cte-text-sub); text-align:left; border-bottom: 1px solid var(--cte-border-color); padding-bottom: 5px; margin-bottom: 10px;">楼层导航 (点击展开)</p>
 
-                                <button class="cte-floor-btn" data-target="f4">💪 四层：康复与健身</button>
-                                <div class="cte-floor-panel" id="f4">
-                                    <span class="cte-room-tag" data-travel="CTE基地-健身房">健身房</span>
-                                    <span class="cte-room-tag" data-travel="CTE基地-瑜伽室">瑜伽室</span>
-                                    <span class="cte-room-tag" data-travel="CTE基地-理疗室">按摩理疗室</span>
-                                </div>
-
-                                <button class="cte-floor-btn" data-target="f3">🖥️ 三层：训练区</button>
-                                <div class="cte-floor-panel" id="f3">
-                                    <span class="cte-room-tag" data-travel="CTE基地-主训练室">主训练室</span>
-                                    <span class="cte-room-tag" data-travel="CTE基地-副训练室">副训练室</span>
-                                    <span class="cte-room-tag" data-travel="CTE基地-战术会议室">战术会议室</span>
-                                    <span class="cte-room-tag" data-travel="CTE基地-选手休息室">选手休息室</span>
-                                </div>
-
-                                <button class="cte-floor-btn" data-target="f2">📹 二层：运营与内容</button>
-                                <div class="cte-floor-panel" id="f2">
-                                    <span class="cte-room-tag" data-travel="CTE基地-采访室">采访室</span>
-                                    <span class="cte-room-tag" data-travel="CTE基地-直播间">直播间</span>
-                                    <span class="cte-room-tag" data-travel="CTE基地-创作室">创作工作室</span>
-                                    <span class="cte-room-tag" data-travel="CTE基地-教练办公室">教练办公室</span>
-                                    <span class="cte-room-tag" data-travel="CTE基地-经理办公室">经理办公室</span>
-                                    <span class="cte-room-tag" data-travel="CTE基地-观赛区">观赛区</span>
-                                </div>
-
-                                <button class="cte-floor-btn" data-target="f1">🛋️ 一层：生活区</button>
-                                <div class="cte-floor-panel" id="f1">
-                                    <span class="cte-room-tag" data-travel="CTE基地-前院">前院花园</span>
-                                    <span class="cte-room-tag" data-travel="CTE基地-大厅">接待大厅</span>
-                                    <span class="cte-room-tag" data-travel="CTE基地-餐厅">餐厅/厨房</span>
-                                    <span class="cte-room-tag" data-travel="CTE基地-洗衣房">洗衣房</span>
-                                    <span class="cte-room-tag" data-travel="CTE基地-医务室">医务室</span>
-                                    <span class="cte-room-tag" data-travel="CTE基地-后院">后院泳池</span>
-                                </div>
+                            <button class="cte-floor-btn" data-target="f-roof">☁️ 顶楼：休闲天台</button>
+                            <div class="cte-floor-panel" id="f-roof">
+                                <span class="cte-room-tag" data-travel="CTE基地-顶楼天台">顶楼天台</span>
                             </div>
-                            <!-- 右侧：图片 -->
-                            <div style="flex: 1;">
-                                <img src="https://files.catbox.moe/lhw7xk.png" alt="FloorPlan" style="width:100%;">
-                                <p style="font-size:12px; color:#888; text-align:center; margin-top:5px;">点击左侧列表出发</p>
-                                <button class="cte-action-btn" data-action="back-base">⬅ 返回外观</button>
+
+                            <button class="cte-floor-btn" data-target="f5">🛏️ 五层：居住区</button>
+                            <div class="cte-floor-panel" id="f5">
+                                <span class="cte-room-tag" data-travel="CTE基地-魏月华房间">魏月华</span>
+                                <span class="cte-room-tag" data-travel="CTE基地-秦述房间">秦述</span>
+                                <span class="cte-room-tag" data-travel="CTE基地-司洛房间">司洛</span>
+                                <span class="cte-room-tag" data-travel="CTE基地-鹿言房间">鹿言</span>
+                                <span class="cte-room-tag" data-travel="CTE基地-魏星泽房间">魏星泽</span>
+                                <span class="cte-room-tag" data-travel="CTE基地-周锦宁房间">周锦宁</span>
+                                <span class="cte-room-tag" data-travel="CTE基地-谌绪房间">谌绪</span>
+                                <span class="cte-room-tag" data-travel="CTE基地-孟明赫房间">孟明赫</span>
+                                <span class="cte-room-tag" data-travel="CTE基地-亓谢房间">亓谢</span>
+                                <span class="cte-room-tag" data-travel="CTE基地-桑洛凡房间">桑洛凡</span>
+                                <span class="cte-room-tag" data-travel="CTE基地-你的房间">你的房间</span>
+                                <span class="cte-room-tag" data-travel="CTE基地-五楼休憩区">公共休憩区</span>
+                            </div>
+
+                            <button class="cte-floor-btn" data-target="f4">💪 四层：康复与健身</button>
+                            <div class="cte-floor-panel" id="f4">
+                                <span class="cte-room-tag" data-travel="CTE基地-健身房">健身房</span>
+                                <span class="cte-room-tag" data-travel="CTE基地-瑜伽室">瑜伽室</span>
+                                <span class="cte-room-tag" data-travel="CTE基地-理疗室">按摩理疗室</span>
+                            </div>
+
+                            <button class="cte-floor-btn" data-target="f3">🖥️ 三层：训练区</button>
+                            <div class="cte-floor-panel" id="f3">
+                                <span class="cte-room-tag" data-travel="CTE基地-主训练室">主训练室</span>
+                                <span class="cte-room-tag" data-travel="CTE基地-副训练室">副训练室</span>
+                                <span class="cte-room-tag" data-travel="CTE基地-战术会议室">战术会议室</span>
+                                <span class="cte-room-tag" data-travel="CTE基地-选手休息室">选手休息室</span>
+                            </div>
+
+                            <button class="cte-floor-btn" data-target="f2">📹 二层：运营与内容</button>
+                            <div class="cte-floor-panel" id="f2">
+                                <span class="cte-room-tag" data-travel="CTE基地-采访室">采访室</span>
+                                <span class="cte-room-tag" data-travel="CTE基地-直播间">直播间</span>
+                                <span class="cte-room-tag" data-travel="CTE基地-创作室">创作工作室</span>
+                                <span class="cte-room-tag" data-travel="CTE基地-教练办公室">教练办公室</span>
+                                <span class="cte-room-tag" data-travel="CTE基地-经理办公室">经理办公室</span>
+                                <span class="cte-room-tag" data-travel="CTE基地-观赛区">观赛区</span>
+                            </div>
+
+                            <button class="cte-floor-btn" data-target="f1">🛋️ 一层：生活区</button>
+                            <div class="cte-floor-panel" id="f1">
+                                <span class="cte-room-tag" data-travel="CTE基地-前院">前院花园</span>
+                                <span class="cte-room-tag" data-travel="CTE基地-大厅">接待大厅</span>
+                                <span class="cte-room-tag" data-travel="CTE基地-餐厅">餐厅/厨房</span>
+                                <span class="cte-room-tag" data-travel="CTE基地-洗衣房">洗衣房</span>
+                                <span class="cte-room-tag" data-travel="CTE基地-医务室">医务室</span>
+                                <span class="cte-room-tag" data-travel="CTE基地-后院">后院泳池</span>
                             </div>
                         </div>
                     </div>
