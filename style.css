@@ -1,4 +1,4 @@
-/* --- CTE Esport Map 样式表 --- */
+/* --- CTE Esport Map 样式表 (Mobile Fixed v1.1) --- */
 
 /* 引入字体 */
 @import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;700&family=Noto+Serif+SC:wght@400;700&display=swap');
@@ -14,27 +14,85 @@
     --cte-btn-text-hover: #000;
 }
 
-/* 主面板 - Z轴层级设为最高，防止被遮挡 */
+/* ============================================
+   主面板 - 修复移动端溢出问题
+   ============================================ */
 #cte-esport-panel {
     position: fixed;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    width: 90vh;
-    height: 90vh;
-    max-width: 900px;
-    max-height: 900px;
+    
+    /* 🔧 修复：使用 inset + margin 居中，替代 top/left + transform */
+    inset: 0;
+    margin: auto;
+    
+    /* 🔧 修复：使用 dvh (dynamic viewport height) 适配移动端地址栏变化 */
+    /* 同时使用 vmin 确保在任何方向都不超出 */
+    width: min(90vmin, 900px);
+    height: min(90vmin, 900px);
+    
+    /* 🔧 修复：添加安全边距，防止贴边 */
+    max-width: calc(100vw - 20px);
+    max-height: calc(100dvh - 20px);
+    
     background-color: var(--cte-bg-dark);
     border: 2px solid var(--cte-accent-gold);
     box-shadow: 0 0 50px rgba(0,0,0,0.9);
-    z-index: 2147483647; /* 极高层级 */
+    z-index: 2147483647;
     display: none;
     flex-direction: column;
     overflow: hidden;
     font-family: 'Noto Serif SC', serif;
     color: var(--cte-text-main);
     border-radius: 8px;
-    opacity: 0; /* 配合 JS 的淡入淡出 */
+    opacity: 0;
+}
+
+/* 🔧 移动端专用修复 */
+@supports (-webkit-touch-callout: none) {
+    /* iOS Safari 专用修复 */
+    #cte-esport-panel {
+        max-height: calc(100svh - 20px); /* svh = small viewport height */
+    }
+}
+
+/* 🔧 小屏幕设备额外优化 */
+@media screen and (max-width: 768px) {
+    #cte-esport-panel {
+        width: calc(100vw - 16px);
+        height: calc(100dvh - 16px);
+        max-width: none;
+        max-height: none;
+        border-radius: 4px;
+        border-width: 1px;
+    }
+    
+    .cte-esport-header {
+        padding: 10px 12px;
+    }
+    
+    .cte-esport-title {
+        font-size: 1.1rem;
+        letter-spacing: 1px;
+    }
+    
+    .cte-esport-icon-btn {
+        width: 28px;
+        height: 28px;
+        font-size: 14px;
+    }
+    
+    .cte-esport-controls {
+        gap: 6px;
+    }
+}
+
+/* 🔧 超小屏幕（iPhone SE 等） */
+@media screen and (max-width: 375px) {
+    #cte-esport-panel {
+        width: 100vw;
+        height: 100dvh;
+        border-radius: 0;
+        border: none;
+    }
 }
 
 /* 标题栏 */
@@ -72,8 +130,18 @@
     border-radius: 4px;
     transition: all 0.2s;
     font-size: 16px;
+    /* 🔧 移动端触摸优化 */
+    -webkit-tap-highlight-color: transparent;
 }
 .cte-esport-icon-btn:hover { background: var(--cte-accent-gold); color: var(--cte-btn-text-hover); }
+
+/* 🔧 触摸设备上使用 active 替代 hover */
+@media (hover: none) {
+    .cte-esport-icon-btn:active { 
+        background: var(--cte-accent-gold); 
+        color: var(--cte-btn-text-hover); 
+    }
+}
 
 /* 主内容区 */
 .cte-esport-body {
@@ -82,6 +150,8 @@
     width: 100%;
     height: 100%;
     overflow: hidden;
+    /* 🔧 修复：确保内容不会撑破容器 */
+    min-height: 0;
 }
 
 /* 滚动层 */
@@ -91,6 +161,9 @@
     overflow: auto;
     position: relative;
     background-color: #000;
+    /* 🔧 移动端滚动优化 */
+    -webkit-overflow-scrolling: touch;
+    overscroll-behavior: contain;
 }
 /* 滚动条美化 */
 .cte-esport-scroll-layer::-webkit-scrollbar { width: 8px; height: 8px; }
@@ -102,13 +175,15 @@
     position: relative;
     width: 800px;
     height: 800px;
-    min-width: 800px; /* 防止被挤压 */
-    min-height: 800px; /* 防止被挤压 */
+    min-width: 800px;
+    min-height: 800px;
     background-image: url('https://files.catbox.moe/b6p3mq.png'); 
     background-size: cover;
     background-position: center;
     box-shadow: 0 0 40px rgba(0,0,0,0.5);
     margin: 0 auto;
+    /* 🔧 防止触摸时意外缩放 */
+    touch-action: pan-x pan-y;
 }
 
 /* 地标点 */
@@ -121,15 +196,25 @@
     justify-content: center;
     align-items: center;
     transition: transform 0.3s ease;
-    /* 允许拖动时改变鼠标样式 */
+    /* 🔧 移动端触摸优化 */
+    -webkit-tap-highlight-color: transparent;
 }
 .cte-esport-pin:hover { z-index: 50; transform: translate(-50%, -60%) scale(1.1); }
+
+/* 🔧 触摸设备上的地标交互 */
+@media (hover: none) {
+    .cte-esport-pin:active { 
+        z-index: 50; 
+        transform: translate(-50%, -60%) scale(1.1); 
+    }
+}
+
 /* 拖拽态 */
 .cte-esport-pin.dragging {
     cursor: grabbing;
     opacity: 0.8;
     transform: translate(-50%, -50%) scale(1.1);
-    transition: none; /* 拖拽时移除平滑过渡，确保跟手 */
+    transition: none;
     z-index: 999;
 }
 
@@ -144,7 +229,7 @@
     box-shadow: 0 4px 10px rgba(0,0,0,0.8);
     font-weight: bold;
     position: relative;
-    pointer-events: none; /* 确保拖拽时鼠标事件穿透到 pin 容器 */
+    pointer-events: none;
 }
 
 .cte-esport-pin-label::after {
@@ -179,6 +264,9 @@
     display: flex;
     justify-content: center;
     align-items: center;
+    /* 🔧 移动端弹窗安全区域 */
+    padding: 10px;
+    box-sizing: border-box;
 }
 
 /* 弹窗本体 (通用) */
@@ -195,6 +283,18 @@
     box-shadow: 0 20px 60px rgba(0,0,0,0.9);
     display: none;
     animation: ctePopIn 0.3s cubic-bezier(0.18, 0.89, 0.32, 1.28);
+    /* 🔧 移动端滚动优化 */
+    -webkit-overflow-scrolling: touch;
+    overscroll-behavior: contain;
+}
+
+/* 🔧 移动端弹窗尺寸优化 */
+@media screen and (max-width: 768px) {
+    .cte-esport-popup {
+        padding: 15px;
+        max-width: 95%;
+        max-height: 85%;
+    }
 }
 
 /* 特定弹窗加宽规则 */
@@ -220,7 +320,15 @@
     padding-bottom: 10px;
 }
 .cte-popup-title { color: var(--cte-accent-gold); font-size: 1.2rem; font-weight: bold; font-family: 'Cormorant Garamond', serif; }
-.cte-close-btn { cursor: pointer; font-size: 1.5rem; line-height: 1; }
+.cte-close-btn { 
+    cursor: pointer; 
+    font-size: 1.5rem; 
+    line-height: 1;
+    /* 🔧 移动端触摸区域优化 */
+    padding: 5px;
+    margin: -5px;
+    -webkit-tap-highlight-color: transparent;
+}
 .cte-popup-content img { width: 100%; border: 1px solid var(--cte-border-color); margin: 10px 0; }
 
 .cte-action-btn {
@@ -235,8 +343,19 @@
     text-align: center;
     transition: all 0.2s;
     font-family: 'Noto Serif SC', serif;
+    /* 🔧 移动端触摸优化 */
+    -webkit-tap-highlight-color: transparent;
+    min-height: 44px; /* iOS 推荐的最小触摸尺寸 */
 }
 .cte-action-btn:hover { background: var(--cte-accent-gold); color: #000; }
+
+/* 🔧 触摸设备按钮交互 */
+@media (hover: none) {
+    .cte-action-btn:active { 
+        background: var(--cte-accent-gold); 
+        color: #000; 
+    }
+}
 
 .cte-loc-list { list-style: none; padding: 0; }
 .cte-loc-item {
@@ -245,6 +364,12 @@
     background: rgba(255,255,255,0.05);
     margin-bottom: 5px;
     cursor: pointer;
+    /* 🔧 移动端触摸优化 */
+    -webkit-tap-highlight-color: transparent;
+    min-height: 44px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
 }
 .cte-loc-item span { display: block; font-size: 0.8em; color: var(--cte-text-sub); margin-top: 2px; }
 .cte-loc-item:hover {
@@ -253,6 +378,16 @@
     color: #000;
 }
 .cte-loc-item:hover span { color: rgba(0,0,0,0.7); }
+
+/* 🔧 触摸设备列表交互 */
+@media (hover: none) {
+    .cte-loc-item:active {
+        border-left-color: var(--cte-accent-gold);
+        background: var(--cte-accent-gold);
+        color: #000;
+    }
+    .cte-loc-item:active span { color: rgba(0,0,0,0.7); }
+}
 
 .cte-floor-group { margin-top: 15px; }
 .cte-floor-btn {
@@ -265,6 +400,9 @@
     text-align: left;
     margin-top: 5px;
     cursor: pointer;
+    /* 🔧 移动端触摸优化 */
+    min-height: 44px;
+    -webkit-tap-highlight-color: transparent;
 }
 .cte-floor-btn:hover { opacity: 0.8; }
 .cte-floor-btn.active {
@@ -279,9 +417,22 @@
     margin: 3px;
     border: 1px solid var(--cte-border-color);
     cursor: pointer;
+    /* 🔧 移动端触摸优化 */
+    min-height: 32px;
+    line-height: 24px;
+    -webkit-tap-highlight-color: transparent;
 }
 .cte-room-tag:hover {
     border-color: var(--cte-accent-gold);
     background: var(--cte-accent-gold);
     color: #000;
+}
+
+/* 🔧 触摸设备房间标签交互 */
+@media (hover: none) {
+    .cte-room-tag:active {
+        border-color: var(--cte-accent-gold);
+        background: var(--cte-accent-gold);
+        color: #000;
+    }
 }
