@@ -1,5 +1,5 @@
-/* --- CTE Esport Map 样式表 (Mobile Fixed v2.0) --- */
-/* 修复方案：使用 inset 固定边距定位，完全避免 vh 单位 */
+/* --- CTE Esport Map 样式表 (Mobile Fixed v3.0) --- */
+/* 最小化修复：只修改面板定位，其他保持原样 */
 
 /* 引入字体 */
 @import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;700&family=Noto+Serif+SC:wght@400;700&display=swap');
@@ -15,24 +15,19 @@
     --cte-btn-text-hover: #000;
 }
 
-/* ============================================
-   主面板 - 使用固定边距定位修复移动端问题
-   ============================================ */
+/* 主面板 - 移动端修复版 */
 #cte-esport-panel {
     position: fixed;
     
-    /* 🔧 核心修复：使用 inset 四边定位，完全不依赖 vh */
-    top: 10px;
-    left: 10px;
-    right: 10px;
-    bottom: 10px;
+    /* 🔧 修复：使用百分比 + calc 替代 vh */
+    top: 5%;
+    left: 50%;
+    transform: translateX(-50%);
     
-    /* 限制最大尺寸并居中 */
-    width: auto;
-    height: auto;
-    max-width: 880px;
-    max-height: 880px;
-    margin: auto;
+    width: 90%;
+    height: 90%;
+    max-width: 900px;
+    max-height: 900px;
     
     background-color: var(--cte-bg-dark);
     border: 2px solid var(--cte-accent-gold);
@@ -45,39 +40,6 @@
     color: var(--cte-text-main);
     border-radius: 8px;
     opacity: 0;
-}
-
-/* 🔧 小屏幕设备：减小边距 */
-@media screen and (max-width: 768px), screen and (max-height: 600px) {
-    #cte-esport-panel {
-        top: 5px;
-        left: 5px;
-        right: 5px;
-        bottom: 5px;
-        max-width: none;
-        max-height: none;
-        border-radius: 4px;
-        border-width: 1px;
-    }
-    
-    .cte-esport-header {
-        padding: 8px 12px;
-    }
-    
-    .cte-esport-title {
-        font-size: 1rem;
-        letter-spacing: 1px;
-    }
-    
-    .cte-esport-icon-btn {
-        width: 28px;
-        height: 28px;
-        font-size: 14px;
-    }
-    
-    .cte-esport-controls {
-        gap: 6px;
-    }
 }
 
 /* 标题栏 */
@@ -115,24 +77,17 @@
     border-radius: 4px;
     transition: all 0.2s;
     font-size: 16px;
-    -webkit-tap-highlight-color: transparent;
 }
 .cte-esport-icon-btn:hover { background: var(--cte-accent-gold); color: var(--cte-btn-text-hover); }
-
-@media (hover: none) {
-    .cte-esport-icon-btn:active { 
-        background: var(--cte-accent-gold); 
-        color: var(--cte-btn-text-hover); 
-    }
-}
 
 /* 主内容区 */
 .cte-esport-body {
     position: relative;
     flex-grow: 1;
     width: 100%;
+    height: 100%;
     overflow: hidden;
-    min-height: 0; /* 🔧 关键：允许 flex 子元素收缩 */
+    min-height: 0; /* 🔧 关键修复 */
 }
 
 /* 滚动层 */
@@ -142,15 +97,14 @@
     overflow: auto;
     position: relative;
     background-color: #000;
-    -webkit-overflow-scrolling: touch;
-    overscroll-behavior: contain;
+    -webkit-overflow-scrolling: touch; /* 🔧 iOS 滚动优化 */
 }
-
+/* 滚动条美化 */
 .cte-esport-scroll-layer::-webkit-scrollbar { width: 8px; height: 8px; }
 .cte-esport-scroll-layer::-webkit-scrollbar-track { background: var(--cte-bg-dark); }
 .cte-esport-scroll-layer::-webkit-scrollbar-thumb { background: var(--cte-border-color); border-radius: 4px; }
 
-/* 地图画布 */
+/* 地图画布 - 强制 1:1 比例 */
 .cte-esport-map-canvas {
     position: relative;
     width: 800px;
@@ -162,7 +116,6 @@
     background-position: center;
     box-shadow: 0 0 40px rgba(0,0,0,0.5);
     margin: 0 auto;
-    touch-action: pan-x pan-y;
 }
 
 /* 地标点 */
@@ -175,17 +128,9 @@
     justify-content: center;
     align-items: center;
     transition: transform 0.3s ease;
-    -webkit-tap-highlight-color: transparent;
 }
 .cte-esport-pin:hover { z-index: 50; transform: translate(-50%, -60%) scale(1.1); }
-
-@media (hover: none) {
-    .cte-esport-pin:active { 
-        z-index: 50; 
-        transform: translate(-50%, -60%) scale(1.1); 
-    }
-}
-
+/* 拖拽态 */
 .cte-esport-pin.dragging {
     cursor: grabbing;
     opacity: 0.8;
@@ -240,11 +185,9 @@
     display: flex;
     justify-content: center;
     align-items: center;
-    padding: 10px;
-    box-sizing: border-box;
 }
 
-/* 弹窗本体 */
+/* 弹窗本体 (通用) */
 .cte-esport-popup {
     pointer-events: auto;
     background-color: var(--cte-panel-bg);
@@ -258,18 +201,9 @@
     box-shadow: 0 20px 60px rgba(0,0,0,0.9);
     display: none;
     animation: ctePopIn 0.3s cubic-bezier(0.18, 0.89, 0.32, 1.28);
-    -webkit-overflow-scrolling: touch;
-    overscroll-behavior: contain;
 }
 
-@media screen and (max-width: 768px) {
-    .cte-esport-popup {
-        padding: 15px;
-        max-width: 95%;
-        max-height: 85%;
-    }
-}
-
+/* 特定弹窗加宽规则 */
 #popup-cte, 
 #popup-interior {
     width: 700px; 
@@ -292,14 +226,7 @@
     padding-bottom: 10px;
 }
 .cte-popup-title { color: var(--cte-accent-gold); font-size: 1.2rem; font-weight: bold; font-family: 'Cormorant Garamond', serif; }
-.cte-close-btn { 
-    cursor: pointer; 
-    font-size: 1.5rem; 
-    line-height: 1;
-    padding: 5px;
-    margin: -5px;
-    -webkit-tap-highlight-color: transparent;
-}
+.cte-close-btn { cursor: pointer; font-size: 1.5rem; line-height: 1; }
 .cte-popup-content img { width: 100%; border: 1px solid var(--cte-border-color); margin: 10px 0; }
 
 .cte-action-btn {
@@ -314,17 +241,8 @@
     text-align: center;
     transition: all 0.2s;
     font-family: 'Noto Serif SC', serif;
-    -webkit-tap-highlight-color: transparent;
-    min-height: 44px;
 }
 .cte-action-btn:hover { background: var(--cte-accent-gold); color: #000; }
-
-@media (hover: none) {
-    .cte-action-btn:active { 
-        background: var(--cte-accent-gold); 
-        color: #000; 
-    }
-}
 
 .cte-loc-list { list-style: none; padding: 0; }
 .cte-loc-item {
@@ -333,11 +251,6 @@
     background: rgba(255,255,255,0.05);
     margin-bottom: 5px;
     cursor: pointer;
-    -webkit-tap-highlight-color: transparent;
-    min-height: 44px;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
 }
 .cte-loc-item span { display: block; font-size: 0.8em; color: var(--cte-text-sub); margin-top: 2px; }
 .cte-loc-item:hover {
@@ -346,15 +259,6 @@
     color: #000;
 }
 .cte-loc-item:hover span { color: rgba(0,0,0,0.7); }
-
-@media (hover: none) {
-    .cte-loc-item:active {
-        border-left-color: var(--cte-accent-gold);
-        background: var(--cte-accent-gold);
-        color: #000;
-    }
-    .cte-loc-item:active span { color: rgba(0,0,0,0.7); }
-}
 
 .cte-floor-group { margin-top: 15px; }
 .cte-floor-btn {
@@ -367,8 +271,6 @@
     text-align: left;
     margin-top: 5px;
     cursor: pointer;
-    min-height: 44px;
-    -webkit-tap-highlight-color: transparent;
 }
 .cte-floor-btn:hover { opacity: 0.8; }
 .cte-floor-btn.active {
@@ -383,20 +285,9 @@
     margin: 3px;
     border: 1px solid var(--cte-border-color);
     cursor: pointer;
-    min-height: 32px;
-    line-height: 24px;
-    -webkit-tap-highlight-color: transparent;
 }
 .cte-room-tag:hover {
     border-color: var(--cte-accent-gold);
     background: var(--cte-accent-gold);
     color: #000;
-}
-
-@media (hover: none) {
-    .cte-room-tag:active {
-        border-color: var(--cte-accent-gold);
-        background: var(--cte-accent-gold);
-        color: #000;
-    }
 }
