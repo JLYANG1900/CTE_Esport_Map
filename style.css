@@ -1,4 +1,5 @@
-/* --- CTE Esport Map 样式表 (Mobile Fixed v1.1) --- */
+/* --- CTE Esport Map 样式表 (Mobile Fixed v2.0) --- */
+/* 修复方案：使用 inset 固定边距定位，完全避免 vh 单位 */
 
 /* 引入字体 */
 @import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;700&family=Noto+Serif+SC:wght@400;700&display=swap');
@@ -15,23 +16,23 @@
 }
 
 /* ============================================
-   主面板 - 修复移动端溢出问题
+   主面板 - 使用固定边距定位修复移动端问题
    ============================================ */
 #cte-esport-panel {
     position: fixed;
     
-    /* 🔧 修复：使用 inset + margin 居中，替代 top/left + transform */
-    inset: 0;
+    /* 🔧 核心修复：使用 inset 四边定位，完全不依赖 vh */
+    top: 10px;
+    left: 10px;
+    right: 10px;
+    bottom: 10px;
+    
+    /* 限制最大尺寸并居中 */
+    width: auto;
+    height: auto;
+    max-width: 880px;
+    max-height: 880px;
     margin: auto;
-    
-    /* 🔧 修复：使用 dvh (dynamic viewport height) 适配移动端地址栏变化 */
-    /* 同时使用 vmin 确保在任何方向都不超出 */
-    width: min(90vmin, 900px);
-    height: min(90vmin, 900px);
-    
-    /* 🔧 修复：添加安全边距，防止贴边 */
-    max-width: calc(100vw - 20px);
-    max-height: calc(100dvh - 20px);
     
     background-color: var(--cte-bg-dark);
     border: 2px solid var(--cte-accent-gold);
@@ -46,19 +47,13 @@
     opacity: 0;
 }
 
-/* 🔧 移动端专用修复 */
-@supports (-webkit-touch-callout: none) {
-    /* iOS Safari 专用修复 */
+/* 🔧 小屏幕设备：减小边距 */
+@media screen and (max-width: 768px), screen and (max-height: 600px) {
     #cte-esport-panel {
-        max-height: calc(100svh - 20px); /* svh = small viewport height */
-    }
-}
-
-/* 🔧 小屏幕设备额外优化 */
-@media screen and (max-width: 768px) {
-    #cte-esport-panel {
-        width: calc(100vw - 16px);
-        height: calc(100dvh - 16px);
+        top: 5px;
+        left: 5px;
+        right: 5px;
+        bottom: 5px;
         max-width: none;
         max-height: none;
         border-radius: 4px;
@@ -66,11 +61,11 @@
     }
     
     .cte-esport-header {
-        padding: 10px 12px;
+        padding: 8px 12px;
     }
     
     .cte-esport-title {
-        font-size: 1.1rem;
+        font-size: 1rem;
         letter-spacing: 1px;
     }
     
@@ -82,16 +77,6 @@
     
     .cte-esport-controls {
         gap: 6px;
-    }
-}
-
-/* 🔧 超小屏幕（iPhone SE 等） */
-@media screen and (max-width: 375px) {
-    #cte-esport-panel {
-        width: 100vw;
-        height: 100dvh;
-        border-radius: 0;
-        border: none;
     }
 }
 
@@ -130,12 +115,10 @@
     border-radius: 4px;
     transition: all 0.2s;
     font-size: 16px;
-    /* 🔧 移动端触摸优化 */
     -webkit-tap-highlight-color: transparent;
 }
 .cte-esport-icon-btn:hover { background: var(--cte-accent-gold); color: var(--cte-btn-text-hover); }
 
-/* 🔧 触摸设备上使用 active 替代 hover */
 @media (hover: none) {
     .cte-esport-icon-btn:active { 
         background: var(--cte-accent-gold); 
@@ -148,10 +131,8 @@
     position: relative;
     flex-grow: 1;
     width: 100%;
-    height: 100%;
     overflow: hidden;
-    /* 🔧 修复：确保内容不会撑破容器 */
-    min-height: 0;
+    min-height: 0; /* 🔧 关键：允许 flex 子元素收缩 */
 }
 
 /* 滚动层 */
@@ -161,16 +142,15 @@
     overflow: auto;
     position: relative;
     background-color: #000;
-    /* 🔧 移动端滚动优化 */
     -webkit-overflow-scrolling: touch;
     overscroll-behavior: contain;
 }
-/* 滚动条美化 */
+
 .cte-esport-scroll-layer::-webkit-scrollbar { width: 8px; height: 8px; }
 .cte-esport-scroll-layer::-webkit-scrollbar-track { background: var(--cte-bg-dark); }
 .cte-esport-scroll-layer::-webkit-scrollbar-thumb { background: var(--cte-border-color); border-radius: 4px; }
 
-/* 地图画布 - 强制 1:1 比例 */
+/* 地图画布 */
 .cte-esport-map-canvas {
     position: relative;
     width: 800px;
@@ -182,7 +162,6 @@
     background-position: center;
     box-shadow: 0 0 40px rgba(0,0,0,0.5);
     margin: 0 auto;
-    /* 🔧 防止触摸时意外缩放 */
     touch-action: pan-x pan-y;
 }
 
@@ -196,12 +175,10 @@
     justify-content: center;
     align-items: center;
     transition: transform 0.3s ease;
-    /* 🔧 移动端触摸优化 */
     -webkit-tap-highlight-color: transparent;
 }
 .cte-esport-pin:hover { z-index: 50; transform: translate(-50%, -60%) scale(1.1); }
 
-/* 🔧 触摸设备上的地标交互 */
 @media (hover: none) {
     .cte-esport-pin:active { 
         z-index: 50; 
@@ -209,7 +186,6 @@
     }
 }
 
-/* 拖拽态 */
 .cte-esport-pin.dragging {
     cursor: grabbing;
     opacity: 0.8;
@@ -264,12 +240,11 @@
     display: flex;
     justify-content: center;
     align-items: center;
-    /* 🔧 移动端弹窗安全区域 */
     padding: 10px;
     box-sizing: border-box;
 }
 
-/* 弹窗本体 (通用) */
+/* 弹窗本体 */
 .cte-esport-popup {
     pointer-events: auto;
     background-color: var(--cte-panel-bg);
@@ -283,12 +258,10 @@
     box-shadow: 0 20px 60px rgba(0,0,0,0.9);
     display: none;
     animation: ctePopIn 0.3s cubic-bezier(0.18, 0.89, 0.32, 1.28);
-    /* 🔧 移动端滚动优化 */
     -webkit-overflow-scrolling: touch;
     overscroll-behavior: contain;
 }
 
-/* 🔧 移动端弹窗尺寸优化 */
 @media screen and (max-width: 768px) {
     .cte-esport-popup {
         padding: 15px;
@@ -297,7 +270,6 @@
     }
 }
 
-/* 特定弹窗加宽规则 */
 #popup-cte, 
 #popup-interior {
     width: 700px; 
@@ -324,7 +296,6 @@
     cursor: pointer; 
     font-size: 1.5rem; 
     line-height: 1;
-    /* 🔧 移动端触摸区域优化 */
     padding: 5px;
     margin: -5px;
     -webkit-tap-highlight-color: transparent;
@@ -343,13 +314,11 @@
     text-align: center;
     transition: all 0.2s;
     font-family: 'Noto Serif SC', serif;
-    /* 🔧 移动端触摸优化 */
     -webkit-tap-highlight-color: transparent;
-    min-height: 44px; /* iOS 推荐的最小触摸尺寸 */
+    min-height: 44px;
 }
 .cte-action-btn:hover { background: var(--cte-accent-gold); color: #000; }
 
-/* 🔧 触摸设备按钮交互 */
 @media (hover: none) {
     .cte-action-btn:active { 
         background: var(--cte-accent-gold); 
@@ -364,7 +333,6 @@
     background: rgba(255,255,255,0.05);
     margin-bottom: 5px;
     cursor: pointer;
-    /* 🔧 移动端触摸优化 */
     -webkit-tap-highlight-color: transparent;
     min-height: 44px;
     display: flex;
@@ -379,7 +347,6 @@
 }
 .cte-loc-item:hover span { color: rgba(0,0,0,0.7); }
 
-/* 🔧 触摸设备列表交互 */
 @media (hover: none) {
     .cte-loc-item:active {
         border-left-color: var(--cte-accent-gold);
@@ -400,7 +367,6 @@
     text-align: left;
     margin-top: 5px;
     cursor: pointer;
-    /* 🔧 移动端触摸优化 */
     min-height: 44px;
     -webkit-tap-highlight-color: transparent;
 }
@@ -417,7 +383,6 @@
     margin: 3px;
     border: 1px solid var(--cte-border-color);
     cursor: pointer;
-    /* 🔧 移动端触摸优化 */
     min-height: 32px;
     line-height: 24px;
     -webkit-tap-highlight-color: transparent;
@@ -428,7 +393,6 @@
     color: #000;
 }
 
-/* 🔧 触摸设备房间标签交互 */
 @media (hover: none) {
     .cte-room-tag:active {
         border-color: var(--cte-accent-gold);
