@@ -1,33 +1,27 @@
-// --- CTE Esport Map 核心逻辑 (v5.0) ---
-// 更新内容：背景重置、可拖动地标、内部档案新布局
+// --- CTE Esport Map 核心逻辑 (v5.1) ---
+// 修复：移动端面板上浮问题 - 使用 JS 动态定位
 
 const extensionName = "cte-esport-map";
-const defaultMapBg = "https://files.catbox.moe/b6p3mq.png"; // 原始地图链接
+const defaultMapBg = "https://files.catbox.moe/b6p3mq.png";
 
 const CTEEscape = {
     settings: {
         theme: 0, 
     },
     panelLoaded: false,
-    currentDestination: null, // 存储当前选中的目的地
-    isDraggingPin: false, // 标记是否正在拖动地标
+    currentDestination: null,
+    isDraggingPin: false,
 
     async init() {
         console.log("🏆 [CTE Esport] 插件正在启动...");
         
-        // 1. 注入开关按钮
         this.injectToggleButton();
-        
-        // 2. 加载设置
         this.loadSettings();
-        
-        // 3. 加载 HTML
         await this.loadHTML();
         
-        // 4. 绑定事件
         if (this.panelLoaded) {
             this.bindEvents();
-            this.enablePinDragging(); // 启用拖拽
+            this.enablePinDragging();
             this.applyTheme(this.settings.theme);
             console.log("✅ [CTE Esport] 初始化成功。");
         }
@@ -92,12 +86,52 @@ const CTEEscape = {
         }
     },
 
+    // 🔧 核心修复：使用 JS 动态计算面板位置
+    fixPanelPosition(panel) {
+        const isMobile = window.innerWidth <= 768 || window.innerHeight <= 600;
+        
+        if (isMobile) {
+            // 移动端：使用 window.innerHeight 计算真实可视区域
+            const vh = window.innerHeight;
+            const vw = window.innerWidth;
+            const padding = 10;
+            
+            const panelWidth = vw - padding * 2;
+            const panelHeight = vh - padding * 2;
+            
+            // 直接设置像素值，覆盖 CSS
+            panel.style.top = padding + 'px';
+            panel.style.left = padding + 'px';
+            panel.style.right = padding + 'px';
+            panel.style.bottom = padding + 'px';
+            panel.style.width = panelWidth + 'px';
+            panel.style.height = panelHeight + 'px';
+            panel.style.maxWidth = 'none';
+            panel.style.maxHeight = 'none';
+            panel.style.transform = 'none';
+        } else {
+            // 桌面端：恢复 CSS 默认样式
+            panel.style.top = '50%';
+            panel.style.left = '50%';
+            panel.style.right = 'auto';
+            panel.style.bottom = 'auto';
+            panel.style.width = '90vh';
+            panel.style.height = '90vh';
+            panel.style.maxWidth = '900px';
+            panel.style.maxHeight = '900px';
+            panel.style.transform = 'translate(-50%, -50%)';
+        }
+    },
+
     togglePanel() {
         const panel = document.getElementById("cte-esport-panel");
         if (!panel) return;
 
         const currentDisplay = window.getComputedStyle(panel).display;
         if (currentDisplay === "none") {
+            // 🔧 打开前先修复位置
+            this.fixPanelPosition(panel);
+            
             panel.style.display = "flex";
             panel.style.opacity = "0";
             setTimeout(() => {
@@ -109,19 +143,16 @@ const CTEEscape = {
         }
     },
 
-    // 1. 触发旅行弹窗
     prepareTravel(destination) {
         this.currentDestination = destination;
         const modalTitle = document.getElementById("cte-travel-dest-name");
         if(modalTitle) modalTitle.innerText = destination;
         
-        // 显示确认弹窗
         this.showPopup("cte-travel-modal");
     },
 
-    // 2. 执行旅行 (已修改：强制使用 {{user}})
     executeTravel(companionName = null) {
-        this.togglePanel(); // 关闭地图
+        this.togglePanel();
         
         const destination = this.currentDestination;
         const userPlaceholder = "{{user}}"; 
@@ -150,7 +181,6 @@ const CTEEscape = {
         if(companionInput) companionInput.value = "";
     },
 
-    // 3. 处理地图背景上传
     handleMapUpload(e) {
         const file = e.target.files[0];
         if (!file) return;
@@ -166,7 +196,6 @@ const CTEEscape = {
         reader.readAsDataURL(file);
     },
 
-    // 4. 处理背景恢复
     handleResetBackground() {
         const mapCanvas = document.getElementById("cte-map-canvas");
         if (mapCanvas) {
@@ -175,7 +204,6 @@ const CTEEscape = {
         }
     },
 
-    // 5. 启用 Pin 拖动功能
     enablePinDragging() {
         const mapCanvas = document.getElementById("cte-map-canvas");
         if (!mapCanvas) return;
@@ -184,16 +212,14 @@ const CTEEscape = {
         let startX, startY, startLeft, startTop;
         let hasMoved = false;
 
-        // 监听鼠标按下
         mapCanvas.addEventListener("mousedown", (e) => {
             const pin = e.target.closest(".cte-esport-pin");
             if (!pin) return;
 
-            e.preventDefault(); // 防止选中文本
+            e.preventDefault();
             activePin = pin;
             hasMoved = false;
             
-            // 记录初始位置
             startX = e.clientX;
             startY = e.clientY;
             startLeft = parseInt(activePin.style.left || 0);
@@ -211,15 +237,13 @@ const CTEEscape = {
             const dx = e.clientX - startX;
             const dy = e.clientY - startY;
 
-            // 只有移动距离超过阈值才视为拖动
             if (Math.abs(dx) > 3 || Math.abs(dy) > 3) {
                 hasMoved = true;
-                this.isDraggingPin = true; // 设置全局标志位，阻止弹窗触发
+                this.isDraggingPin = true;
 
                 let newLeft = startLeft + dx;
                 let newTop = startTop + dy;
 
-                // 边界限制 (800x800)
                 newLeft = Math.max(0, Math.min(newLeft, 800));
                 newTop = Math.max(0, Math.min(newTop, 800));
 
@@ -236,7 +260,6 @@ const CTEEscape = {
             document.removeEventListener("mousemove", onMouseMove);
             document.removeEventListener("mouseup", onMouseUp);
             
-            // 延迟重置拖拽标志，确保 click 事件能读取到 true
             setTimeout(() => {
                 this.isDraggingPin = false;
             }, 50);
@@ -247,11 +270,9 @@ const CTEEscape = {
         const panel = document.getElementById("cte-esport-panel");
         if (!panel) return;
 
-        // 关闭
         const closeBtn = panel.querySelector("#cte-btn-close");
         if(closeBtn) closeBtn.onclick = () => this.togglePanel();
 
-        // 主题
         const themeBtn = panel.querySelector("#cte-btn-theme");
         if(themeBtn) themeBtn.onclick = () => {
             this.settings.theme = (this.settings.theme + 1) % 3;
@@ -259,23 +280,19 @@ const CTEEscape = {
             this.saveSettings();
         };
 
-        // 背景上传监听
         const uploadInput = document.getElementById("cte-bg-upload");
         if (uploadInput) {
             uploadInput.addEventListener("change", (e) => this.handleMapUpload(e));
         }
 
-        // 背景恢复监听
         const resetBtn = document.getElementById("cte-btn-reset-bg");
         if (resetBtn) {
             resetBtn.onclick = () => this.handleResetBackground();
         }
 
-        // 地图点击 (含防拖拽误触)
         const mapCanvas = panel.querySelector("#cte-map-canvas");
         if(mapCanvas) {
             mapCanvas.onclick = (e) => {
-                // 如果刚刚发生了拖动，则忽略此次点击
                 if (this.isDraggingPin) {
                     e.stopPropagation();
                     return;
@@ -292,29 +309,23 @@ const CTEEscape = {
             };
         }
 
-        // 统一处理面板内的点击 (弹窗、按钮)
         panel.onclick = (e) => {
             const target = e.target;
             
-            // 关闭小弹窗
             if (target.matches(".cte-close-btn")) {
                 target.closest(".cte-esport-popup").classList.remove("active");
             }
             
-            // 点击含有 data-travel 的元素 (准备出发)
             const travelDest = target.getAttribute("data-travel") || target.closest("[data-travel]")?.getAttribute("data-travel");
             if (travelDest) {
-                // 如果是在 Travel Modal 里的按钮，不要递归触发，直接return
                 if (!target.closest("#cte-travel-modal")) {
                     this.prepareTravel(travelDest);
                 }
             }
 
-            // 内部功能
             if (target.getAttribute("data-action") === "interior") this.showPopup("popup-interior");
             if (target.getAttribute("data-action") === "back-base") this.showPopup("popup-cte");
 
-            // 楼层切换
             const floorBtn = target.closest(".cte-floor-btn");
             if (floorBtn) {
                 const floorId = floorBtn.getAttribute("data-target");
@@ -322,7 +333,6 @@ const CTEEscape = {
             }
         };
 
-        // 绑定旅行确认弹窗的具体按钮
         const btnAlone = document.getElementById("cte-travel-alone");
         const btnCompanion = document.getElementById("cte-travel-companion");
         const inputCompanion = document.getElementById("cte-companion-input");
@@ -342,7 +352,6 @@ const CTEEscape = {
             };
         }
 
-        // 自定义前往按钮 (输入框 -> 准备出发)
         const customBtn = document.getElementById("cte-btn-custom-go");
         if (customBtn) {
             customBtn.onclick = () => {
@@ -353,7 +362,6 @@ const CTEEscape = {
     },
 
     showPopup(id) {
-        // 关闭所有其他，打开指定
         this.closeAllPopups();
         const popup = document.getElementById(id);
         if (popup) popup.classList.add("active");
