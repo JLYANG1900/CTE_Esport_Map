@@ -1,4 +1,4 @@
-![预览](https://files.catbox.moe/t0f84b.png)
+<img width="760" height="755" alt="插件预览2" src="https://github.com/user-attachments/assets/18c52391-3790-4aa1-a011-0924183c9156" />
 
 :trophy: CTE Esport Map 互动地图插件介绍
 
