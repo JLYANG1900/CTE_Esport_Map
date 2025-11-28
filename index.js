@@ -1,5 +1,5 @@
-// --- CTE Esport Map 核心逻辑 (v6.2) ---
-// 更新：修复资料卡被覆盖问题 (DOM顺序 + Z-Index强制)
+// --- CTE Esport Map 核心逻辑 (v6.3) ---
+// 保持逻辑不变，仅提供完整文件
 
 const extensionName = "cte-esport-map";
 const defaultMapBg = "https://files.catbox.moe/b6p3mq.png";
@@ -11,7 +11,7 @@ const CTE_CHARACTERS = {
         age: "27",
         role: "CTE战队教练",
         personality: "严肃、冷酷、认真、严谨",
-        desc: "房间里堆满了战术复盘的录像带和笔记本，空气中弥漫着淡淡的咖啡香。这里是战队的大脑中枢，每一个战术决策都诞生于此。",
+        desc: "房间里堆满了战术复盘的录像带和笔记本，空气中弥漫着淡淡的咖啡香。这里是战队的大脑中枢，每一个战术决策都诞生于此。(头像图片来自角色卡原作者耶耶)",
         avatar: "https://files.catbox.moe/auqnct.jpeg",
         destination: "CTE基地-魏月华房间"
     },
@@ -20,7 +20,7 @@ const CTE_CHARACTERS = {
         age: "24",
         role: "CTE战队队长、ADC",
         personality: "沉默、清冷、内敛",
-        desc: "极简风格的房间，除了必要的设备几乎没有杂物。书桌上摆着一本翻开的书，窗台上养着一盆生命力顽强的绿植，正如他本人一样沉稳可靠。",
+        desc: "极简风格的房间，除了必要的设备几乎没有杂物。书桌上摆着一本翻开的书，窗台上养着一盆生命力顽强的绿植，正如他本人一样沉稳可靠。(头像图片来自角色卡原作者耶耶)",
         avatar: "https://files.catbox.moe/c2khbl.jpeg",
         destination: "CTE基地-秦述房间"
     },
@@ -29,7 +29,7 @@ const CTE_CHARACTERS = {
         age: "24",
         role: "CTE战队成员、打野",
         personality: "慵懒、随性、玩世不恭",
-        desc: "房间略显凌乱，但乱中有序。昂贵的电竞外设随意摆放，懒人沙发上丢着几件潮牌外套，处处透着一股漫不经心的天才气息。",
+        desc: "房间略显凌乱，但乱中有序。昂贵的电竞外设随意摆放，懒人沙发上丢着几件潮牌外套，处处透着一股漫不经心的天才气息。(头像图片来自角色卡原作者耶耶)",
         avatar: "https://files.catbox.moe/pohz52.jpeg",
         destination: "CTE基地-司洛房间"
     },
@@ -38,7 +38,7 @@ const CTE_CHARACTERS = {
         age: "23",
         role: "CTE战队成员、中单",
         personality: "温柔、谦逊、善良",
-        desc: "温暖的色调，书架上摆满了粉丝送的玩偶和手写信。房间里总是收拾得一尘不染，让人感到无比的安心和舒适。",
+        desc: "温暖的色调，书架上摆满了粉丝送的玩偶和手写信。房间里总是收拾得一尘不染，让人感到无比的安心和舒适。(头像图片来自角色卡原作者耶耶)",
         avatar: "https://files.catbox.moe/parliq.jpeg",
         destination: "CTE基地-鹿言房间"
     },
@@ -47,7 +47,7 @@ const CTE_CHARACTERS = {
         age: "20",
         role: "CTE战队成员、辅助",
         personality: "开朗、感性、大大咧咧",
-        desc: "充满活力的房间，墙上贴着各种动漫海报。零食柜永远是满的，角落里还堆着几个还没拆封的游戏手办。",
+        desc: "充满活力的房间，墙上贴着各种动漫海报。零食柜永远是满的，角落里还堆着几个还没拆封的游戏手办。(头像图片来自角色卡原作者耶耶)",
         avatar: "https://files.catbox.moe/syo0ze.jpeg",
         destination: "CTE基地-魏星泽房间"
     },
@@ -56,7 +56,7 @@ const CTE_CHARACTERS = {
         age: "20",
         role: "CTE战队成员、上单",
         personality: "傲娇、矜贵、毒舌",
-        desc: "精致奢华的装修风格，甚至有一个专门的陈列柜用来展示他的限量版球鞋。每一处细节都彰显着主人的高傲与品味。",
+        desc: "精致奢华的装修风格，甚至有一个专门的陈列柜用来展示他的限量版球鞋。每一处细节都彰显着主人的高傲与品味。(头像图片来自角色卡原作者耶耶)",
         avatar: "https://files.catbox.moe/1loxsn.jpeg",
         destination: "CTE基地-周锦宁房间"
     },
@@ -65,7 +65,7 @@ const CTE_CHARACTERS = {
         age: "18",
         role: "CTE战队替补中单、高中生",
         personality: "腹黑、恶劣、隐藏病娇",
-        desc: "表面看起来像个乖巧高中生的房间，书桌上摆着整齐的试卷。但抽屉深处似乎藏着一些不为人知的秘密，空气中带着一丝危险的气息。",
+        desc: "表面看起来像个乖巧高中生的房间，书桌上摆着整齐的试卷。但抽屉深处似乎藏着一些不为人知的秘密，空气中带着一丝危险的气息。(头像图片来自角色卡原作者耶耶)",
         avatar: "https://files.catbox.moe/9tnuva.png",
         destination: "CTE基地-谌绪房间"
     },
@@ -74,7 +74,7 @@ const CTE_CHARACTERS = {
         age: "20",
         role: "CTE战队ADC替补",
         personality: "阴郁、厌世、内向、大胆叛逆",
-        desc: "窗帘常年拉着，光线昏暗。墙上有着涂鸦的痕迹，角落里放着一把旧吉他。这是一个属于孤独灵魂的避难所。",
+        desc: "窗帘常年拉着，光线昏暗。墙上有着涂鸦的痕迹，角落里放着一把旧吉他。这是一个属于孤独灵魂的避难所。(头像图片来自角色卡原作者耶耶)",
         avatar: "https://files.catbox.moe/m446ro.jpeg",
         destination: "CTE基地-孟明赫房间"
     },
@@ -83,7 +83,7 @@ const CTE_CHARACTERS = {
         age: "18",
         role: "CTE战队打野替补",
         personality: "疯批、天才、毒舌、直白",
-        desc: "房间里充满了科技感，多块屏幕闪烁着复杂的数据流。这里更像是一个黑客的实验室，而不是一个普通的电竞选手宿舍。",
+        desc: "房间里充满了科技感，多块屏幕闪烁着复杂的数据流。这里更像是一个黑客的实验室，而不是一个普通的电竞选手宿舍。(头像图片来自角色卡原作者耶耶)",
         avatar: "https://files.catbox.moe/ev2g1l.png",
         destination: "CTE基地-亓谢房间"
     },
@@ -92,7 +92,7 @@ const CTE_CHARACTERS = {
         age: "27",
         role: "CTE助教、豪门大少爷",
         personality: "慵懒随性、桀骜不驯、腹黑",
-        desc: "低调奢华，红酒柜和定制西装占据了很大空间。他并不常住这里，但即便只是偶尔停留，也要保持绝对的享受。",
+        desc: "低调奢华，红酒柜和定制西装占据了很大空间。他并不常住这里，但即便只是偶尔停留，也要保持绝对的享受。(头像图片来自角色卡原作者耶耶)",
         avatar: "https://files.catbox.moe/syudzu.png",
         destination: "CTE基地-桑洛凡房间"
     },
