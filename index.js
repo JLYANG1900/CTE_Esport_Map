@@ -1,5 +1,5 @@
-// --- CTE Esport Map 核心逻辑 (v6.1) ---
-// 更新：弹窗覆盖逻辑修复
+// --- CTE Esport Map 核心逻辑 (v6.2) ---
+// 更新：修复资料卡被覆盖问题 (DOM顺序 + Z-Index强制)
 
 const extensionName = "cte-esport-map";
 const defaultMapBg = "https://files.catbox.moe/b6p3mq.png";
@@ -525,6 +525,7 @@ const CTEEscape = {
         
         document.querySelectorAll(".cte-esport-popup").forEach(p => {
             if (keepInteriorOpen) {
+                // 如果是资料卡模式，不关闭 interior 和 cte
                 if (p.id !== 'popup-interior' && p.id !== 'popup-cte') {
                     p.classList.remove("active");
                 }
@@ -536,8 +537,14 @@ const CTEEscape = {
         const popup = document.getElementById(id);
         if (popup) {
             popup.classList.add("active");
-            // 确保显示在最上层
-            popup.style.zIndex = 1000; 
+            
+            // ⚠️ 关键逻辑：角色卡 z-index 设置得极高 (2000)，普通弹窗设置为 1000
+            // 配合 HTML 的 DOM 顺序修改，双重保险
+            if (id === 'cte-profile-modal') {
+                popup.style.zIndex = 2000;
+            } else {
+                popup.style.zIndex = 1000;
+            }
         }
     },
 
