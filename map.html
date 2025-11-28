@@ -4,7 +4,9 @@
         <div class="cte-esport-header">
             <h2 class="cte-esport-title">CTE E-SPORTS MAP</h2>
             <div class="cte-esport-controls">
+                <!-- 原始背景恢复按钮 -->
                 <button class="cte-esport-icon-btn" id="cte-btn-reset-bg" title="恢复原始背景">🔄</button>
+                <!-- 上传地图背景按钮 -->
                 <label for="cte-bg-upload" class="cte-esport-icon-btn" title="更换地图背景" style="display:flex; align-items:center; justify-content:center;">🖼️</label>
                 <input type="file" id="cte-bg-upload" accept="image/*" style="display: none;">
                 
@@ -18,6 +20,7 @@
             
             <!-- 底层：可滚动的地图层 -->
             <div class="cte-esport-scroll-layer">
+                <!-- 强制 1:1 比例的大地图画布 -->
                 <div class="cte-esport-map-canvas" id="cte-map-canvas">
                     <!-- 地标点 -->
                     <div class="cte-esport-pin" id="cte-pin-base" style="left: 400px; top: 400px;" data-popup="popup-cte">
