@@ -1,4 +1,4 @@
-/* --- CTE Esport Map 样式表 (v5.0) --- */
+/* --- CTE Esport Map 样式表 (v6.0 角色卡片适配) --- */
 
 @import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;700&family=Noto+Serif+SC:wght@400;700&display=swap');
 
@@ -198,7 +198,8 @@
 }
 
 #popup-cte, 
-#popup-interior {
+#popup-interior,
+#cte-profile-modal {
     width: 700px; 
     max-width: 95%;
 }
@@ -278,9 +279,175 @@
     margin: 3px;
     border: 1px solid var(--cte-border-color);
     cursor: pointer;
+    transition: all 0.2s;
 }
 .cte-room-tag:hover {
     border-color: var(--cte-accent-gold);
     background: var(--cte-accent-gold);
     color: #000;
+}
+
+/* --- 新增：角色资料卡样式 --- */
+.cte-profile-content {
+    display: flex;
+    gap: 25px;
+    align-items: flex-start;
+    padding-bottom: 15px;
+}
+
+/* 头像区域 */
+.cte-profile-avatar-container {
+    flex-shrink: 0;
+    width: 150px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+}
+
+.cte-profile-avatar-wrapper {
+    width: 150px;
+    height: 150px;
+    border-radius: 50%;
+    border: 3px solid var(--cte-accent-gold);
+    overflow: hidden;
+    position: relative;
+    box-shadow: 0 0 20px rgba(0,0,0,0.5);
+    transition: transform 0.3s ease;
+}
+
+.cte-profile-avatar-wrapper img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+    margin: 0;
+    border: none;
+}
+
+.cte-profile-avatar-wrapper:hover {
+    transform: scale(1.05);
+}
+
+/* 玩家专属：金色光晕动画 */
+.cte-user-avatar-glow {
+    animation: glowPulse 2s infinite ease-in-out;
+    box-shadow: 0 0 15px var(--cte-accent-gold);
+}
+
+@keyframes glowPulse {
+    0% { box-shadow: 0 0 15px var(--cte-accent-gold); border-color: #c5a065; }
+    50% { box-shadow: 0 0 30px #fdd835, 0 0 10px #fdd835 inset; border-color: #fff; }
+    100% { box-shadow: 0 0 15px var(--cte-accent-gold); border-color: #c5a065; }
+}
+
+/* 玩家专属：上传按钮 */
+#cte-avatar-upload-btn {
+    position: absolute;
+    bottom: 0;
+    width: 100%;
+    background: rgba(0,0,0,0.7);
+    color: #fff;
+    text-align: center;
+    padding: 5px 0;
+    cursor: pointer;
+    font-size: 14px;
+    opacity: 0;
+    transition: opacity 0.2s;
+}
+
+.cte-profile-avatar-wrapper:hover #cte-avatar-upload-btn {
+    opacity: 1;
+}
+
+#cte-avatar-delete-btn {
+    background: transparent;
+    border: none;
+    color: #ff4d4f;
+    cursor: pointer;
+    font-size: 18px;
+    display: none; /* JS控制显示 */
+    transition: transform 0.2s;
+}
+#cte-avatar-delete-btn:hover { transform: scale(1.2); }
+
+/* 信息区域 */
+.cte-profile-info {
+    flex-grow: 1;
+}
+
+#cte-profile-name {
+    margin: 0 0 15px 0;
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 2rem;
+    color: var(--cte-accent-gold);
+    border-bottom: 2px solid var(--cte-border-color);
+    padding-bottom: 5px;
+}
+
+.cte-profile-grid {
+    display: flex;
+    gap: 20px;
+    margin-bottom: 15px;
+}
+
+.cte-profile-item, .cte-profile-full-item {
+    display: flex;
+    flex-direction: column;
+}
+
+.cte-profile-item .label, .cte-profile-full-item .label {
+    font-size: 12px;
+    color: var(--cte-text-sub);
+    margin-bottom: 3px;
+}
+
+.cte-profile-item .value, .cte-profile-full-item .value {
+    font-size: 16px;
+    color: var(--cte-text-main);
+}
+
+.cte-profile-full-item { margin-bottom: 15px; }
+
+.cte-profile-desc {
+    font-size: 14px;
+    line-height: 1.6;
+    color: var(--cte-text-main);
+    background: rgba(255,255,255,0.03);
+    padding: 10px;
+    border-radius: 4px;
+    border-left: 2px solid var(--cte-border-color);
+}
+
+/* 移动端适配 (<= 480px) */
+@media (max-width: 480px) {
+    .cte-profile-content {
+        flex-direction: column; /* 垂直布局 */
+        align-items: center;
+        gap: 15px;
+    }
+
+    .cte-profile-avatar-container {
+        width: 100%;
+        margin-bottom: 10px;
+    }
+
+    .cte-profile-avatar-wrapper {
+        width: 120px; /* 稍微缩小头像 */
+        height: 120px;
+    }
+    
+    .cte-profile-info {
+        width: 100%;
+        text-align: left;
+    }
+
+    #cte-profile-name {
+        text-align: center;
+        font-size: 1.8rem;
+    }
+
+    .cte-profile-grid {
+        justify-content: space-between;
+    }
 }
