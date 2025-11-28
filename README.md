@@ -1,3 +1,5 @@
+![预览](https://files.catbox.moe/t0f84b.png)
+
 :trophy: CTE Esport Map 互动地图插件介绍
 
 CTE Esport Map 是一款专为 SillyTavern 打造的沉浸式互动地图插件，旨在为电竞战队助理故事提供极具代入感的可视化舞台。插件内置根据世界书描述的周边环境 1:1 还原的战队基地周边高清大地图，囊括基地内部、万城娱乐、商业广场、小吃街、电竞馆等十余个关键地标。
