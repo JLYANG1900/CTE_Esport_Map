@@ -1,11 +1,10 @@
-// --- CTE Esport Map 核心逻辑 (v6.0) ---
-// 更新：角色资料卡片、自定义头像上传、移动端适配
+// --- CTE Esport Map 核心逻辑 (v6.1) ---
+// 更新：弹窗覆盖逻辑修复
 
 const extensionName = "cte-esport-map";
 const defaultMapBg = "https://files.catbox.moe/b6p3mq.png";
 const userPlaceholderAvatar = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%23c5a065'%3E%3Cpath d='M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z'/%3E%3C/svg%3E";
 
-// 角色数据
 const CTE_CHARACTERS = {
     "wei_yuehua": {
         name: "魏月华",
@@ -115,7 +114,7 @@ const CTEEscape = {
     panelLoaded: false,
     currentDestination: null,
     isDraggingPin: false,
-    currentProfileId: null, // 追踪当前查看的角色
+    currentProfileId: null,
 
     async init() {
         console.log("🏆 [CTE Esport] 插件正在启动...");
@@ -128,7 +127,7 @@ const CTEEscape = {
             this.bindEvents();
             this.enablePinDragging();
             this.applyTheme(this.settings.theme);
-            this.loadUserAvatar(); // 初始化加载用户头像
+            this.loadUserAvatar();
             console.log("✅ [CTE Esport] 初始化成功。");
         }
     },
@@ -200,15 +199,12 @@ const CTEEscape = {
             const vw = window.innerWidth;
             const padding = 10;
             
-            const panelWidth = vw - padding * 2;
-            const panelHeight = vh - padding * 2;
-            
             panel.style.top = padding + 'px';
             panel.style.left = padding + 'px';
             panel.style.right = padding + 'px';
             panel.style.bottom = padding + 'px';
-            panel.style.width = panelWidth + 'px';
-            panel.style.height = panelHeight + 'px';
+            panel.style.width = (vw - padding * 2) + 'px';
+            panel.style.height = (vh - padding * 2) + 'px';
             panel.style.maxWidth = 'none';
             panel.style.maxHeight = 'none';
             panel.style.transform = 'none';
@@ -281,7 +277,6 @@ const CTEEscape = {
         if(companionInput) companionInput.value = "";
     },
 
-    // --- 角色资料卡逻辑 ---
     showCharacterProfile(charId) {
         const data = CTE_CHARACTERS[charId];
         if (!data) return;
@@ -289,32 +284,27 @@ const CTEEscape = {
         this.currentProfileId = charId;
         const isUser = charId === 'user';
 
-        // 填充数据
         document.getElementById("cte-profile-name").innerText = data.name;
         document.getElementById("cte-profile-age").innerText = data.age;
         document.getElementById("cte-profile-role").innerText = data.role;
         document.getElementById("cte-profile-personality").innerText = data.personality;
         document.getElementById("cte-profile-desc").innerText = data.desc;
 
-        // 头像处理
         const imgEl = document.getElementById("cte-profile-img");
         const avatarWrapper = document.querySelector(".cte-profile-avatar-wrapper");
         const deleteBtn = document.getElementById("cte-avatar-delete-btn");
 
         if (isUser) {
-            // 用户逻辑：读取本地存储或使用默认
             const savedAvatar = localStorage.getItem("cte-user-avatar");
             imgEl.src = savedAvatar || data.avatar;
-            avatarWrapper.classList.add("cte-user-avatar-glow"); // 添加发光特效
+            avatarWrapper.classList.add("cte-user-avatar-glow");
             deleteBtn.style.display = savedAvatar ? "block" : "none";
         } else {
-            // NPC逻辑
             imgEl.src = data.avatar;
             avatarWrapper.classList.remove("cte-user-avatar-glow");
             deleteBtn.style.display = "none";
         }
 
-        // 绑定按钮事件
         const goBtn = document.getElementById("cte-profile-go-btn");
         goBtn.onclick = () => {
             this.prepareTravel(data.destination);
@@ -323,7 +313,6 @@ const CTEEscape = {
         this.showPopup("cte-profile-modal");
     },
 
-    // --- 用户头像上传逻辑 ---
     handleAvatarUpload(e) {
         const file = e.target.files[0];
         if (!file) return;
@@ -332,14 +321,10 @@ const CTEEscape = {
         reader.onload = (event) => {
             const base64 = event.target.result;
             localStorage.setItem("cte-user-avatar", base64);
-            
-            // 立即更新当前显示的头像
             const imgEl = document.getElementById("cte-profile-img");
             if (imgEl) imgEl.src = base64;
-            
             const deleteBtn = document.getElementById("cte-avatar-delete-btn");
             if (deleteBtn) deleteBtn.style.display = "block";
-
             if (typeof toastr !== 'undefined') toastr.success("头像上传成功！");
         };
         reader.readAsDataURL(file);
@@ -349,15 +334,12 @@ const CTEEscape = {
         localStorage.removeItem("cte-user-avatar");
         const imgEl = document.getElementById("cte-profile-img");
         if (imgEl) imgEl.src = CTE_CHARACTERS['user'].avatar;
-        
         const deleteBtn = document.getElementById("cte-avatar-delete-btn");
         if (deleteBtn) deleteBtn.style.display = "none";
-        
         if (typeof toastr !== 'undefined') toastr.info("头像已重置");
     },
 
     loadUserAvatar() {
-        // 仅在初始化时预检，具体渲染在 showCharacterProfile 中进行
         const saved = localStorage.getItem("cte-user-avatar");
         if (saved) console.log("Detected custom user avatar.");
     },
@@ -365,7 +347,6 @@ const CTEEscape = {
     handleMapUpload(e) {
         const file = e.target.files[0];
         if (!file) return;
-
         const reader = new FileReader();
         reader.onload = (event) => {
             const mapCanvas = document.getElementById("cte-map-canvas");
@@ -414,20 +395,16 @@ const CTEEscape = {
 
         const onMouseMove = (e) => {
             if (!activePin) return;
-            
             const dx = e.clientX - startX;
             const dy = e.clientY - startY;
 
             if (Math.abs(dx) > 3 || Math.abs(dy) > 3) {
                 hasMoved = true;
                 this.isDraggingPin = true;
-
                 let newLeft = startLeft + dx;
                 let newTop = startTop + dy;
-
                 newLeft = Math.max(0, Math.min(newLeft, 800));
                 newTop = Math.max(0, Math.min(newTop, 800));
-
                 activePin.style.left = `${newLeft}px`;
                 activePin.style.top = `${newTop}px`;
             }
@@ -440,10 +417,7 @@ const CTEEscape = {
             }
             document.removeEventListener("mousemove", onMouseMove);
             document.removeEventListener("mouseup", onMouseUp);
-            
-            setTimeout(() => {
-                this.isDraggingPin = false;
-            }, 50);
+            setTimeout(() => { this.isDraggingPin = false; }, 50);
         };
     },
 
@@ -461,36 +435,22 @@ const CTEEscape = {
             this.saveSettings();
         };
 
-        // 地图背景上传
         const uploadInput = document.getElementById("cte-bg-upload");
-        if (uploadInput) {
-            uploadInput.addEventListener("change", (e) => this.handleMapUpload(e));
-        }
+        if (uploadInput) uploadInput.addEventListener("change", (e) => this.handleMapUpload(e));
 
         const resetBtn = document.getElementById("cte-btn-reset-bg");
-        if (resetBtn) {
-            resetBtn.onclick = () => this.handleResetBackground();
-        }
+        if (resetBtn) resetBtn.onclick = () => this.handleResetBackground();
 
-        // 玩家头像上传
         const avatarInput = document.getElementById("cte-user-avatar-input");
-        if (avatarInput) {
-            avatarInput.addEventListener("change", (e) => this.handleAvatarUpload(e));
-        }
+        if (avatarInput) avatarInput.addEventListener("change", (e) => this.handleAvatarUpload(e));
         
         const deleteAvatarBtn = document.getElementById("cte-avatar-delete-btn");
-        if (deleteAvatarBtn) {
-            deleteAvatarBtn.onclick = () => this.deleteUserAvatar();
-        }
+        if (deleteAvatarBtn) deleteAvatarBtn.onclick = () => this.deleteUserAvatar();
 
         const mapCanvas = panel.querySelector("#cte-map-canvas");
         if(mapCanvas) {
             mapCanvas.onclick = (e) => {
-                if (this.isDraggingPin) {
-                    e.stopPropagation();
-                    return;
-                }
-
+                if (this.isDraggingPin) { e.stopPropagation(); return; }
                 if (e.target.id === "cte-map-canvas") this.closeAllPopups();
                 
                 const pin = e.target.closest(".cte-esport-pin");
@@ -509,14 +469,12 @@ const CTEEscape = {
                 target.closest(".cte-esport-popup").classList.remove("active");
             }
             
-            // 处理角色资料卡点击
             const profileTarget = target.getAttribute("data-profile") || target.closest("[data-profile]")?.getAttribute("data-profile");
             if (profileTarget) {
                 this.showCharacterProfile(profileTarget);
-                return; // 阻止冒泡，避免触发其他 travel 逻辑
+                return; 
             }
 
-            // 处理普通旅行逻辑
             const travelDest = target.getAttribute("data-travel") || target.closest("[data-travel]")?.getAttribute("data-travel");
             if (travelDest) {
                 if (!target.closest("#cte-travel-modal")) {
@@ -538,9 +496,7 @@ const CTEEscape = {
         const btnCompanion = document.getElementById("cte-travel-companion");
         const inputCompanion = document.getElementById("cte-companion-input");
 
-        if (btnAlone) {
-            btnAlone.onclick = () => this.executeTravel(null);
-        }
+        if (btnAlone) btnAlone.onclick = () => this.executeTravel(null);
 
         if (btnCompanion) {
             btnCompanion.onclick = () => {
@@ -563,20 +519,19 @@ const CTEEscape = {
     },
 
     showPopup(id) {
-        // 不关闭 popup-interior 如果打开的是 cte-profile-modal? 
-        // 实际上最好保持层级清晰，这里简化处理，关闭所有其他弹窗
-        // 如果想保留 interior 背景，可以修改 closeAllPopups 逻辑
-        if (id === 'cte-profile-modal') {
-             // 特殊处理：打开资料卡时，不关闭 interior 面板，这样看起来是叠加的
-             // 但为了避免层级混乱，还是关闭比较安全，或者只关闭 profile 相关的
-             document.querySelectorAll(".cte-esport-popup").forEach(p => {
-                 if (p.id !== 'popup-interior' && p.id !== 'popup-cte') {
-                     p.classList.remove("active");
-                 }
-             });
-        } else {
-            this.closeAllPopups();
-        }
+        // 如果打开的是角色资料卡 (cte-profile-modal)，不要关闭 interior 弹窗
+        // 这样可以保留背景上下文
+        const keepInteriorOpen = (id === 'cte-profile-modal');
+        
+        document.querySelectorAll(".cte-esport-popup").forEach(p => {
+            if (keepInteriorOpen) {
+                if (p.id !== 'popup-interior' && p.id !== 'popup-cte') {
+                    p.classList.remove("active");
+                }
+            } else {
+                p.classList.remove("active");
+            }
+        });
         
         const popup = document.getElementById(id);
         if (popup) {
