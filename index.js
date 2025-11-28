@@ -1,8 +1,112 @@
-// --- CTE Esport Map 核心逻辑 (v5.1) ---
-// 修复：移动端面板上浮问题 - 使用 JS 动态定位
+// --- CTE Esport Map 核心逻辑 (v6.0) ---
+// 更新：角色资料卡片、自定义头像上传、移动端适配
 
 const extensionName = "cte-esport-map";
 const defaultMapBg = "https://files.catbox.moe/b6p3mq.png";
+const userPlaceholderAvatar = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%23c5a065'%3E%3Cpath d='M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z'/%3E%3C/svg%3E";
+
+// 角色数据
+const CTE_CHARACTERS = {
+    "wei_yuehua": {
+        name: "魏月华",
+        age: "27",
+        role: "CTE战队教练",
+        personality: "严肃、冷酷、认真、严谨",
+        desc: "房间里堆满了战术复盘的录像带和笔记本，空气中弥漫着淡淡的咖啡香。这里是战队的大脑中枢，每一个战术决策都诞生于此。",
+        avatar: "https://files.catbox.moe/auqnct.jpeg",
+        destination: "CTE基地-魏月华房间"
+    },
+    "qin_shu": {
+        name: "秦述",
+        age: "24",
+        role: "CTE战队队长、ADC",
+        personality: "沉默、清冷、内敛",
+        desc: "极简风格的房间，除了必要的设备几乎没有杂物。书桌上摆着一本翻开的书，窗台上养着一盆生命力顽强的绿植，正如他本人一样沉稳可靠。",
+        avatar: "https://files.catbox.moe/c2khbl.jpeg",
+        destination: "CTE基地-秦述房间"
+    },
+    "si_luo": {
+        name: "司洛",
+        age: "24",
+        role: "CTE战队成员、打野",
+        personality: "慵懒、随性、玩世不恭",
+        desc: "房间略显凌乱，但乱中有序。昂贵的电竞外设随意摆放，懒人沙发上丢着几件潮牌外套，处处透着一股漫不经心的天才气息。",
+        avatar: "https://files.catbox.moe/pohz52.jpeg",
+        destination: "CTE基地-司洛房间"
+    },
+    "lu_yan": {
+        name: "鹿言",
+        age: "23",
+        role: "CTE战队成员、中单",
+        personality: "温柔、谦逊、善良",
+        desc: "温暖的色调，书架上摆满了粉丝送的玩偶和手写信。房间里总是收拾得一尘不染，让人感到无比的安心和舒适。",
+        avatar: "https://files.catbox.moe/parliq.jpeg",
+        destination: "CTE基地-鹿言房间"
+    },
+    "wei_xingze": {
+        name: "魏星泽",
+        age: "20",
+        role: "CTE战队成员、辅助",
+        personality: "开朗、感性、大大咧咧",
+        desc: "充满活力的房间，墙上贴着各种动漫海报。零食柜永远是满的，角落里还堆着几个还没拆封的游戏手办。",
+        avatar: "https://files.catbox.moe/syo0ze.jpeg",
+        destination: "CTE基地-魏星泽房间"
+    },
+    "zhou_jinning": {
+        name: "周锦宁",
+        age: "20",
+        role: "CTE战队成员、上单",
+        personality: "傲娇、矜贵、毒舌",
+        desc: "精致奢华的装修风格，甚至有一个专门的陈列柜用来展示他的限量版球鞋。每一处细节都彰显着主人的高傲与品味。",
+        avatar: "https://files.catbox.moe/1loxsn.jpeg",
+        destination: "CTE基地-周锦宁房间"
+    },
+    "chen_xu": {
+        name: "谌绪",
+        age: "18",
+        role: "CTE战队替补中单、高中生",
+        personality: "腹黑、恶劣、隐藏病娇",
+        desc: "表面看起来像个乖巧高中生的房间，书桌上摆着整齐的试卷。但抽屉深处似乎藏着一些不为人知的秘密，空气中带着一丝危险的气息。",
+        avatar: "https://files.catbox.moe/9tnuva.png",
+        destination: "CTE基地-谌绪房间"
+    },
+    "meng_minghe": {
+        name: "孟明赫",
+        age: "20",
+        role: "CTE战队ADC替补",
+        personality: "阴郁、厌世、内向、大胆叛逆",
+        desc: "窗帘常年拉着，光线昏暗。墙上有着涂鸦的痕迹，角落里放着一把旧吉他。这是一个属于孤独灵魂的避难所。",
+        avatar: "https://files.catbox.moe/m446ro.jpeg",
+        destination: "CTE基地-孟明赫房间"
+    },
+    "qi_xie": {
+        name: "亓谢",
+        age: "18",
+        role: "CTE战队打野替补",
+        personality: "疯批、天才、毒舌、直白",
+        desc: "房间里充满了科技感，多块屏幕闪烁着复杂的数据流。这里更像是一个黑客的实验室，而不是一个普通的电竞选手宿舍。",
+        avatar: "https://files.catbox.moe/ev2g1l.png",
+        destination: "CTE基地-亓谢房间"
+    },
+    "sang_luofan": {
+        name: "桑洛凡",
+        age: "27",
+        role: "CTE助教、豪门大少爷",
+        personality: "慵懒随性、桀骜不驯、腹黑",
+        desc: "低调奢华，红酒柜和定制西装占据了很大空间。他并不常住这里，但即便只是偶尔停留，也要保持绝对的享受。",
+        avatar: "https://files.catbox.moe/syudzu.png",
+        destination: "CTE基地-桑洛凡房间"
+    },
+    "user": {
+        name: "你",
+        age: "??",
+        role: "CTE战队新成员/访客",
+        personality: "自定义",
+        desc: "这是属于你的私人空间。你可以按照自己的喜好布置它。虽然现在还很空旷，但未来这里会充满你与CTE的故事。",
+        avatar: userPlaceholderAvatar, 
+        destination: "CTE基地-你的房间"
+    }
+};
 
 const CTEEscape = {
     settings: {
@@ -11,6 +115,7 @@ const CTEEscape = {
     panelLoaded: false,
     currentDestination: null,
     isDraggingPin: false,
+    currentProfileId: null, // 追踪当前查看的角色
 
     async init() {
         console.log("🏆 [CTE Esport] 插件正在启动...");
@@ -23,6 +128,7 @@ const CTEEscape = {
             this.bindEvents();
             this.enablePinDragging();
             this.applyTheme(this.settings.theme);
+            this.loadUserAvatar(); // 初始化加载用户头像
             console.log("✅ [CTE Esport] 初始化成功。");
         }
     },
@@ -86,12 +192,10 @@ const CTEEscape = {
         }
     },
 
-    // 🔧 核心修复：使用 JS 动态计算面板位置
     fixPanelPosition(panel) {
         const isMobile = window.innerWidth <= 768 || window.innerHeight <= 600;
         
         if (isMobile) {
-            // 移动端：使用 window.innerHeight 计算真实可视区域
             const vh = window.innerHeight;
             const vw = window.innerWidth;
             const padding = 10;
@@ -99,7 +203,6 @@ const CTEEscape = {
             const panelWidth = vw - padding * 2;
             const panelHeight = vh - padding * 2;
             
-            // 直接设置像素值，覆盖 CSS
             panel.style.top = padding + 'px';
             panel.style.left = padding + 'px';
             panel.style.right = padding + 'px';
@@ -110,7 +213,6 @@ const CTEEscape = {
             panel.style.maxHeight = 'none';
             panel.style.transform = 'none';
         } else {
-            // 桌面端：恢复 CSS 默认样式
             panel.style.top = '50%';
             panel.style.left = '50%';
             panel.style.right = 'auto';
@@ -129,9 +231,7 @@ const CTEEscape = {
 
         const currentDisplay = window.getComputedStyle(panel).display;
         if (currentDisplay === "none") {
-            // 🔧 打开前先修复位置
             this.fixPanelPosition(panel);
-            
             panel.style.display = "flex";
             panel.style.opacity = "0";
             setTimeout(() => {
@@ -179,6 +279,87 @@ const CTEEscape = {
         this.currentDestination = null;
         const companionInput = document.getElementById("cte-companion-input");
         if(companionInput) companionInput.value = "";
+    },
+
+    // --- 角色资料卡逻辑 ---
+    showCharacterProfile(charId) {
+        const data = CTE_CHARACTERS[charId];
+        if (!data) return;
+
+        this.currentProfileId = charId;
+        const isUser = charId === 'user';
+
+        // 填充数据
+        document.getElementById("cte-profile-name").innerText = data.name;
+        document.getElementById("cte-profile-age").innerText = data.age;
+        document.getElementById("cte-profile-role").innerText = data.role;
+        document.getElementById("cte-profile-personality").innerText = data.personality;
+        document.getElementById("cte-profile-desc").innerText = data.desc;
+
+        // 头像处理
+        const imgEl = document.getElementById("cte-profile-img");
+        const avatarWrapper = document.querySelector(".cte-profile-avatar-wrapper");
+        const deleteBtn = document.getElementById("cte-avatar-delete-btn");
+
+        if (isUser) {
+            // 用户逻辑：读取本地存储或使用默认
+            const savedAvatar = localStorage.getItem("cte-user-avatar");
+            imgEl.src = savedAvatar || data.avatar;
+            avatarWrapper.classList.add("cte-user-avatar-glow"); // 添加发光特效
+            deleteBtn.style.display = savedAvatar ? "block" : "none";
+        } else {
+            // NPC逻辑
+            imgEl.src = data.avatar;
+            avatarWrapper.classList.remove("cte-user-avatar-glow");
+            deleteBtn.style.display = "none";
+        }
+
+        // 绑定按钮事件
+        const goBtn = document.getElementById("cte-profile-go-btn");
+        goBtn.onclick = () => {
+            this.prepareTravel(data.destination);
+        };
+
+        this.showPopup("cte-profile-modal");
+    },
+
+    // --- 用户头像上传逻辑 ---
+    handleAvatarUpload(e) {
+        const file = e.target.files[0];
+        if (!file) return;
+
+        const reader = new FileReader();
+        reader.onload = (event) => {
+            const base64 = event.target.result;
+            localStorage.setItem("cte-user-avatar", base64);
+            
+            // 立即更新当前显示的头像
+            const imgEl = document.getElementById("cte-profile-img");
+            if (imgEl) imgEl.src = base64;
+            
+            const deleteBtn = document.getElementById("cte-avatar-delete-btn");
+            if (deleteBtn) deleteBtn.style.display = "block";
+
+            if (typeof toastr !== 'undefined') toastr.success("头像上传成功！");
+        };
+        reader.readAsDataURL(file);
+    },
+
+    deleteUserAvatar() {
+        localStorage.removeItem("cte-user-avatar");
+        const imgEl = document.getElementById("cte-profile-img");
+        if (imgEl) imgEl.src = CTE_CHARACTERS['user'].avatar;
+        
+        const deleteBtn = document.getElementById("cte-avatar-delete-btn");
+        if (deleteBtn) deleteBtn.style.display = "none";
+        
+        if (typeof toastr !== 'undefined') toastr.info("头像已重置");
+    },
+
+    loadUserAvatar() {
+        // 仅在初始化时预检，具体渲染在 showCharacterProfile 中进行
+        const saved = localStorage.getItem("cte-user-avatar");
+        if (saved) console.log("Detected custom user avatar.");
     },
 
     handleMapUpload(e) {
@@ -280,6 +461,7 @@ const CTEEscape = {
             this.saveSettings();
         };
 
+        // 地图背景上传
         const uploadInput = document.getElementById("cte-bg-upload");
         if (uploadInput) {
             uploadInput.addEventListener("change", (e) => this.handleMapUpload(e));
@@ -288,6 +470,17 @@ const CTEEscape = {
         const resetBtn = document.getElementById("cte-btn-reset-bg");
         if (resetBtn) {
             resetBtn.onclick = () => this.handleResetBackground();
+        }
+
+        // 玩家头像上传
+        const avatarInput = document.getElementById("cte-user-avatar-input");
+        if (avatarInput) {
+            avatarInput.addEventListener("change", (e) => this.handleAvatarUpload(e));
+        }
+        
+        const deleteAvatarBtn = document.getElementById("cte-avatar-delete-btn");
+        if (deleteAvatarBtn) {
+            deleteAvatarBtn.onclick = () => this.deleteUserAvatar();
         }
 
         const mapCanvas = panel.querySelector("#cte-map-canvas");
@@ -316,6 +509,14 @@ const CTEEscape = {
                 target.closest(".cte-esport-popup").classList.remove("active");
             }
             
+            // 处理角色资料卡点击
+            const profileTarget = target.getAttribute("data-profile") || target.closest("[data-profile]")?.getAttribute("data-profile");
+            if (profileTarget) {
+                this.showCharacterProfile(profileTarget);
+                return; // 阻止冒泡，避免触发其他 travel 逻辑
+            }
+
+            // 处理普通旅行逻辑
             const travelDest = target.getAttribute("data-travel") || target.closest("[data-travel]")?.getAttribute("data-travel");
             if (travelDest) {
                 if (!target.closest("#cte-travel-modal")) {
@@ -362,13 +563,34 @@ const CTEEscape = {
     },
 
     showPopup(id) {
-        this.closeAllPopups();
+        // 不关闭 popup-interior 如果打开的是 cte-profile-modal? 
+        // 实际上最好保持层级清晰，这里简化处理，关闭所有其他弹窗
+        // 如果想保留 interior 背景，可以修改 closeAllPopups 逻辑
+        if (id === 'cte-profile-modal') {
+             // 特殊处理：打开资料卡时，不关闭 interior 面板，这样看起来是叠加的
+             // 但为了避免层级混乱，还是关闭比较安全，或者只关闭 profile 相关的
+             document.querySelectorAll(".cte-esport-popup").forEach(p => {
+                 if (p.id !== 'popup-interior' && p.id !== 'popup-cte') {
+                     p.classList.remove("active");
+                 }
+             });
+        } else {
+            this.closeAllPopups();
+        }
+        
         const popup = document.getElementById(id);
-        if (popup) popup.classList.add("active");
+        if (popup) {
+            popup.classList.add("active");
+            // 确保显示在最上层
+            popup.style.zIndex = 1000; 
+        }
     },
 
     closeAllPopups() {
-        document.querySelectorAll(".cte-esport-popup").forEach(p => p.classList.remove("active"));
+        document.querySelectorAll(".cte-esport-popup").forEach(p => {
+            p.classList.remove("active");
+            p.style.zIndex = "";
+        });
     },
 
     toggleFloor(floorId, btn) {
