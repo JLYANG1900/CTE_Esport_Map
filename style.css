@@ -1,4 +1,4 @@
-/* --- CTE Esport Map 样式表 (v6.2 覆盖层级修复) --- */
+/* --- CTE Esport Map 样式表 (v6.3 文字高亮修复) --- */
 
 @import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;700&family=Noto+Serif+SC:wght@400;700&display=swap');
 
@@ -404,24 +404,29 @@
 
 .cte-profile-item, .cte-profile-full-item { display: flex; flex-direction: column; }
 
+/* ⚠️ 修复：标签文字设为浅灰白色 */
 .cte-profile-item .label, .cte-profile-full-item .label {
     font-size: 12px;
-    color: var(--cte-text-sub);
+    color: #dddddd; /* 非常浅的灰色，接近白 */
     margin-bottom: 3px;
+    font-weight: normal;
 }
 
+/* ⚠️ 修复：数值和描述文字设为纯白色 */
 .cte-profile-item .value, .cte-profile-full-item .value {
     font-size: 16px;
-    color: var(--cte-text-main);
+    color: #ffffff !important; /* 强制纯白 */
+    font-weight: 500;
 }
 
 .cte-profile-full-item { margin-bottom: 15px; }
 
+/* ⚠️ 修复：描述文本设为纯白色 */
 .cte-profile-desc {
     font-size: 14px;
     line-height: 1.6;
-    color: var(--cte-text-main);
-    background: rgba(255,255,255,0.03);
+    color: #ffffff !important; /* 强制纯白 */
+    background: rgba(255,255,255,0.05); /* 背景稍微调亮一点点 */
     padding: 10px;
     border-radius: 4px;
     border-left: 2px solid var(--cte-border-color);
