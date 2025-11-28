@@ -1,10 +1,11 @@
 {
     "display_name": "CTE Esport Map",
     "author": "JLYANG1900",
-    "version": "1.0.1",
-    "description": "CTE战队基地地图扩展 - 包含完整地点信息与交互式旅行功能。更新已修复：移动端面板上浮问题",
+    "version": "1.1.0",
+    "description": "CTE战队基地地图扩展 - 包含完整地点信息与交互式旅行功能。更新新增：角色头像",
     "js": "index.js",
     "css": "style.css",
     "html": "map.html"
 }
+
 
