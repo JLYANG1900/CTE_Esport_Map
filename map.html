@@ -4,9 +4,7 @@
         <div class="cte-esport-header">
             <h2 class="cte-esport-title">CTE E-SPORTS MAP</h2>
             <div class="cte-esport-controls">
-                <!-- 原始背景恢复按钮 -->
                 <button class="cte-esport-icon-btn" id="cte-btn-reset-bg" title="恢复原始背景">🔄</button>
-                <!-- 上传地图背景按钮 -->
                 <label for="cte-bg-upload" class="cte-esport-icon-btn" title="更换地图背景" style="display:flex; align-items:center; justify-content:center;">🖼️</label>
                 <input type="file" id="cte-bg-upload" accept="image/*" style="display: none;">
                 
@@ -20,7 +18,6 @@
             
             <!-- 底层：可滚动的地图层 -->
             <div class="cte-esport-scroll-layer">
-                <!-- 强制 1:1 比例的大地图画布 -->
                 <div class="cte-esport-map-canvas" id="cte-map-canvas">
                     <!-- 地标点 -->
                     <div class="cte-esport-pin" id="cte-pin-base" style="left: 400px; top: 400px;" data-popup="popup-cte">
@@ -68,50 +65,6 @@
             <!-- 顶层：UI 弹窗层 -->
             <div class="cte-esport-ui-layer" id="cte-ui-layer">
                 
-                <!-- 新增：通用角色资料卡片弹窗 (内容由 JS 动态填充) -->
-                <div class="cte-esport-popup" id="cte-profile-modal">
-                    <div class="cte-popup-header">
-                        <span class="cte-popup-title">角色档案</span>
-                        <span class="cte-close-btn">×</span>
-                    </div>
-                    <div class="cte-profile-content">
-                        <!-- 头像区域 -->
-                        <div class="cte-profile-avatar-container">
-                            <div class="cte-profile-avatar-wrapper">
-                                <img id="cte-profile-img" src="" alt="Avatar">
-                                <!-- 玩家专属：上传按钮 -->
-                                <label for="cte-user-avatar-input" id="cte-avatar-upload-btn" title="上传头像">📷</label>
-                                <input type="file" id="cte-user-avatar-input" accept="image/*" style="display:none;">
-                            </div>
-                            <!-- 玩家专属：删除按钮 -->
-                             <button id="cte-avatar-delete-btn" title="删除头像">🗑️</button>
-                        </div>
-
-                        <!-- 信息区域 -->
-                        <div class="cte-profile-info">
-                            <h3 id="cte-profile-name">姓名</h3>
-                            <div class="cte-profile-grid">
-                                <div class="cte-profile-item">
-                                    <span class="label">年龄</span>
-                                    <span class="value" id="cte-profile-age">--</span>
-                                </div>
-                                <div class="cte-profile-item">
-                                    <span class="label">身份</span>
-                                    <span class="value" id="cte-profile-role">--</span>
-                                </div>
-                            </div>
-                            <div class="cte-profile-full-item">
-                                <span class="label">性格</span>
-                                <span class="value" id="cte-profile-personality">--</span>
-                            </div>
-                            <div class="cte-profile-desc" id="cte-profile-desc">
-                                房间描述文本...
-                            </div>
-                        </div>
-                    </div>
-                    <button class="cte-action-btn" id="cte-profile-go-btn">🚀 前往此处</button>
-                </div>
-
                 <!-- 弹窗：CTE 基地 -->
                 <div class="cte-esport-popup" id="popup-cte">
                     <div class="cte-popup-header">
@@ -128,7 +81,7 @@
                     </div>
                 </div>
 
-                <!-- 弹窗：基地内部 -->
+                <!-- 弹窗：基地内部 (这层通常在下面) -->
                 <div class="cte-esport-popup" id="popup-interior">
                     <div class="cte-popup-header">
                         <span class="cte-popup-title">基地内部档案</span>
@@ -151,7 +104,6 @@
 
                             <button class="cte-floor-btn" data-target="f5">🛏️ 五层：居住区 (点击查看资料)</button>
                             <div class="cte-floor-panel" id="f5">
-                                <!-- 修改：data-profile 属性指向角色ID -->
                                 <span class="cte-room-tag" data-profile="wei_yuehua">魏月华</span>
                                 <span class="cte-room-tag" data-profile="qin_shu">秦述</span>
                                 <span class="cte-room-tag" data-profile="si_luo">司洛</span>
@@ -229,7 +181,7 @@
                     </div>
                 </div>
 
-                <!-- 其他地点弹窗保持不变 -->
+                <!-- 其他普通弹窗 -->
                 <div class="cte-esport-popup" id="popup-baibu">
                     <div class="cte-popup-header"><span>百步街</span><span class="cte-close-btn">×</span></div>
                     <ul class="cte-loc-list">
@@ -323,6 +275,50 @@
                     <div class="cte-popup-header"><span>自定义地点</span><span class="cte-close-btn">×</span></div>
                     <input type="text" id="cte-custom-input" placeholder="输入你想去的地方..." style="width:100%; padding:10px; margin-bottom:10px; background:#333; border:1px solid #555; color:#fff;">
                     <button class="cte-action-btn" id="cte-btn-custom-go">🚀 出发</button>
+                </div>
+
+                <!-- ⚠️ 关键修改：将角色资料卡移到最后，确保 DOM 顺序在最上层 -->
+                <div class="cte-esport-popup" id="cte-profile-modal">
+                    <div class="cte-popup-header">
+                        <span class="cte-popup-title">角色档案</span>
+                        <span class="cte-close-btn">×</span>
+                    </div>
+                    <div class="cte-profile-content">
+                        <!-- 头像区域 -->
+                        <div class="cte-profile-avatar-container">
+                            <div class="cte-profile-avatar-wrapper">
+                                <img id="cte-profile-img" src="" alt="Avatar">
+                                <!-- 玩家专属：上传按钮 -->
+                                <label for="cte-user-avatar-input" id="cte-avatar-upload-btn" title="上传头像">📷</label>
+                                <input type="file" id="cte-user-avatar-input" accept="image/*" style="display:none;">
+                            </div>
+                            <!-- 玩家专属：删除按钮 -->
+                             <button id="cte-avatar-delete-btn" title="删除头像">🗑️</button>
+                        </div>
+
+                        <!-- 信息区域 -->
+                        <div class="cte-profile-info">
+                            <h3 id="cte-profile-name">姓名</h3>
+                            <div class="cte-profile-grid">
+                                <div class="cte-profile-item">
+                                    <span class="label">年龄</span>
+                                    <span class="value" id="cte-profile-age">--</span>
+                                </div>
+                                <div class="cte-profile-item">
+                                    <span class="label">身份</span>
+                                    <span class="value" id="cte-profile-role">--</span>
+                                </div>
+                            </div>
+                            <div class="cte-profile-full-item">
+                                <span class="label">性格</span>
+                                <span class="value" id="cte-profile-personality">--</span>
+                            </div>
+                            <div class="cte-profile-desc" id="cte-profile-desc">
+                                房间描述文本...
+                            </div>
+                        </div>
+                    </div>
+                    <button class="cte-action-btn" id="cte-profile-go-btn">🚀 前往此处</button>
                 </div>
 
             </div>
