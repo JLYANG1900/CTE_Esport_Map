@@ -1,5 +1,5 @@
-// --- CTE Esport Map 核心逻辑 (v6.5 Mobile Fix) ---
-// 更新日志：修复移动端图标消失问题、增加屏幕边界智能检测、自适应默认位置
+// --- CTE Esport Map 核心逻辑 (v6.6 Center Default) ---
+// 更新日志：移动端默认位置调整为屏幕正中间、保留位置记忆与边界检查
 
 const extensionName = "cte-esport-map";
 const defaultMapBg = "https://files.catbox.moe/hjurjz.png";
@@ -143,7 +143,6 @@ const CTEEscape = {
     calculateSafePosition() {
         const winWidth = window.innerWidth;
         const winHeight = window.innerHeight;
-        const btnSize = 50; // 图标大概尺寸 + 缓冲
 
         // 1. 尝试使用保存的位置
         if (this.settings.buttonPos && this.settings.buttonPos.top && this.settings.buttonPos.left) {
@@ -151,7 +150,7 @@ const CTEEscape = {
             const top = parseInt(this.settings.buttonPos.top);
 
             // 检查：是否在当前屏幕范围内
-            // 左边不能小于0，不能大于屏幕宽；上边不能小于0，不能大于屏幕高
+            // 左边不能小于0，不能大于屏幕宽-20；上边不能小于0，不能大于屏幕高-20
             if (left >= 0 && left < (winWidth - 20) && top >= 0 && top < (winHeight - 20)) {
                 return `top: ${top}px; left: ${left}px; right: auto;`;
             } else {
@@ -162,8 +161,11 @@ const CTEEscape = {
         // 2. 默认位置回退逻辑
         const isMobile = winWidth <= 768;
         if (isMobile) {
-            // 移动端：默认右上角，贴近边缘
-            return "top: 60px; right: 20px;"; 
+            // 移动端：屏幕正中间
+            // 按钮大小约 40px，减去一半(20px)以实现视觉中心对齐
+            const centerX = (winWidth / 2) - 20;
+            const centerY = (winHeight / 2) - 20;
+            return `top: ${centerY}px; left: ${centerX}px; right: auto;`; 
         } else {
             // 桌面端：避开右侧侧边栏 (通常侧边栏约300px)
             return "top: 10px; right: 340px;";
