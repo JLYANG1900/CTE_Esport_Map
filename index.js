@@ -1,5 +1,5 @@
-// --- CTE Esport Map 核心逻辑 (v6.3) ---
-// 保持逻辑不变，仅提供完整文件
+// --- CTE Esport Map 核心逻辑 (v6.4 Draggable Update) ---
+// 更新日志：新增悬浮图标拖拽功能、位置记忆及防误触逻辑
 
 const extensionName = "cte-esport-map";
 const defaultMapBg = "https://files.catbox.moe/b6p3mq.png";
@@ -109,7 +109,8 @@ const CTE_CHARACTERS = {
 
 const CTEEscape = {
     settings: {
-        theme: 0, 
+        theme: 0,
+        // buttonPos: { top: '...', left: '...' } // 动态存储
     },
     panelLoaded: false,
     currentDestination: null,
@@ -119,8 +120,13 @@ const CTEEscape = {
     async init() {
         console.log("🏆 [CTE Esport] 插件正在启动...");
         
-        this.injectToggleButton();
+        // 1. 先加载设置，确保能获取到保存的按钮位置
         this.loadSettings();
+        
+        // 2. 注入按钮 (会使用加载的设置来定位)
+        this.injectToggleButton();
+        
+        // 3. 加载 HTML 资源
         await this.loadHTML();
         
         if (this.panelLoaded) {
@@ -140,10 +146,18 @@ const CTEEscape = {
         btn.innerHTML = "🏆"; 
         btn.title = "打开 CTE 战队地图";
         
+        // 确定初始位置：优先使用保存的位置，否则使用默认值
+        // 注意：jQuery UI 保存的是 top/left，默认值是 top/right
+        let posStyle = "";
+        if (this.settings.buttonPos) {
+            posStyle = `top: ${this.settings.buttonPos.top}; left: ${this.settings.buttonPos.left}; right: auto;`;
+        } else {
+            posStyle = `top: 10px; right: 340px;`;
+        }
+
         btn.style.cssText = `
             position: fixed; 
-            top: 10px; 
-            right: 340px; 
+            ${posStyle}
             z-index: 2147483647; 
             width: 40px;
             height: 40px;
@@ -159,8 +173,46 @@ const CTEEscape = {
             border-radius: 50%;
         `;
         
+        // ----------------------------------------------------
+        // 新增：拖拽与防误触逻辑
+        // ----------------------------------------------------
+        let isButtonDragging = false;
+
+        // 检查 jQuery 是否可用 (SillyTavern 环境通常内置)
+        if (typeof $ !== "undefined" && $.fn.draggable) {
+            $(btn).draggable({
+                containment: "window", // 限制在窗口内
+                scroll: false,         // 防止拖动到边缘滚动页面
+                start: () => {
+                    isButtonDragging = true;
+                    // 拖拽开始时移除 right 属性，防止定位冲突
+                    btn.style.right = 'auto';
+                },
+                stop: (event, ui) => {
+                    // 保存新位置到设置
+                    this.settings.buttonPos = {
+                        top: ui.position.top + "px",
+                        left: ui.position.left + "px"
+                    };
+                    this.saveSettings();
+
+                    // 延迟重置拖拽状态，确保 click 事件被下方逻辑拦截
+                    setTimeout(() => {
+                        isButtonDragging = false;
+                    }, 100);
+                }
+            });
+        }
+
         btn.addEventListener("click", (e) => {
             e.stopPropagation();
+            
+            // 如果刚刚处于拖拽状态，则阻止打开面板
+            if (isButtonDragging) {
+                e.preventDefault();
+                return;
+            }
+
             this.togglePanel();
         });
         
