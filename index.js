@@ -1,5 +1,5 @@
-// --- CTE Esport Map 核心逻辑 (v6.4 Draggable Update) ---
-// 更新日志：新增悬浮图标拖拽功能、位置记忆及防误触逻辑
+// --- CTE Esport Map 核心逻辑 (v6.5 Mobile Fix) ---
+// 更新日志：修复移动端图标消失问题、增加屏幕边界智能检测、自适应默认位置
 
 const extensionName = "cte-esport-map";
 const defaultMapBg = "https://files.catbox.moe/hjurjz.png";
@@ -110,7 +110,7 @@ const CTE_CHARACTERS = {
 const CTEEscape = {
     settings: {
         theme: 0,
-        // buttonPos: { top: '...', left: '...' } // 动态存储
+        buttonPos: null // 显式初始化为 null
     },
     panelLoaded: false,
     currentDestination: null,
@@ -119,14 +119,8 @@ const CTEEscape = {
 
     async init() {
         console.log("🏆 [CTE Esport] 插件正在启动...");
-        
-        // 1. 先加载设置，确保能获取到保存的按钮位置
         this.loadSettings();
-        
-        // 2. 注入按钮 (会使用加载的设置来定位)
         this.injectToggleButton();
-        
-        // 3. 加载 HTML 资源
         await this.loadHTML();
         
         if (this.panelLoaded) {
@@ -134,7 +128,89 @@ const CTEEscape = {
             this.enablePinDragging();
             this.applyTheme(this.settings.theme);
             this.loadUserAvatar();
+            
+            // 添加窗口尺寸变化监听，防止图标在旋屏后消失
+            window.addEventListener('resize', () => {
+                const btn = document.getElementById("cte-esport-toggle-btn");
+                if (btn) this.constrainButtonToScreen(btn);
+            });
+
             console.log("✅ [CTE Esport] 初始化成功。");
+        }
+    },
+
+    // 计算安全位置的逻辑
+    calculateSafePosition() {
+        const winWidth = window.innerWidth;
+        const winHeight = window.innerHeight;
+        const btnSize = 50; // 图标大概尺寸 + 缓冲
+
+        // 1. 尝试使用保存的位置
+        if (this.settings.buttonPos && this.settings.buttonPos.top && this.settings.buttonPos.left) {
+            const left = parseInt(this.settings.buttonPos.left);
+            const top = parseInt(this.settings.buttonPos.top);
+
+            // 检查：是否在当前屏幕范围内
+            // 左边不能小于0，不能大于屏幕宽；上边不能小于0，不能大于屏幕高
+            if (left >= 0 && left < (winWidth - 20) && top >= 0 && top < (winHeight - 20)) {
+                return `top: ${top}px; left: ${left}px; right: auto;`;
+            } else {
+                console.warn("🏆 [CTE Map] 保存的图标位置超出当前屏幕，已重置。");
+            }
+        }
+
+        // 2. 默认位置回退逻辑
+        const isMobile = winWidth <= 768;
+        if (isMobile) {
+            // 移动端：默认右上角，贴近边缘
+            return "top: 60px; right: 20px;"; 
+        } else {
+            // 桌面端：避开右侧侧边栏 (通常侧边栏约300px)
+            return "top: 10px; right: 340px;";
+        }
+    },
+
+    // 强制将按钮限制在屏幕内
+    constrainButtonToScreen(btn) {
+        const rect = btn.getBoundingClientRect();
+        const winWidth = window.innerWidth;
+        const winHeight = window.innerHeight;
+        let newLeft = rect.left;
+        let newTop = rect.top;
+        let adjusted = false;
+
+        // 右边界检查
+        if (rect.right > winWidth) {
+            newLeft = winWidth - rect.width - 10;
+            adjusted = true;
+        }
+        // 下边界检查
+        if (rect.bottom > winHeight) {
+            newTop = winHeight - rect.height - 10;
+            adjusted = true;
+        }
+        // 左边界
+        if (rect.left < 0) {
+            newLeft = 10;
+            adjusted = true;
+        }
+        // 上边界
+        if (rect.top < 0) {
+            newTop = 10;
+            adjusted = true;
+        }
+
+        if (adjusted) {
+            btn.style.left = newLeft + 'px';
+            btn.style.top = newTop + 'px';
+            btn.style.right = 'auto'; // 清除 right 避免冲突
+            
+            // 更新设置
+            this.settings.buttonPos = {
+                top: newTop + "px",
+                left: newLeft + "px"
+            };
+            this.saveSettings();
         }
     },
 
@@ -146,14 +222,8 @@ const CTEEscape = {
         btn.innerHTML = "🏆"; 
         btn.title = "打开 CTE 战队地图";
         
-        // 确定初始位置：优先使用保存的位置，否则使用默认值
-        // 注意：jQuery UI 保存的是 top/left，默认值是 top/right
-        let posStyle = "";
-        if (this.settings.buttonPos) {
-            posStyle = `top: ${this.settings.buttonPos.top}; left: ${this.settings.buttonPos.left}; right: auto;`;
-        } else {
-            posStyle = `top: 10px; right: 340px;`;
-        }
+        // 获取计算后的安全 CSS 样式
+        const posStyle = this.calculateSafePosition();
 
         btn.style.cssText = `
             position: fixed; 
@@ -173,30 +243,25 @@ const CTEEscape = {
             border-radius: 50%;
         `;
         
-        // ----------------------------------------------------
-        // 新增：拖拽与防误触逻辑
-        // ----------------------------------------------------
         let isButtonDragging = false;
 
-        // 检查 jQuery 是否可用 (SillyTavern 环境通常内置)
         if (typeof $ !== "undefined" && $.fn.draggable) {
             $(btn).draggable({
-                containment: "window", // 限制在窗口内
-                scroll: false,         // 防止拖动到边缘滚动页面
+                containment: "window",
+                scroll: false,
                 start: () => {
                     isButtonDragging = true;
-                    // 拖拽开始时移除 right 属性，防止定位冲突
-                    btn.style.right = 'auto';
+                    // 开始拖拽时，必须清除 right 属性，否则 left 可能会打架
+                    btn.style.right = 'auto'; 
                 },
                 stop: (event, ui) => {
-                    // 保存新位置到设置
                     this.settings.buttonPos = {
                         top: ui.position.top + "px",
                         left: ui.position.left + "px"
                     };
                     this.saveSettings();
 
-                    // 延迟重置拖拽状态，确保 click 事件被下方逻辑拦截
+                    // 防止误触点击
                     setTimeout(() => {
                         isButtonDragging = false;
                     }, 100);
@@ -206,13 +271,10 @@ const CTEEscape = {
 
         btn.addEventListener("click", (e) => {
             e.stopPropagation();
-            
-            // 如果刚刚处于拖拽状态，则阻止打开面板
             if (isButtonDragging) {
                 e.preventDefault();
                 return;
             }
-
             this.togglePanel();
         });
         
@@ -571,13 +633,10 @@ const CTEEscape = {
     },
 
     showPopup(id) {
-        // 如果打开的是角色资料卡 (cte-profile-modal)，不要关闭 interior 弹窗
-        // 这样可以保留背景上下文
         const keepInteriorOpen = (id === 'cte-profile-modal');
         
         document.querySelectorAll(".cte-esport-popup").forEach(p => {
             if (keepInteriorOpen) {
-                // 如果是资料卡模式，不关闭 interior 和 cte
                 if (p.id !== 'popup-interior' && p.id !== 'popup-cte') {
                     p.classList.remove("active");
                 }
@@ -589,9 +648,6 @@ const CTEEscape = {
         const popup = document.getElementById(id);
         if (popup) {
             popup.classList.add("active");
-            
-            // ⚠️ 关键逻辑：角色卡 z-index 设置得极高 (2000)，普通弹窗设置为 1000
-            // 配合 HTML 的 DOM 顺序修改，双重保险
             if (id === 'cte-profile-modal') {
                 popup.style.zIndex = 2000;
             } else {
@@ -655,4 +711,3 @@ const CTEEscape = {
 (function() {
     CTEEscape.init();
 })();
-
