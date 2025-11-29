@@ -1,11 +1,12 @@
 {
     "display_name": "CTE Esport Map",
     "author": "JLYANG1900",
-    "version": "1.1.0",
-    "description": "CTE战队基地地图扩展 - 包含完整地点信息与交互式旅行功能。更新新增：角色头像",
+    "version": "1.1.1",
+    "description": "CTE战队基地地图扩展 - 包含完整地点信息与交互式旅行功能。更新新增：🏆 小图标可移动",
     "js": "index.js",
     "css": "style.css",
     "html": "map.html"
 }
+
 
 
