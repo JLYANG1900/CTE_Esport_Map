@@ -1,4 +1,4 @@
-/* --- CTE Esport Map 样式表 (v6.3 文字高亮修复) --- */
+/* --- CTE Esport Map 样式表 (v6.4 更新) --- */
 
 @import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;700&family=Noto+Serif+SC:wght@400;700&display=swap');
 
@@ -203,32 +203,28 @@
     max-width: 95%;
 }
 
-/* 关键修改：角色资料卡样式 (覆盖式) */
+/* 角色资料卡样式 */
 #cte-profile-modal {
     width: 600px;
     max-width: 90%;
-    position: absolute; /* 脱离 Flex 流，强制覆盖 */
+    position: absolute;
     top: 50%;
     left: 50%;
-    /* z-index 在 JS 中动态设置为 2000 */
-    
-    /* 使用专门的居中动画 */
     animation: ctePopInCentered 0.3s cubic-bezier(0.18, 0.89, 0.32, 1.28) forwards;
-    box-shadow: 0 0 100px rgba(0,0,0,1); /* 更深的阴影强调层级 */
+    box-shadow: 0 0 100px rgba(0,0,0,1);
     border-left: none;
     border: 2px solid var(--cte-accent-gold);
-    background-color: rgba(30, 30, 30, 0.98); /* 稍微不透明一点 */
+    background-color: rgba(30, 30, 30, 0.98);
 }
 
 .cte-esport-popup.active { display: block; }
 
-/* 普通弹窗动画 */
+/* 动画 */
 @keyframes ctePopIn {
     from { opacity: 0; transform: scale(0.95) translateY(10px); }
     to { opacity: 1; transform: scale(1) translateY(0); }
 }
 
-/* 居中覆盖式弹窗动画 */
 @keyframes ctePopInCentered {
     from { opacity: 0; transform: translate(-50%, -45%) scale(0.95); }
     to { opacity: 1; transform: translate(-50%, -50%) scale(1); }
@@ -277,6 +273,57 @@
 }
 .cte-loc-item:hover span { color: rgba(0,0,0,0.7); }
 
+/* Toggle Switch Styles for NPC */
+.cte-toggle-group {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    font-size: 12px;
+}
+.cte-toggle-group input[type="radio"] {
+    display: none;
+}
+.cte-toggle-group label {
+    padding: 2px 8px;
+    border: 1px solid var(--cte-border-color);
+    border-radius: 3px;
+    cursor: pointer;
+    color: var(--cte-text-sub);
+    transition: all 0.2s;
+}
+.cte-toggle-group input[type="radio"]:checked + label {
+    background-color: var(--cte-accent-gold);
+    color: #000;
+    border-color: var(--cte-accent-gold);
+    font-weight: bold;
+}
+
+/* Activity Grid Styles */
+.cte-activity-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 10px;
+}
+.cte-activity-btn {
+    background: rgba(255,255,255,0.05);
+    border: 1px solid var(--cte-border-color);
+    color: var(--cte-text-main);
+    padding: 10px 5px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 13px;
+    transition: all 0.2s;
+}
+.cte-activity-btn:hover {
+    border-color: var(--cte-accent-gold);
+    background: rgba(197, 160, 101, 0.1);
+}
+.cte-activity-btn.selected {
+    background: var(--cte-accent-gold);
+    color: #000;
+    border-color: var(--cte-accent-gold);
+}
+
 .cte-floor-group { margin-top: 15px; }
 .cte-floor-btn {
     width: 100%;
@@ -310,7 +357,7 @@
     color: #000;
 }
 
-/* --- 角色资料卡内部样式 --- */
+/* 角色资料卡内部样式 */
 .cte-profile-content {
     display: flex;
     gap: 25px;
@@ -404,29 +451,26 @@
 
 .cte-profile-item, .cte-profile-full-item { display: flex; flex-direction: column; }
 
-/* ⚠️ 修复：标签文字设为浅灰白色 */
 .cte-profile-item .label, .cte-profile-full-item .label {
     font-size: 12px;
-    color: #dddddd; /* 非常浅的灰色，接近白 */
+    color: #dddddd;
     margin-bottom: 3px;
     font-weight: normal;
 }
 
-/* ⚠️ 修复：数值和描述文字设为纯白色 */
 .cte-profile-item .value, .cte-profile-full-item .value {
     font-size: 16px;
-    color: #ffffff !important; /* 强制纯白 */
+    color: #ffffff !important;
     font-weight: 500;
 }
 
 .cte-profile-full-item { margin-bottom: 15px; }
 
-/* ⚠️ 修复：描述文本设为纯白色 */
 .cte-profile-desc {
     font-size: 14px;
     line-height: 1.6;
-    color: #ffffff !important; /* 强制纯白 */
-    background: rgba(255,255,255,0.05); /* 背景稍微调亮一点点 */
+    color: #ffffff !important;
+    background: rgba(255,255,255,0.05);
     padding: 10px;
     border-radius: 4px;
     border-left: 2px solid var(--cte-border-color);
@@ -439,12 +483,13 @@
         align-items: center;
         gap: 15px;
     }
-
+    .cte-activity-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
     .cte-profile-avatar-container {
         width: 100%;
         margin-bottom: 10px;
     }
-
     .cte-profile-avatar-wrapper { width: 120px; height: 120px; }
     .cte-profile-info { width: 100%; text-align: left; }
     #cte-profile-name { text-align: center; font-size: 1.8rem; }
