@@ -1,9 +1,21 @@
-// --- CTE Esport Map 核心逻辑 (v6.6 Center Default) ---
-// 更新日志：移动端默认位置调整为屏幕正中间、保留位置记忆与边界检查
+// --- CTE Esport Map 核心逻辑 (v7.0 NPC & Activity Update) ---
+// 更新日志：
+// 1. 在“确认行程”界面新增 NPC 偶遇逻辑（是/否开关 + 动态默认值）
+// 2. 新增二级弹窗“选择活动”，支持点击预设活动或自定义输入
+// 3. 优化文本生成逻辑，合并地点、人物、NPC和活动信息
 
 const extensionName = "cte-esport-map";
 const defaultMapBg = "https://files.catbox.moe/hjurjz.png";
 const userPlaceholderAvatar = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%23c5a065'%3E%3Cpath d='M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z'/%3E%3C/svg%3E";
+
+// --- 新增：地点对应的默认 NPC 列表 ---
+const LOCATION_NPC_DEFAULTS = {
+    "极光电竞馆": "粉丝、工作人员、其他团队成员",
+    "万达广场": "粉丝",
+    "百步街": "粉丝",
+    "小吃街": "粉丝",
+    "default": "" // 默认空（如宿舍），由用户填写
+};
 
 const CTE_CHARACTERS = {
     "wei_yuehua": {
@@ -110,10 +122,17 @@ const CTE_CHARACTERS = {
 const CTEEscape = {
     settings: {
         theme: 0,
-        buttonPos: null // 显式初始化为 null
+        buttonPos: null 
     },
     panelLoaded: false,
-    currentDestination: null,
+    
+    // 修改：使用 tempTripData 暂存行程信息，而不是只存 currentDestination
+    tempTripData: {
+        destination: null,
+        companion: null,
+        npc: null
+    },
+
     isDraggingPin: false,
     currentProfileId: null,
 
@@ -129,7 +148,6 @@ const CTEEscape = {
             this.applyTheme(this.settings.theme);
             this.loadUserAvatar();
             
-            // 添加窗口尺寸变化监听，防止图标在旋屏后消失
             window.addEventListener('resize', () => {
                 const btn = document.getElementById("cte-esport-toggle-btn");
                 if (btn) this.constrainButtonToScreen(btn);
@@ -139,18 +157,14 @@ const CTEEscape = {
         }
     },
 
-    // 计算安全位置的逻辑
     calculateSafePosition() {
         const winWidth = window.innerWidth;
         const winHeight = window.innerHeight;
 
-        // 1. 尝试使用保存的位置
         if (this.settings.buttonPos && this.settings.buttonPos.top && this.settings.buttonPos.left) {
             const left = parseInt(this.settings.buttonPos.left);
             const top = parseInt(this.settings.buttonPos.top);
 
-            // 检查：是否在当前屏幕范围内
-            // 左边不能小于0，不能大于屏幕宽-20；上边不能小于0，不能大于屏幕高-20
             if (left >= 0 && left < (winWidth - 20) && top >= 0 && top < (winHeight - 20)) {
                 return `top: ${top}px; left: ${left}px; right: auto;`;
             } else {
@@ -158,21 +172,16 @@ const CTEEscape = {
             }
         }
 
-        // 2. 默认位置回退逻辑
         const isMobile = winWidth <= 768;
         if (isMobile) {
-            // 移动端：屏幕正中间
-            // 按钮大小约 40px，减去一半(20px)以实现视觉中心对齐
             const centerX = (winWidth / 2) - 20;
             const centerY = (winHeight / 2) - 20;
             return `top: ${centerY}px; left: ${centerX}px; right: auto;`; 
         } else {
-            // 桌面端：避开右侧侧边栏 (通常侧边栏约300px)
             return "top: 10px; right: 340px;";
         }
     },
 
-    // 强制将按钮限制在屏幕内
     constrainButtonToScreen(btn) {
         const rect = btn.getBoundingClientRect();
         const winWidth = window.innerWidth;
@@ -181,22 +190,18 @@ const CTEEscape = {
         let newTop = rect.top;
         let adjusted = false;
 
-        // 右边界检查
         if (rect.right > winWidth) {
             newLeft = winWidth - rect.width - 10;
             adjusted = true;
         }
-        // 下边界检查
         if (rect.bottom > winHeight) {
             newTop = winHeight - rect.height - 10;
             adjusted = true;
         }
-        // 左边界
         if (rect.left < 0) {
             newLeft = 10;
             adjusted = true;
         }
-        // 上边界
         if (rect.top < 0) {
             newTop = 10;
             adjusted = true;
@@ -205,9 +210,8 @@ const CTEEscape = {
         if (adjusted) {
             btn.style.left = newLeft + 'px';
             btn.style.top = newTop + 'px';
-            btn.style.right = 'auto'; // 清除 right 避免冲突
+            btn.style.right = 'auto'; 
             
-            // 更新设置
             this.settings.buttonPos = {
                 top: newTop + "px",
                 left: newLeft + "px"
@@ -224,7 +228,6 @@ const CTEEscape = {
         btn.innerHTML = "🏆"; 
         btn.title = "打开 CTE 战队地图";
         
-        // 获取计算后的安全 CSS 样式
         const posStyle = this.calculateSafePosition();
 
         btn.style.cssText = `
@@ -253,7 +256,6 @@ const CTEEscape = {
                 scroll: false,
                 start: () => {
                     isButtonDragging = true;
-                    // 开始拖拽时，必须清除 right 属性，否则 left 可能会打架
                     btn.style.right = 'auto'; 
                 },
                 stop: (event, ui) => {
@@ -262,21 +264,14 @@ const CTEEscape = {
                         left: ui.position.left + "px"
                     };
                     this.saveSettings();
-
-                    // 防止误触点击
-                    setTimeout(() => {
-                        isButtonDragging = false;
-                    }, 100);
+                    setTimeout(() => { isButtonDragging = false; }, 100);
                 }
             });
         }
 
         btn.addEventListener("click", (e) => {
             e.stopPropagation();
-            if (isButtonDragging) {
-                e.preventDefault();
-                return;
-            }
+            if (isButtonDragging) { e.preventDefault(); return; }
             this.togglePanel();
         });
         
@@ -290,14 +285,11 @@ const CTEEscape = {
         try {
             const panelUrl = new URL('./map.html', import.meta.url).href;
             const response = await fetch(panelUrl);
-            
             if (!response.ok) throw new Error(`HTTP ${response.status}`);
-            
             const html = await response.text();
             const container = document.createElement("div");
             container.innerHTML = html;
             document.body.appendChild(container.firstElementChild);
-            
             this.panelLoaded = true;
         } catch (e) {
             console.error("❌ [CTE Esport] HTML 加载失败:", e);
@@ -309,30 +301,18 @@ const CTEEscape = {
 
     fixPanelPosition(panel) {
         const isMobile = window.innerWidth <= 768 || window.innerHeight <= 600;
-        
         if (isMobile) {
-            const vh = window.innerHeight;
-            const vw = window.innerWidth;
             const padding = 10;
-            
             panel.style.top = padding + 'px';
             panel.style.left = padding + 'px';
-            panel.style.right = padding + 'px';
-            panel.style.bottom = padding + 'px';
-            panel.style.width = (vw - padding * 2) + 'px';
-            panel.style.height = (vh - padding * 2) + 'px';
-            panel.style.maxWidth = 'none';
-            panel.style.maxHeight = 'none';
+            panel.style.width = (window.innerWidth - padding * 2) + 'px';
+            panel.style.height = (window.innerHeight - padding * 2) + 'px';
             panel.style.transform = 'none';
         } else {
             panel.style.top = '50%';
             panel.style.left = '50%';
-            panel.style.right = 'auto';
-            panel.style.bottom = 'auto';
             panel.style.width = '90vh';
             panel.style.height = '90vh';
-            panel.style.maxWidth = '900px';
-            panel.style.maxHeight = '900px';
             panel.style.transform = 'translate(-50%, -50%)';
         }
     },
@@ -340,7 +320,6 @@ const CTEEscape = {
     togglePanel() {
         const panel = document.getElementById("cte-esport-panel");
         if (!panel) return;
-
         const currentDisplay = window.getComputedStyle(panel).display;
         if (currentDisplay === "none") {
             this.fixPanelPosition(panel);
@@ -355,28 +334,100 @@ const CTEEscape = {
         }
     },
 
+    // --- 修改：准备行程逻辑 ---
     prepareTravel(destination) {
-        this.currentDestination = destination;
+        // 1. 初始化临时数据
+        this.tempTripData = {
+            destination: destination,
+            companion: null,
+            npc: null
+        };
+
+        // 2. 更新 UI 标题
         const modalTitle = document.getElementById("cte-travel-dest-name");
         if(modalTitle) modalTitle.innerText = destination;
         
+        // 3. NPC 偶遇逻辑：根据地点匹配默认NPC
+        let defaultNPC = "";
+        
+        if (destination.includes("极光电竞馆")) {
+            defaultNPC = LOCATION_NPC_DEFAULTS["极光电竞馆"];
+        } else if (destination.includes("万达广场")) {
+            defaultNPC = LOCATION_NPC_DEFAULTS["万达广场"];
+        } else if (destination.includes("百步街")) {
+            defaultNPC = LOCATION_NPC_DEFAULTS["百步街"];
+        } else if (destination.includes("小吃街")) {
+            defaultNPC = LOCATION_NPC_DEFAULTS["小吃街"];
+        }
+        
+        // 4. 更新 NPC UI 状态
+        const npcInput = document.getElementById("cte-npc-input");
+        const placeholderText = document.getElementById("cte-npc-placeholder-text");
+        const noRadio = document.getElementById("meet_no");
+
+        // 默认设置为“否”，隐藏输入框
+        if (noRadio) noRadio.checked = true;
+        if (npcInput) {
+            npcInput.style.display = "none";
+            npcInput.value = defaultNPC; // 预填默认值，方便用户直接改
+        }
+
+        // 提示文案：显示该地点可能遇到的 NPC
+        if (placeholderText) {
+            placeholderText.innerText = defaultNPC ? defaultNPC.split("、")[0] : "NPC";
+        }
+
         this.showPopup("cte-travel-modal");
     },
 
-    executeTravel(companionName = null) {
-        this.togglePanel();
+    // --- 新增：第一步，点击出发后显示活动选择 ---
+    showActivityPopup(companionName = null) {
+        // 1. 保存同伴信息
+        this.tempTripData.companion = companionName;
+
+        // 2. 获取并保存 NPC 设置
+        const yesRadio = document.getElementById("meet_yes");
+        const npcInput = document.getElementById("cte-npc-input");
         
-        const destination = this.currentDestination;
+        if (yesRadio && yesRadio.checked) {
+            // 如果选了是，获取输入框的值
+            const val = npcInput.value.trim();
+            this.tempTripData.npc = val || "神秘人"; 
+        } else {
+            this.tempTripData.npc = null;
+        }
+
+        // 3. 切换弹窗：保持 Panel 打开，只切换内部 Popup
+        this.showPopup("cte-activity-modal");
+    },
+
+    // --- 新增：第二步，确定活动并生成最终文本 ---
+    finalizeTrip(activity) {
+        this.togglePanel(); // 关闭大地图
+        
+        const { destination, companion, npc } = this.tempTripData;
         const userPlaceholder = "{{user}}"; 
         
         let outputText = "";
         
-        if (companionName) {
-            outputText = `${userPlaceholder} 邀请 ${companionName} 前往 ${destination}`;
+        // 构建句子：人物 + 地点
+        if (companion) {
+            outputText = `${userPlaceholder} 邀请 ${companion} 前往 ${destination}`;
         } else {
-            outputText = `${userPlaceholder} 决定独自前往${destination}。`;
+            outputText = `${userPlaceholder} 决定独自前往${destination}`;
         }
 
+        // 追加：活动
+        outputText += `，打算去${activity}`;
+
+        // 追加：NPC 偶遇
+        if (npc) {
+            outputText += `。在那里，意外遇见了${npc}。`;
+        } else {
+            outputText += `。`;
+        }
+
+        // 输出到输入框
         const textarea = document.getElementById('send_textarea');
         if (textarea) {
             textarea.value = outputText;
@@ -385,12 +436,14 @@ const CTEEscape = {
         }
 
         if (typeof toastr !== 'undefined') {
-            toastr.success(`已设置出发指令: ${destination}`);
+            toastr.success(`行程已确认: ${activity} @ ${destination}`);
         }
         
-        this.currentDestination = null;
+        // 清理输入框
         const companionInput = document.getElementById("cte-companion-input");
         if(companionInput) companionInput.value = "";
+        const customActInput = document.getElementById("cte-custom-act-input");
+        if(customActInput) customActInput.value = "";
     },
 
     showCharacterProfile(charId) {
@@ -608,11 +661,26 @@ const CTEEscape = {
             }
         };
 
+        // --- 更新：绑定 NPC 开关逻辑 ---
+        const yesRadio = document.getElementById("meet_yes");
+        const noRadio = document.getElementById("meet_no");
+        const npcInput = document.getElementById("cte-npc-input");
+        
+        if (yesRadio && noRadio && npcInput) {
+            yesRadio.addEventListener("change", () => {
+                if (yesRadio.checked) npcInput.style.display = "block";
+            });
+            noRadio.addEventListener("change", () => {
+                if (noRadio.checked) npcInput.style.display = "none";
+            });
+        }
+
+        // --- 更新：绑定行程按钮逻辑（指向 Activity Popup）---
         const btnAlone = document.getElementById("cte-travel-alone");
         const btnCompanion = document.getElementById("cte-travel-companion");
         const inputCompanion = document.getElementById("cte-companion-input");
 
-        if (btnAlone) btnAlone.onclick = () => this.executeTravel(null);
+        if (btnAlone) btnAlone.onclick = () => this.showActivityPopup(null);
 
         if (btnCompanion) {
             btnCompanion.onclick = () => {
@@ -621,10 +689,30 @@ const CTEEscape = {
                     if (typeof toastr !== "undefined") toastr.warning("请输入同伴名字");
                     return;
                 }
-                this.executeTravel(name);
+                this.showActivityPopup(name);
             };
         }
 
+        // --- 新增：绑定活动选择按钮逻辑 ---
+        const actBtns = document.querySelectorAll(".cte-activity-btn");
+        actBtns.forEach(btn => {
+            btn.onclick = (e) => {
+                const act = e.target.getAttribute("data-act");
+                this.finalizeTrip(act);
+            };
+        });
+
+        // 绑定自定义活动确认按钮
+        const confirmCustomAct = document.getElementById("cte-confirm-custom-act");
+        const customActInput = document.getElementById("cte-custom-act-input");
+        if (confirmCustomAct && customActInput) {
+            confirmCustomAct.onclick = () => {
+                const val = customActInput.value.trim();
+                if (val) this.finalizeTrip(val);
+            };
+        }
+
+        // 自定义地点出发按钮（保持原样，但也指向 prepareTravel）
         const customBtn = document.getElementById("cte-btn-custom-go");
         if (customBtn) {
             customBtn.onclick = () => {
