@@ -11,6 +11,8 @@
     --cte-border-color: #3d3d3d;
     --cte-pin-bg: rgba(0, 0, 0, 0.85);
     --cte-btn-text-hover: #000;
+    --cte-card-bg: rgba(255, 255, 255, 0.05); /* Default Card BG */
+    --cte-scroll-layer-bg: #000000; /* Default Scroll Layer BG */
 }
 
 /* 主面板 */
@@ -90,7 +92,7 @@
     height: 100%;
     overflow: auto;
     position: relative;
-    background-color: #000;
+    background-color: var(--cte-scroll-layer-bg); /* Use variable instead of hardcoded black */
     -webkit-overflow-scrolling: touch;
 }
 
@@ -494,4 +496,124 @@
     .cte-profile-info { width: 100%; text-align: left; }
     #cte-profile-name { text-align: center; font-size: 1.8rem; }
     .cte-profile-grid { justify-content: space-between; }
+}
+
+/* --- Schedule View Styles (New) --- */
+
+.cte-schedule-container {
+    max-width: 800px;
+    margin: 0 auto;
+    color: var(--cte-text-main);
+}
+
+.cte-schedule-header {
+    text-align: center;
+    border-bottom: 1px solid var(--cte-accent-gold);
+    padding-bottom: 20px;
+    margin-bottom: 20px;
+}
+
+.cte-schedule-header h3 {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 2rem;
+    color: var(--cte-accent-gold);
+    margin: 0 0 5px 0;
+    text-shadow: 0 0 10px rgba(197, 160, 101, 0.3);
+}
+
+/* Timeline */
+.cte-timeline {
+    padding: 20px 0 20px 40px;
+    border-left: 2px solid var(--cte-border-color);
+}
+
+.cte-timeline-item {
+    position: relative;
+    margin-bottom: 30px;
+    animation: ctePopIn 0.3s ease-out;
+}
+
+.cte-timeline-item::before {
+    content: '';
+    position: absolute;
+    left: -46px; /* -40px padding - 6px half width */
+    top: 5px;
+    width: 10px;
+    height: 10px;
+    background: var(--cte-bg-dark);
+    border: 2px solid var(--cte-accent-gold);
+    border-radius: 50%;
+    z-index: 2;
+}
+
+.cte-timeline-card {
+    background: var(--cte-card-bg); /* Use new variable for Card BG */
+    border: 1px solid var(--cte-border-color);
+    border-left: 3px solid var(--cte-accent-gold);
+    padding: 15px;
+    border-radius: 4px;
+    transition: transform 0.2s, box-shadow 0.2s;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.cte-timeline-card:hover {
+    transform: translateX(5px);
+    box-shadow: 0 5px 15px rgba(0,0,0,0.5);
+    background: rgba(255, 255, 255, 0.08);
+}
+
+.cte-timeline-content {
+    font-size: 1.1em;
+    color: var(--cte-text-main); 
+    flex: 1;
+    margin-right: 15px;
+}
+
+.cte-schedule-exec-btn {
+    font-size: 12px;
+    padding: 5px 10px;
+    background: transparent;
+    border: 1px solid var(--cte-accent-gold);
+    color: var(--cte-accent-gold);
+    cursor: pointer;
+    border-radius: 20px;
+    white-space: nowrap;
+    transition: all 0.2s;
+}
+
+.cte-schedule-exec-btn:hover {
+    background: var(--cte-accent-gold);
+    color: #000;
+}
+
+/* Participant Grid */
+.cte-participant-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 8px;
+    max-height: 300px;
+    overflow-y: auto;
+}
+
+.cte-participant-checkbox {
+    display: flex;
+    align-items: center;
+    background: rgba(255,255,255,0.05);
+    padding: 8px;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: background 0.2s;
+    font-size: 13px;
+    user-select: none;
+}
+
+.cte-participant-checkbox:hover {
+    background: rgba(255,255,255,0.1);
+}
+
+.cte-participant-checkbox input {
+    margin-right: 8px;
+    accent-color: var(--cte-accent-gold);
 }
