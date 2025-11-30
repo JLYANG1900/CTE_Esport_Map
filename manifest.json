@@ -1,14 +1,9 @@
 {
-    "display_name": "CTE Esport Map",
+    "display_name": "CTE Esport Map TEST",
     "author": "JLYANG1900",
-    "version": "1.2.0",
-    "description": "CTE战队基地地图扩展 - 包含完整地点信息与交互式旅行功能。更新新增：前往某地的具体活动内容可选；是否偶遇NPC可选。",
+    "version": "1.3.0",
+    "description": "CTE战队基地地图扩展 - 包含完整地点信息与交互式旅行功能。更新新增：行程表。",
     "js": "index.js",
     "css": "style.css",
     "html": "map.html"
 }
-
-
-
-
-
