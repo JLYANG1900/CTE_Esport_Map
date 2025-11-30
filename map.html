@@ -4,6 +4,9 @@
         <div class="cte-esport-header">
             <h2 class="cte-esport-title">CTE E-SPORTS MAP</h2>
             <div class="cte-esport-controls">
+                <!-- 行程表按钮 -->
+                <button class="cte-esport-icon-btn" id="cte-btn-schedule" title="查看今日行程">📅</button>
+                
                 <button class="cte-esport-icon-btn" id="cte-btn-reset-bg" title="恢复原始背景">🔄</button>
                 <label for="cte-bg-upload" class="cte-esport-icon-btn" title="更换地图背景" style="display:flex; align-items:center; justify-content:center;">🖼️</label>
                 <input type="file" id="cte-bg-upload" accept="image/*" style="display: none;">
@@ -16,8 +19,8 @@
         <!-- 2. 主体区域 (层叠) -->
         <div class="cte-esport-body">
             
-            <!-- 底层：可滚动的地图层 -->
-            <div class="cte-esport-scroll-layer">
+            <!-- Layer A: 地图层 (默认显示) -->
+            <div class="cte-esport-scroll-layer" id="cte-layer-map">
                 <div class="cte-esport-map-canvas" id="cte-map-canvas">
                     <!-- 地标点 -->
                     <div class="cte-esport-pin" id="cte-pin-base" style="left: 400px; top: 400px;" data-popup="popup-cte">
@@ -58,6 +61,27 @@
                     </div>
                     <div class="cte-esport-pin" style="left: 600px; top: 650px;" data-popup="popup-custom">
                         <div class="cte-esport-pin-label">其他地点</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Layer B: 行程表层 (默认隐藏) -->
+            <div class="cte-esport-scroll-layer" id="cte-layer-schedule" style="display:none; padding: 20px;">
+                <div class="cte-schedule-container">
+                    <div class="cte-schedule-header">
+                        <h3>今日行程安排</h3>
+                        <p style="font-size: 12px; color: var(--cte-text-sub);">数据来源：最新聊天记录 &lt;status_top&gt;</p>
+                        <!-- NEW: 新增控制按钮组 (查看地图 + 刷新数据) -->
+                        <div class="cte-schedule-controls" style="display: flex; justify-content: center; gap: 10px; margin: 10px auto;">
+                            <button class="cte-action-btn" id="cte-btn-back-to-map" style="width: auto;">🗺️ 查看地图</button>
+                            <button class="cte-action-btn" id="cte-btn-refresh-schedule" style="width: auto;">🔄 刷新数据</button>
+                        </div>
+                    </div>
+                    <div class="cte-timeline" id="cte-schedule-list">
+                        <!-- JS 将在此处生成列表项 -->
+                        <div style="text-align:center; color:#666; margin-top:50px;">
+                            暂无数据。<br>请确保上一条回复包含 &lt;status_top&gt;...今日安排...&lt;/status_top&gt;
+                        </div>
                     </div>
                 </div>
             </div>
@@ -156,82 +180,7 @@
                     </div>
                 </div>
 
-                <!-- 旅行确认弹窗 (Updated) -->
-                <div class="cte-esport-popup" id="cte-travel-modal" style="width: 350px;">
-                    <div class="cte-popup-header">
-                        <span class="cte-popup-title">确认行程</span>
-                        <span class="cte-close-btn">×</span>
-                    </div>
-                    <div class="cte-popup-content" style="text-align: center;">
-                        <p style="color: var(--cte-text-sub); margin-bottom: 5px;">目的地</p>
-                        <h3 id="cte-travel-dest-name" style="color: var(--cte-accent-gold); margin: 0 0 15px 0; font-size: 1.5em;">Destination</h3>
-                        
-                        <!-- 新增: NPC 偶遇设置 -->
-                        <div class="cte-npc-config" style="text-align:left; background:rgba(255,255,255,0.05); padding:10px; border-radius:4px; margin-bottom:20px;">
-                            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
-                                <label style="font-size:13px; color:var(--cte-text-main);">是否要遇见<span id="cte-npc-placeholder-text">NPC</span>?</label>
-                                <div class="cte-toggle-group">
-                                    <input type="radio" name="meet_npc" id="meet_no" value="no" checked>
-                                    <label for="meet_no">否</label>
-                                    <input type="radio" name="meet_npc" id="meet_yes" value="yes">
-                                    <label for="meet_yes">是</label>
-                                </div>
-                            </div>
-                            <input type="text" id="cte-npc-input" placeholder="输入NPC名字..." 
-                                   style="width:100%; padding:8px; background:rgba(0,0,0,0.3); border:1px solid var(--cte-border-color); color:#fff; border-radius:3px; display:none;">
-                        </div>
-
-                        <button class="cte-action-btn" id="cte-travel-alone">👤 独自前往</button>
-                        
-                        <div style="margin: 20px 0; border-top: 1px solid var(--cte-border-color); position: relative;">
-                            <span style="position: absolute; top: -10px; left: 50%; transform: translateX(-50%); background: var(--cte-panel-bg); padding: 0 10px; color: var(--cte-text-sub); font-size: 12px;">OR</span>
-                        </div>
-
-                        <div style="text-align: left;">
-                            <label style="font-size: 12px; color: var(--cte-text-sub);">邀请同伴：</label>
-                            <input type="text" id="cte-companion-input" placeholder="输入同伴名字 (如: 秦述)" 
-                                   style="width: 100%; padding: 10px; margin: 5px 0 10px 0; background: rgba(0,0,0,0.2); border: 1px solid var(--cte-border-color); color: var(--cte-text-main); border-radius: 4px; box-sizing: border-box;">
-                            <button class="cte-action-btn" id="cte-travel-companion">👥 邀请同伴前往</button>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- 新增: 活动选择弹窗 -->
-                <div class="cte-esport-popup" id="cte-activity-modal" style="width: 450px;">
-                    <div class="cte-popup-header">
-                        <span class="cte-popup-title">选择活动内容</span>
-                        <span class="cte-close-btn">×</span>
-                    </div>
-                    <div class="cte-popup-content">
-                        <p style="font-size:13px; color:var(--cte-text-sub); margin-bottom:15px;">你想在这里做什么？</p>
-                        
-                        <div class="cte-activity-grid">
-                            <button class="cte-activity-btn" data-act="训练">🎮 训练</button>
-                            <button class="cte-activity-btn" data-act="开会">📝 开会</button>
-                            <button class="cte-activity-btn" data-act="购物">🛍️ 购物</button>
-                            <button class="cte-activity-btn" data-act="闲逛">🚶 闲逛</button>
-                            <button class="cte-activity-btn" data-act="吃饭">🍜 吃饭</button>
-                            <button class="cte-activity-btn" data-act="喝酒">🍺 喝酒</button>
-                            <button class="cte-activity-btn" data-act="约会">💕 约会</button>
-                            <button class="cte-activity-btn" data-act="做爱">🔞 做爱</button>
-                            <button class="cte-activity-btn" data-act="运动">🏃 运动</button>
-                            <button class="cte-activity-btn" data-act="直播">📹 直播</button>
-                            <button class="cte-activity-btn" data-act="拍摄节目">🎬 拍摄节目</button>
-                            <button class="cte-activity-btn" data-act="接受媒体采访">🎤 接受采访</button>
-                        </div>
-
-                        <div style="margin-top:20px; border-top:1px solid var(--cte-border-color); padding-top:15px;">
-                            <label style="font-size:12px; color:var(--cte-text-sub);">自定义活动：</label>
-                            <div style="display:flex; gap:10px; margin-top:5px;">
-                                <input type="text" id="cte-custom-act-input" placeholder="输入其他活动内容..." 
-                                    style="flex:1; padding:8px; background:rgba(0,0,0,0.2); border:1px solid var(--cte-border-color); color:var(--cte-text-main); border-radius:4px;">
-                                <button class="cte-action-btn" id="cte-confirm-custom-act" style="width:auto; margin:0; padding:0 15px;">确定</button>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- 其他普通弹窗 -->
+                <!-- 其他地点弹窗 (保留) -->
                 <div class="cte-esport-popup" id="popup-baibu">
                     <div class="cte-popup-header"><span>百步街</span><span class="cte-close-btn">×</span></div>
                     <ul class="cte-loc-list">
@@ -325,6 +274,112 @@
                     <div class="cte-popup-header"><span>自定义地点</span><span class="cte-close-btn">×</span></div>
                     <input type="text" id="cte-custom-input" placeholder="输入你想去的地方..." style="width:100%; padding:10px; margin-bottom:10px; background:#333; border:1px solid #555; color:#fff;">
                     <button class="cte-action-btn" id="cte-btn-custom-go">🚀 出发</button>
+                </div>
+
+                <!-- 参与人员选择弹窗 -->
+                <div class="cte-esport-popup" id="cte-participant-modal" style="width: 400px; z-index: 2000;">
+                    <div class="cte-popup-header">
+                        <span class="cte-popup-title">选择同行人员</span>
+                        <span class="cte-close-btn">×</span>
+                    </div>
+                    <div class="cte-popup-content">
+                        <p style="color:var(--cte-text-sub); margin-bottom:10px;">请勾选参与此行程的人员：</p>
+                        <div id="cte-participant-list" class="cte-participant-grid">
+                            <!-- JS will populate checklist -->
+                        </div>
+                        
+                        <div style="margin-top:15px; padding-top:10px; border-top:1px solid var(--cte-border-color);">
+                            <input type="text" id="cte-custom-participant" placeholder="其他人员 (如: 工作人员)..." 
+                                   style="width:100%; padding:8px; background:rgba(0,0,0,0.2); border:1px solid var(--cte-border-color); color:#fff; border-radius:3px;">
+                        </div>
+
+                        <button class="cte-action-btn" id="cte-confirm-participants">📍 选择地点并出发</button>
+                    </div>
+                </div>
+
+                <!-- 确认行程弹窗 (增加行程模式) -->
+                <div class="cte-esport-popup" id="cte-travel-modal" style="width: 350px;">
+                    <div class="cte-popup-header">
+                        <span class="cte-popup-title">确认行程</span>
+                        <span class="cte-close-btn">×</span>
+                    </div>
+                    <div class="cte-popup-content" style="text-align: center;">
+                        <p style="color: var(--cte-text-sub); margin-bottom: 5px;">目的地</p>
+                        <h3 id="cte-travel-dest-name" style="color: var(--cte-accent-gold); margin: 0 0 15px 0; font-size: 1.5em;">Destination</h3>
+                        
+                        <!-- NPC 偶遇设置 -->
+                        <div class="cte-npc-config" style="text-align:left; background:rgba(255,255,255,0.05); padding:10px; border-radius:4px; margin-bottom:20px;">
+                            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+                                <label style="font-size:13px; color:var(--cte-text-main);">是否要遇见<span id="cte-npc-placeholder-text">NPC</span>?</label>
+                                <div class="cte-toggle-group">
+                                    <input type="radio" name="meet_npc" id="meet_no" value="no" checked>
+                                    <label for="meet_no">否</label>
+                                    <input type="radio" name="meet_npc" id="meet_yes" value="yes">
+                                    <label for="meet_yes">是</label>
+                                </div>
+                            </div>
+                            <input type="text" id="cte-npc-input" placeholder="输入NPC名字..." 
+                                   style="width:100%; padding:8px; background:rgba(0,0,0,0.3); border:1px solid var(--cte-border-color); color:#fff; border-radius:3px; display:none;">
+                        </div>
+
+                        <!-- 模式 A: 普通模式 (独自/同伴) -->
+                        <div id="cte-travel-mode-standard">
+                            <button class="cte-action-btn" id="cte-travel-alone">👤 独自前往</button>
+                            <div style="margin: 20px 0; border-top: 1px solid var(--cte-border-color); position: relative;">
+                                <span style="position: absolute; top: -10px; left: 50%; transform: translateX(-50%); background: var(--cte-panel-bg); padding: 0 10px; color: var(--cte-text-sub); font-size: 12px;">OR</span>
+                            </div>
+                            <div style="text-align: left;">
+                                <label style="font-size: 12px; color: var(--cte-text-sub);">邀请同伴：</label>
+                                <input type="text" id="cte-companion-input" placeholder="输入同伴名字 (如: 秦述)" 
+                                       style="width: 100%; padding: 10px; margin: 5px 0 10px 0; background: rgba(0,0,0,0.2); border: 1px solid var(--cte-border-color); color: var(--cte-text-main); border-radius: 4px; box-sizing: border-box;">
+                                <button class="cte-action-btn" id="cte-travel-companion">👥 邀请同伴前往</button>
+                            </div>
+                        </div>
+
+                        <!-- 模式 B: 行程执行模式 -->
+                        <div id="cte-travel-mode-schedule" style="display:none;">
+                            <div style="background: rgba(197, 160, 101, 0.1); border: 1px dashed var(--cte-accent-gold); padding: 10px; margin-bottom: 15px; border-radius: 4px; text-align: left;">
+                                <p style="font-size: 12px; color: var(--cte-accent-gold); margin-bottom: 5px;">📅 正在执行行程：</p>
+                                <p id="cte-schedule-preview-text" style="font-size: 13px; color: var(--cte-text-main); margin: 0; white-space: normal; line-height: 1.5;">...</p>
+                            </div>
+                            <button class="cte-action-btn" id="cte-travel-execute-schedule" style="background: var(--cte-accent-gold); color: #000;">✅ 确认执行行程</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 活动选择弹窗 (原有) -->
+                <div class="cte-esport-popup" id="cte-activity-modal" style="width: 450px;">
+                    <div class="cte-popup-header">
+                        <span class="cte-popup-title">选择活动内容</span>
+                        <span class="cte-close-btn">×</span>
+                    </div>
+                    <div class="cte-popup-content">
+                        <p style="font-size:13px; color:var(--cte-text-sub); margin-bottom:15px;">你想在这里做什么？</p>
+                        
+                        <div class="cte-activity-grid">
+                            <button class="cte-activity-btn" data-act="训练">🎮 训练</button>
+                            <button class="cte-activity-btn" data-act="开会">📝 开会</button>
+                            <button class="cte-activity-btn" data-act="购物">🛍️ 购物</button>
+                            <button class="cte-activity-btn" data-act="闲逛">🚶 闲逛</button>
+                            <button class="cte-activity-btn" data-act="吃饭">🍜 吃饭</button>
+                            <button class="cte-activity-btn" data-act="喝酒">🍺 喝酒</button>
+                            <button class="cte-activity-btn" data-act="约会">💕 约会</button>
+                            <button class="cte-activity-btn" data-act="做爱">🔞 做爱</button>
+                            <button class="cte-activity-btn" data-act="运动">🏃 运动</button>
+                            <button class="cte-activity-btn" data-act="直播">📹 直播</button>
+                            <button class="cte-activity-btn" data-act="拍摄节目">🎬 拍摄节目</button>
+                            <button class="cte-activity-btn" data-act="接受媒体采访">🎤 接受采访</button>
+                        </div>
+
+                        <div style="margin-top:20px; border-top:1px solid var(--cte-border-color); padding-top:15px;">
+                            <label style="font-size:12px; color:var(--cte-text-sub);">自定义活动：</label>
+                            <div style="display:flex; gap:10px; margin-top:5px;">
+                                <input type="text" id="cte-custom-act-input" placeholder="输入其他活动内容..." 
+                                    style="flex:1; padding:8px; background:rgba(0,0,0,0.2); border:1px solid var(--cte-border-color); color:var(--cte-text-main); border-radius:4px;">
+                                <button class="cte-action-btn" id="cte-confirm-custom-act" style="width:auto; margin:0; padding:0 15px;">确定</button>
+                            </div>
+                        </div>
+                    </div>
                 </div>
 
                 <!-- 角色资料卡 -->
