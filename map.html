@@ -19,7 +19,7 @@
         <!-- 2. 主体区域 (层叠) -->
         <div class="cte-esport-body">
             
-            <!-- Layer A: 地图层 (默认显示) -->
+            <!-- Layer A: 京港市地图层 (默认显示) -->
             <div class="cte-esport-scroll-layer" id="cte-layer-map">
                 <div class="cte-esport-map-canvas" id="cte-map-canvas">
                     <!-- 地标点 -->
@@ -63,15 +63,59 @@
                         <div class="cte-esport-pin-label">其他地点</div>
                     </div>
                 </div>
+                
+                <!-- 前往外部大地图按钮 (悬浮在京港市地图上) -->
+                <div class="cte-go-national-btn-container">
+                    <button class="cte-go-national-btn" id="cte-btn-go-national">
+                        🌏 前往外部大地图
+                    </button>
+                </div>
             </div>
 
-            <!-- Layer B: 行程表层 (默认隐藏) -->
+            <!-- Layer B: 国家地图层 (默认隐藏) -->
+            <div class="cte-esport-scroll-layer cte-national-scroll-layer" id="cte-layer-national-map" style="display:none;">
+                <div class="cte-national-container">
+                    <!-- 国家地图标题区 -->
+                    <div class="cte-national-header">
+                        <h1 class="cte-national-title">京港之外的世界</h1>
+                        <p class="cte-national-subtitle">这是一个现代架空都市世界观</p>
+                    </div>
+                    
+                    <!-- 国家地图画布 -->
+                    <div class="cte-national-map-canvas" id="cte-national-map-canvas">
+                        <!-- 城市图标将由 JS 动态生成 -->
+                        <div class="cte-national-cities"></div>
+                    </div>
+                    
+                    <!-- 情报面板 -->
+                    <div class="cte-national-info-panel">
+                        <div id="cte-national-info-content">
+                            <h2><i class="fa-solid fa-map-location-dot"></i> 城市简介</h2>
+                            <p>请点击地图上的城市图标以获取详细情报...<br><span style="color: var(--cte-accent-gold);">💡 点击"京港"可返回京港市地图</span></p>
+                        </div>
+                        <!-- 前往按钮 (动态显示) -->
+                        <button class="cte-national-go-btn" id="cte-national-go-btn" style="display:none;">
+                            🚀 前往
+                        </button>
+                    </div>
+                    
+                    <!-- 控制按钮组 -->
+                    <div class="cte-national-controls">
+                        <button class="cte-action-btn" id="cte-btn-back-to-city">🏙️ 返回京港市</button>
+                        <label for="cte-national-bg-upload" class="cte-action-btn" style="cursor:pointer;">🖼️ 上传背景</label>
+                        <input type="file" id="cte-national-bg-upload" accept="image/*" style="display:none;">
+                        <button class="cte-action-btn" id="cte-btn-reset-national-bg">🔄 恢复默认</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Layer C: 行程表层 (默认隐藏) -->
             <div class="cte-esport-scroll-layer" id="cte-layer-schedule" style="display:none; padding: 20px;">
                 <div class="cte-schedule-container">
                     <div class="cte-schedule-header">
                         <h3>今日行程安排</h3>
                         <p style="font-size: 12px; color: var(--cte-text-sub);">数据来源：最新聊天记录 &lt;status_top&gt;</p>
-                        <!-- NEW: 新增控制按钮组 (查看地图 + 刷新数据) -->
+                        <!-- 控制按钮组 (查看地图 + 刷新数据) -->
                         <div class="cte-schedule-controls" style="display: flex; justify-content: center; gap: 10px; margin: 10px auto;">
                             <button class="cte-action-btn" id="cte-btn-back-to-map" style="width: auto;">🗺️ 查看地图</button>
                             <button class="cte-action-btn" id="cte-btn-refresh-schedule" style="width: auto;">🔄 刷新数据</button>
@@ -180,7 +224,7 @@
                     </div>
                 </div>
 
-                <!-- 其他地点弹窗 (保留) -->
+                <!-- 其他地点弹窗 -->
                 <div class="cte-esport-popup" id="popup-baibu">
                     <div class="cte-popup-header"><span>百步街</span><span class="cte-close-btn">×</span></div>
                     <ul class="cte-loc-list">
@@ -228,42 +272,42 @@
                         <button class="cte-action-btn" data-travel="星夜网吧">🚀 前往</button>
                     </div>
                 </div>
-                 <div class="cte-esport-popup" id="popup-park">
+                <div class="cte-esport-popup" id="popup-park">
                     <div class="cte-popup-header"><span>蓝海公园</span><span class="cte-close-btn">×</span></div>
                     <div class="cte-popup-content">
                         <p>基地北侧的静谧湖畔公园，秦述常在此晨跑。</p>
                         <button class="cte-action-btn" data-travel="蓝海公园">🚀 前往</button>
                     </div>
                 </div>
-                 <div class="cte-esport-popup" id="popup-wancheng">
+                <div class="cte-esport-popup" id="popup-wancheng">
                     <div class="cte-popup-header"><span>万城娱乐总部</span><span class="cte-close-btn">×</span></div>
-                     <div class="cte-popup-content">
+                    <div class="cte-popup-content">
                         <p>距基地2公里。掌控着战队的商业命脉。</p>
                         <button class="cte-action-btn" data-travel="万城娱乐总部">🚀 前往</button>
                     </div>
                 </div>
-                 <div class="cte-esport-popup" id="popup-nightmarket">
+                <div class="cte-esport-popup" id="popup-nightmarket">
                     <div class="cte-popup-header"><span>老街区夜市</span><span class="cte-close-btn">×</span></div>
                     <div class="cte-popup-content">
                         <p>传统夜市，拥有浓郁的本土生活气息。</p>
                         <button class="cte-action-btn" data-travel="老街区夜市">🚀 前往</button>
                     </div>
                 </div>
-                 <div class="cte-esport-popup" id="popup-school">
+                <div class="cte-esport-popup" id="popup-school">
                     <div class="cte-popup-header"><span>京港第三高中</span><span class="cte-close-btn">×</span></div>
                     <div class="cte-popup-content">
                         <p>省重点高中，谌绪就读地。充满青春气息与书卷气。</p>
                         <button class="cte-action-btn" data-travel="京港第三高中">🚀 前往</button>
                     </div>
                 </div>
-                 <div class="cte-esport-popup" id="popup-library">
+                <div class="cte-esport-popup" id="popup-library">
                     <div class="cte-popup-header"><span>城市图书馆</span><span class="cte-close-btn">×</span></div>
                     <div class="cte-popup-content">
                         <p>现代化图书馆，内设电竞文化专区，安静学习的好去处。</p>
                         <button class="cte-action-btn" data-travel="城市图书馆">🚀 前往</button>
                     </div>
                 </div>
-                 <div class="cte-esport-popup" id="popup-hotel">
+                <div class="cte-esport-popup" id="popup-hotel">
                     <div class="cte-popup-header"><span>电竞酒店</span><span class="cte-close-btn">×</span></div>
                     <div class="cte-popup-content">
                         <p>设有电竞主题客房及观赛厅，常有外地粉丝与职业选手造访。</p>
@@ -297,7 +341,7 @@
                     </div>
                 </div>
 
-                <!-- 确认行程弹窗 (增加行程模式) -->
+                <!-- 确认行程弹窗 -->
                 <div class="cte-esport-popup" id="cte-travel-modal" style="width: 350px;">
                     <div class="cte-popup-header">
                         <span class="cte-popup-title">确认行程</span>
@@ -347,7 +391,7 @@
                     </div>
                 </div>
 
-                <!-- 活动选择弹窗 (原有) -->
+                <!-- 活动选择弹窗 -->
                 <div class="cte-esport-popup" id="cte-activity-modal" style="width: 450px;">
                     <div class="cte-popup-header">
                         <span class="cte-popup-title">选择活动内容</span>
