@@ -1,6 +1,6 @@
-/* --- CTE Esport Map 样式表 (v6.4 更新) --- */
+/* --- CTE Esport Map 样式表 (v9.0 国家地图整合版) --- */
 
-@import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;700&family=Noto+Serif+SC:wght@400;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;700&family=Noto+Serif+SC:wght@400;700&family=Zhi+Mang+Xing&display=swap');
 
 #cte-esport-root {
     --cte-bg-dark: #121212;
@@ -11,8 +11,8 @@
     --cte-border-color: #3d3d3d;
     --cte-pin-bg: rgba(0, 0, 0, 0.85);
     --cte-btn-text-hover: #000;
-    --cte-card-bg: rgba(255, 255, 255, 0.05); /* Default Card BG */
-    --cte-scroll-layer-bg: #000000; /* Default Scroll Layer BG */
+    --cte-card-bg: rgba(255, 255, 255, 0.05);
+    --cte-scroll-layer-bg: #000000;
 }
 
 /* 主面板 */
@@ -92,7 +92,7 @@
     height: 100%;
     overflow: auto;
     position: relative;
-    background-color: var(--cte-scroll-layer-bg); /* Use variable instead of hardcoded black */
+    background-color: var(--cte-scroll-layer-bg);
     -webkit-overflow-scrolling: touch;
 }
 
@@ -170,6 +170,253 @@
 }
 #cte-pin-base .cte-esport-pin-label::after {
     border-top-color: #fff;
+}
+
+/* ========================================
+   前往外部大地图按钮
+======================================== */
+.cte-go-national-btn-container {
+    position: absolute;
+    bottom: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 50;
+}
+
+.cte-go-national-btn {
+    background: linear-gradient(135deg, rgba(197, 160, 101, 0.9), rgba(139, 109, 59, 0.9));
+    border: 2px solid var(--cte-accent-gold);
+    color: #fff;
+    padding: 12px 28px;
+    font-size: 16px;
+    font-family: 'Noto Serif SC', serif;
+    font-weight: bold;
+    cursor: pointer;
+    border-radius: 30px;
+    box-shadow: 0 4px 20px rgba(197, 160, 101, 0.5), 0 0 30px rgba(197, 160, 101, 0.3);
+    transition: all 0.3s ease;
+    animation: cte-pulse-glow 2s infinite;
+}
+
+.cte-go-national-btn:hover {
+    transform: scale(1.05);
+    box-shadow: 0 6px 30px rgba(197, 160, 101, 0.7), 0 0 40px rgba(197, 160, 101, 0.5);
+}
+
+@keyframes cte-pulse-glow {
+    0%, 100% { box-shadow: 0 4px 20px rgba(197, 160, 101, 0.5), 0 0 30px rgba(197, 160, 101, 0.3); }
+    50% { box-shadow: 0 4px 25px rgba(197, 160, 101, 0.7), 0 0 40px rgba(197, 160, 101, 0.5); }
+}
+
+/* ========================================
+   国家地图层样式
+======================================== */
+.cte-national-scroll-layer {
+    background-color: #1a1a1a;
+    background-image: url('data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="100" height="100" viewBox="0 0 100 100"%3E%3Cg fill-rule="evenodd"%3E%3Cg fill="%23303030" fill-opacity="0.4"%3E%3Cpath opacity=".5" d="M96 95h4v1h-4v4h-1v-4h-9v4h-1v-4h-9v4h-1v-4h-9v4h-1v-4h-9v4h-1v-4h-9v4h-1v-4h-9v4h-1v-4H0v-1h15v-9H0v-1h15v-9H0v-1h15v-9H0v-1h15v-9H0v-1h15v-9H0v-1h15v-9H0v-1h15v-9H0v-1h15V0h1v15h9V0h1v15h9V0h1v15h9V0h1v15h9V0h1v15h9V0h1v15h9V0h1v15h9V0h1v15h4v1h-4v9h4v1h-4v9h4v1h-4v9h4v1h-4v9h4v1h-4v9h4v1h-4v9h4v1h-4v9z"/%3E%3C/g%3E%3C/g%3E%3C/svg%3E');
+}
+
+.cte-national-container {
+    width: 100%;
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 20px;
+    box-sizing: border-box;
+}
+
+/* 国家地图标题 */
+.cte-national-header {
+    text-align: center;
+    border-bottom: 1px solid var(--cte-accent-gold);
+    padding-bottom: 15px;
+    margin-bottom: 20px;
+}
+
+.cte-national-title {
+    font-family: 'Noto Serif SC', serif;
+    font-size: clamp(1.6rem, 4vw, 2.2rem);
+    color: var(--cte-accent-gold);
+    font-weight: 700;
+    letter-spacing: 2px;
+    margin: 0;
+    text-shadow: 0 0 10px rgba(197, 160, 101, 0.5);
+}
+
+.cte-national-subtitle {
+    font-family: 'Zhi Mang Xing', cursive;
+    font-size: clamp(0.9rem, 2.5vw, 1.1rem);
+    color: #a0a0a0;
+    margin-top: 8px;
+    letter-spacing: 1px;
+}
+
+/* 国家地图画布 - 1:1比例锁定 */
+.cte-national-map-canvas {
+    position: relative;
+    width: 100%;
+    padding-bottom: 100%; /* 1:1 Aspect Ratio */
+    background-color: #222;
+    border: 1px solid var(--cte-accent-gold);
+    overflow: hidden;
+    background-image: 
+        linear-gradient(rgba(255,255,255,0.03) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255,255,255,0.03) 1px, transparent 1px);
+    
+    /* 修复：改为 cover 以确保背景图填满容器，而不是原本的 10% */
+    background-size: cover; 
+    
+    box-shadow: 0 0 30px rgba(0,0,0,0.5), inset 0 0 100px rgba(0,0,0,0.3);
+    background-position: center;
+    background-repeat: no-repeat;
+}
+
+.cte-national-cities {
+    position: absolute;
+    inset: 0;
+}
+
+/* 国家地图城市图标 */
+.cte-national-city {
+    position: absolute;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    cursor: pointer;
+    transition: transform 0.3s ease, filter 0.3s ease;
+    z-index: 10;
+    transform: translate(-50%, -50%);
+}
+
+.cte-national-city:hover {
+    transform: translate(-50%, -50%) scale(1.15);
+    filter: drop-shadow(0 0 12px var(--cte-accent-gold));
+    z-index: 20;
+}
+
+.cte-national-city i {
+    font-size: clamp(1.5rem, 4vw, 2.2rem);
+    color: var(--cte-accent-gold);
+    text-shadow: 0 0 8px var(--cte-accent-gold);
+    transition: all 0.3s ease;
+}
+
+.cte-national-city:hover i {
+    transform: scale(1.1);
+}
+
+.cte-national-city-name {
+    font-size: clamp(0.65rem, 1.5vw, 0.85rem);
+    color: #dcdcdc;
+    background: rgba(0,0,0,0.8);
+    padding: 3px 8px;
+    border-radius: 3px;
+    margin-top: 5px;
+    white-space: nowrap;
+    border: 1px solid rgba(197, 160, 101, 0.3);
+}
+
+/* 首都特殊样式 */
+.cte-national-city.capital i {
+    color: #ffd700;
+    font-size: clamp(1.8rem, 5vw, 2.8rem);
+    text-shadow: 0 0 15px #ffd700, 0 0 30px rgba(255, 215, 0, 0.5);
+    animation: cte-capital-pulse 2s infinite;
+}
+
+.cte-national-city.capital .cte-national-city-name {
+    background: linear-gradient(135deg, rgba(255, 215, 0, 0.2), rgba(197, 160, 101, 0.3));
+    border: 1px solid #ffd700;
+    color: #ffd700;
+    font-weight: bold;
+}
+
+@keyframes cte-capital-pulse {
+    0%, 100% { text-shadow: 0 0 15px #ffd700, 0 0 30px rgba(255, 215, 0, 0.5); }
+    50% { text-shadow: 0 0 25px #ffd700, 0 0 50px rgba(255, 215, 0, 0.7); }
+}
+
+/* 国家地图情报面板 */
+.cte-national-info-panel {
+    margin-top: 20px;
+    background: rgba(0,0,0,0.4);
+    border: 1px dashed var(--cte-accent-gold);
+    padding: 20px;
+    color: #ccc;
+    min-height: 120px;
+    border-radius: 4px;
+}
+
+.cte-national-info-panel h2 {
+    font-size: clamp(1.1rem, 3vw, 1.4rem);
+    color: var(--cte-accent-gold);
+    margin: 0 0 12px 0;
+    border-bottom: 1px solid rgba(197, 160, 101, 0.3);
+    padding-bottom: 8px;
+}
+
+.cte-national-info-panel p {
+    margin: 0;
+    line-height: 1.7;
+}
+
+.cte-national-info-panel ul {
+    list-style-type: none;
+    padding: 0;
+    margin: 0;
+}
+
+.cte-national-info-panel li {
+    margin-bottom: 8px;
+    line-height: 1.6;
+}
+
+.cte-national-info-panel li i {
+    color: var(--cte-accent-gold);
+    margin-right: 8px;
+}
+
+/* 国家地图前往按钮 */
+.cte-national-go-btn {
+    display: block;
+    width: 100%;
+    margin-top: 15px;
+    padding: 14px 20px;
+    background: linear-gradient(135deg, var(--cte-accent-gold), #8b6d3b);
+    border: none;
+    color: #000;
+    font-size: 1.1rem;
+    font-family: 'Noto Serif SC', serif;
+    font-weight: bold;
+    cursor: pointer;
+    border-radius: 6px;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 15px rgba(197, 160, 101, 0.4);
+    animation: cte-go-btn-glow 1.5s infinite;
+}
+
+.cte-national-go-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 25px rgba(197, 160, 101, 0.6);
+}
+
+@keyframes cte-go-btn-glow {
+    0%, 100% { box-shadow: 0 4px 15px rgba(197, 160, 101, 0.4); }
+    50% { box-shadow: 0 4px 25px rgba(197, 160, 101, 0.7); }
+}
+
+/* 国家地图控制按钮组 */
+.cte-national-controls {
+    display: flex;
+    gap: 10px;
+    margin-top: 15px;
+    flex-wrap: wrap;
+    justify-content: center;
+}
+
+.cte-national-controls .cte-action-btn {
+    flex: 1;
+    min-width: 120px;
+    max-width: 200px;
 }
 
 /* 弹窗覆盖层 */
@@ -496,9 +743,21 @@
     .cte-profile-info { width: 100%; text-align: left; }
     #cte-profile-name { text-align: center; font-size: 1.8rem; }
     .cte-profile-grid { justify-content: space-between; }
+    
+    .cte-national-controls {
+        flex-direction: column;
+    }
+    .cte-national-controls .cte-action-btn {
+        max-width: none;
+    }
+    
+    .cte-go-national-btn {
+        padding: 10px 20px;
+        font-size: 14px;
+    }
 }
 
-/* --- Schedule View Styles (New) --- */
+/* --- Schedule View Styles --- */
 
 .cte-schedule-container {
     max-width: 800px;
@@ -536,7 +795,7 @@
 .cte-timeline-item::before {
     content: '';
     position: absolute;
-    left: -46px; /* -40px padding - 6px half width */
+    left: -46px;
     top: 5px;
     width: 10px;
     height: 10px;
@@ -547,7 +806,7 @@
 }
 
 .cte-timeline-card {
-    background: var(--cte-card-bg); /* Use new variable for Card BG */
+    background: var(--cte-card-bg);
     border: 1px solid var(--cte-border-color);
     border-left: 3px solid var(--cte-accent-gold);
     padding: 15px;
