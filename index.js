@@ -1,7 +1,8 @@
-// --- CTE Esport Map 核心逻辑 (v8.4 UI Theme Update) ---
+// --- CTE Esport Map 核心逻辑 (v9.0 国家地图整合版) ---
 
 const extensionName = "cte-esport-map";
 const defaultMapBg = "https://files.catbox.moe/hjurjz.png";
+const defaultNationalMapBg = "https://files.catbox.moe/4p0d94.jpg";
 const userPlaceholderAvatar = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%23c5a065'%3E%3Cpath d='M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z'/%3E%3C/svg%3E";
 
 const LOCATION_NPC_DEFAULTS = {
@@ -21,10 +22,21 @@ const CTE_CHARACTERS = {
     "zhou_jinning": { name: "周锦宁", age: "20", role: "CTE战队成员、上单", personality: "傲娇、矜贵、毒舌", desc: "精致奢华的装修风格，甚至有一个专门的陈列柜用来展示他的限量版球鞋。每一处细节都彰显着主人的高傲与品味。(头像图片来自角色卡原作者耶耶)", avatar: "https://files.catbox.moe/1loxsn.jpeg", destination: "CTE基地-周锦宁房间" },
     "chen_xu": { name: "谌绪", age: "18", role: "CTE战队替补中单、高中生", personality: "腹黑、恶劣、隐藏病娇", desc: "表面看起来像个乖巧高中生的房间，书桌上摆着整齐的试卷。但抽屉深处似乎藏着一些不为人知的秘密，空气中带着一丝危险的气息。(头像图片来自角色卡原作者耶耶)", avatar: "https://files.catbox.moe/9tnuva.png", destination: "CTE基地-谌绪房间" },
     "meng_minghe": { name: "孟明赫", age: "20", role: "CTE战队ADC替补", personality: "阴郁、厌世、内向、大胆叛逆", desc: "窗帘常年拉着，光线昏暗。墙上有着涂鸦的痕迹，角落里放着一把旧吉他。这是一个属于孤独灵魂的避难所。(头像图片来自角色卡原作者耶耶)", avatar: "https://files.catbox.moe/m446ro.jpeg", destination: "CTE基地-孟明赫房间" },
-    "qi_xie": { name: "亓谢", age: "18", role: "CTE战队打野替补", personality: "疯批、天才、毒舌、直白", desc: "房间里充满了科技感，多块屏幕闪烁着复杂的数据流。这里更像是一个黑客的实验室，而不是一个普通的电竞选手宿舍。(头像图片来自角色卡原作者耶耶)", avatar: "https://files.catbox.moe/ev2g1l.png", destination: "CTE基地-亓谢房间" },
-    "sang_luofan": { name: "桑洛凡", age: "27", role: "CTE助教、豪门大少爷", personality: "慵懒随性、桀骜不驯、腹黑", desc: "低调奢华，红酒柜和定制西装占据了很大空间。他并不常住这里，但即便只是偶尔停留，也要保持绝对的享受。(头像图片来自角色卡原作者耶耶)", avatar: "https://files.catbox.moe/syudzu.png", destination: "CTE基地-桑洛凡房间" },
+    "qi_xie": { name: "亓谢", age: "18", role: "CTE战队打野替补", personality: "疯批、天才、毒舌、直白", desc: "房间凌乱但不脏乱差。桌子上布满了各种东西，有植物、鱼缸、盖了一半的乐高、研究了一半的线路板、分析了一半的战术，还有拆了一半的游戏手柄等……(头像图片来自角色卡原作者耶耶)", avatar: "https://files.catbox.moe/ev2g1l.png", destination: "CTE基地-亓谢房间" },
+    "sang_luofan": { name: "桑洛凡", age: "27", role: "CTE助教、豪门大少爷", personality: "慵懒随性、桀骜不驯、腹黑", desc: "低调奢华，红酒柜和定制西装占据了很大空间。他不一定每天住这里，但即便只是偶尔停留，也要保持绝对的享受。(头像图片来自角色卡原作者耶耶)", avatar: "https://files.catbox.moe/syudzu.png", destination: "CTE基地-桑洛凡房间" },
     "user": { name: "你", age: "??", role: "CTE战队新成员/访客", personality: "自定义", desc: "这是属于你的私人空间。你可以按照自己的喜好布置它。虽然现在还很空旷，但未来这里会充满你与CTE的故事。", avatar: userPlaceholderAvatar, destination: "CTE基地-你的房间" }
 };
+
+// 国家地图城市数据
+const NATIONAL_CITIES = [
+    { id: 'jinggang', name: '京港', icon: 'fa-landmark-dome', top: '50%', left: '50%', info: '<strong><i class="fa-solid fa-crown"></i> 权力漩涡:</strong> 首都，政治经济文化中心，权贵聚集，国际化大都市，夜生活极度繁华。摩天大楼与历史建筑交错，霓虹灯下的金融街与老城区并存。', isCapital: true },
+    { id: 'langjing', name: '琅京', icon: 'fa-gem', top: '80%', left: '20%', info: '<strong><i class="fa-solid fa-coins"></i> 豪门金库:</strong> 全国第二大城市，金融与地产重镇，豪门世家聚集。宽阔大道、豪宅林立，老钱家族与新贵共存。钰明珠宝总部所在地。' },
+    { id: 'shenzhou', name: '深州', icon: 'fa-microchip', top: '80%', left: '75%', info: '<strong><i class="fa-solid fa-chart-line"></i> 科技前沿:</strong> 沿海经济特区，科技与贸易发达，外企众多，生活节奏快。高科技园区、港口码头、国际社区。' },
+    { id: 'haizhou', name: '海洲', icon: 'fa-anchor', top: '20%', left: '80%', info: '<strong><i class="fa-solid fa-skull-crossbones"></i> 灰色地带:</strong> 港口城市，地下势力活跃，赌场、夜店、黑市盛行。霓虹闪烁的港口、老旧仓库与豪华赌场并存。' },
+    { id: 'taihe', name: '台河', icon: 'fa-book-open', top: '20%', left: '50%', info: '<strong><i class="fa-solid fa-graduation-cap"></i> 学术之城:</strong> 历史文化名城，教育与艺术氛围浓厚，名校云集。古典建筑、博物馆、大学城。' },
+    { id: 'huashao', name: '化邵', icon: 'fa-industry', top: '50%', left: '20%', info: '<strong><i class="fa-solid fa-wrench"></i> 工业心脏:</strong> 重工业城市，工人阶层为主，生活节奏慢，治安一般。工厂烟囱、老旧居民区、工业遗址。' },
+    { id: 'yucheng', name: '玉城', icon: 'fa-martini-glass-citrus', top: '20%', left: '20%', info: '<strong><i class="fa-solid fa-sun"></i> 度假天堂:</strong> 旅游胜地，风景优美，度假产业发达，富人休闲首选。湖光山色、度假别墅、五星级酒店。' },
+];
 
 const CTEEscape = {
     settings: {
@@ -38,11 +50,18 @@ const CTEEscape = {
     
     // New Schedule State
     isSelectingForSchedule: false,
-    currentScheduleItem: null, // String: "10:00 - 12:00 个人训练"
+    currentScheduleItem: null,
     tempScheduleParticipants: [],
 
     isDraggingPin: false,
+    isDraggingNationalCity: false, // 新增：国家城市拖拽状态
     currentProfileId: null,
+    
+    // 当前视图状态: 'city-map' | 'national-map' | 'schedule'
+    currentView: 'city-map',
+    
+    // 国家地图出行数据
+    nationalTripData: { cityId: null, cityName: null },
 
     async init() {
         console.log("🏆 [CTE Esport] 插件正在启动...");
@@ -55,6 +74,8 @@ const CTEEscape = {
             this.enablePinDragging();
             this.applyTheme(this.settings.theme);
             this.loadUserAvatar();
+            this.initNationalMap();
+            this.loadNationalMapBg();
             
             window.addEventListener('resize', () => {
                 const btn = document.getElementById("cte-esport-toggle-btn");
@@ -182,8 +203,8 @@ const CTEEscape = {
             panel.style.display = "flex";
             panel.style.opacity = "0";
             
-            // 默认打开时重置为地图视图
-            this.toggleView('map'); 
+            // 默认打开时重置为京港市地图视图
+            this.toggleView('city-map'); 
             
             setTimeout(() => {
                 panel.style.opacity = "1"; 
@@ -198,16 +219,234 @@ const CTEEscape = {
     },
 
     toggleView(viewName) {
-        const mapLayer = document.getElementById("cte-layer-map");
+        const cityMapLayer = document.getElementById("cte-layer-map");
+        const nationalMapLayer = document.getElementById("cte-layer-national-map");
         const scheduleLayer = document.getElementById("cte-layer-schedule");
         
-        if (viewName === 'map') {
-            if(mapLayer) mapLayer.style.display = 'block';
-            if(scheduleLayer) scheduleLayer.style.display = 'none';
+        // 隐藏所有层
+        if(cityMapLayer) cityMapLayer.style.display = 'none';
+        if(nationalMapLayer) nationalMapLayer.style.display = 'none';
+        if(scheduleLayer) scheduleLayer.style.display = 'none';
+        
+        this.currentView = viewName;
+        
+        if (viewName === 'city-map') {
+            if(cityMapLayer) cityMapLayer.style.display = 'block';
+        } else if (viewName === 'national-map') {
+            if(nationalMapLayer) nationalMapLayer.style.display = 'block';
         } else if (viewName === 'schedule') {
-            if(mapLayer) mapLayer.style.display = 'none';
             if(scheduleLayer) scheduleLayer.style.display = 'block';
-            this.refreshSchedule(); // 切换时自动刷新
+            this.refreshSchedule();
+        }
+    },
+
+    // --- 初始化国家地图 ---
+    initNationalMap() {
+        const mapContainer = document.getElementById("cte-national-map-canvas");
+        const infoContent = document.getElementById("cte-national-info-content");
+        
+        if (!mapContainer) return;
+        
+        // 清空并生成城市图标
+        const citiesContainer = mapContainer.querySelector('.cte-national-cities');
+        if (!citiesContainer) return;
+        
+        citiesContainer.innerHTML = '';
+        
+        NATIONAL_CITIES.forEach(city => {
+            const cityEl = document.createElement('div');
+            cityEl.className = 'cte-national-city' + (city.isCapital ? ' capital' : '');
+            cityEl.id = `national-city-${city.id}`;
+            cityEl.style.top = city.top;
+            cityEl.style.left = city.left;
+            cityEl.setAttribute('data-city-id', city.id);
+            
+            cityEl.innerHTML = `
+                <i class="fa-solid ${city.icon}"></i>
+                <span class="cte-national-city-name">${city.name}</span>
+            `;
+            
+            // 修改：添加拖拽状态检查，防止拖拽结束时触发点击事件
+            cityEl.addEventListener('click', (e) => {
+                if (this.isDraggingNationalCity) return;
+                this.handleNationalCityClick(city);
+            });
+            
+            citiesContainer.appendChild(cityEl);
+        });
+
+        // 启用国家地图城市拖拽
+        this.enableNationalCityDragging();
+    },
+    
+    // --- 新增：国家地图城市拖拽逻辑 ---
+    enableNationalCityDragging() {
+        const mapCanvas = document.getElementById("cte-national-map-canvas");
+        if (!mapCanvas) return;
+
+        let activeCity = null;
+        let startX, startY, startLeft, startTop;
+
+        mapCanvas.addEventListener("mousedown", (e) => {
+            const city = e.target.closest(".cte-national-city");
+            if (!city) return;
+            e.preventDefault();
+            
+            activeCity = city;
+            this.isDraggingNationalCity = false;
+            
+            startX = e.clientX;
+            startY = e.clientY;
+            
+            // 获取当前位置 (转换为px以便拖拽计算)
+            startLeft = city.offsetLeft;
+            startTop = city.offsetTop;
+            
+            activeCity.style.transition = 'none'; // 临时禁用过渡动画
+            activeCity.classList.add("dragging");
+            
+            document.addEventListener("mousemove", onMouseMove);
+            document.addEventListener("mouseup", onMouseUp);
+        });
+
+        const onMouseMove = (e) => {
+            if (!activeCity) return;
+            const dx = e.clientX - startX;
+            const dy = e.clientY - startY;
+
+            // 阈值检测：移动超过3px才视为拖拽
+            if (Math.abs(dx) > 3 || Math.abs(dy) > 3) {
+                this.isDraggingNationalCity = true;
+                
+                let newLeft = startLeft + dx;
+                let newTop = startTop + dy;
+                
+                // 边界限制
+                const parentRect = mapCanvas.getBoundingClientRect();
+                newLeft = Math.max(0, Math.min(newLeft, parentRect.width));
+                newTop = Math.max(0, Math.min(newTop, parentRect.height));
+                
+                activeCity.style.left = `${newLeft}px`;
+                activeCity.style.top = `${newTop}px`;
+            }
+        };
+
+        const onMouseUp = () => {
+            if (activeCity) {
+                activeCity.classList.remove("dragging");
+                activeCity.style.transition = ''; // 恢复过渡动画
+                activeCity = null;
+            }
+            document.removeEventListener("mousemove", onMouseMove);
+            document.removeEventListener("mouseup", onMouseUp);
+            
+            // 延迟重置拖拽标志，确保点击事件能读取到正确的状态
+            setTimeout(() => {
+                this.isDraggingNationalCity = false;
+            }, 50);
+        };
+    },
+    
+    // --- 加载国家地图背景 ---
+    loadNationalMapBg() {
+        const savedBg = localStorage.getItem("cte-national-map-bg");
+        const canvas = document.getElementById("cte-national-map-canvas");
+        if (canvas) {
+            canvas.style.backgroundImage = `url(${savedBg || defaultNationalMapBg})`;
+        }
+    },
+    
+    // --- 处理国家地图城市点击 ---
+    handleNationalCityClick(city) {
+        const infoPanel = document.getElementById("cte-national-info-content");
+        const goButton = document.getElementById("cte-national-go-btn");
+        
+        if (city.isCapital) {
+            // 点击京港 - 返回京港市地图
+            this.toggleView('city-map');
+            if (typeof toastr !== "undefined") toastr.info("已返回京港市地图");
+            return;
+        }
+        
+        // 显示城市情报
+        if (infoPanel) {
+            infoPanel.innerHTML = `
+                <h2><i class="fa-solid fa-scroll"></i> ${city.name} - 城市简述</h2>
+                <ul><li>${city.info}</li></ul>
+            `;
+        }
+        
+        // 显示前往按钮
+        if (goButton) {
+            goButton.style.display = 'block';
+            goButton.innerHTML = `🚀 前往${city.name}`;
+            goButton.onclick = () => this.prepareNationalTravel(city);
+        }
+        
+        // 存储当前选中城市
+        this.nationalTripData = { cityId: city.id, cityName: city.name };
+    },
+    
+    // --- 准备国家地图出行 ---
+    prepareNationalTravel(city) {
+        // 显示出行确认弹窗（复用现有的旅行系统）
+        this.tempTripData = {
+            destination: city.name,
+            companion: null,
+            npc: null
+        };
+        
+        // 更新 UI 标题
+        const modalTitle = document.getElementById("cte-travel-dest-name");
+        if(modalTitle) modalTitle.innerText = city.name;
+        
+        // NPC 设置
+        const npcInput = document.getElementById("cte-npc-input");
+        const placeholderText = document.getElementById("cte-npc-placeholder-text");
+        const noRadio = document.getElementById("meet_no");
+
+        if (noRadio) noRadio.checked = true;
+        if (npcInput) {
+            npcInput.style.display = "none";
+            npcInput.value = "";
+        }
+        if (placeholderText) {
+            placeholderText.innerText = "当地人";
+        }
+
+        // 显示普通模式
+        const standardModeDiv = document.getElementById("cte-travel-mode-standard");
+        const scheduleModeDiv = document.getElementById("cte-travel-mode-schedule");
+        
+        if(standardModeDiv) standardModeDiv.style.display = "block";
+        if(scheduleModeDiv) scheduleModeDiv.style.display = "none";
+        
+        this.showPopup("cte-travel-modal");
+    },
+    
+    // --- 国家地图背景上传 ---
+    handleNationalMapUpload(e) {
+        const file = e.target.files[0];
+        if (!file) return;
+        const reader = new FileReader();
+        reader.onload = (event) => {
+            const canvas = document.getElementById("cte-national-map-canvas");
+            if (canvas) {
+                canvas.style.backgroundImage = `url(${event.target.result})`;
+                localStorage.setItem("cte-national-map-bg", event.target.result);
+                if (typeof toastr !== 'undefined') toastr.success("国家地图背景更换成功！");
+            }
+        };
+        reader.readAsDataURL(file);
+    },
+    
+    // --- 重置国家地图背景 ---
+    handleResetNationalBg() {
+        const canvas = document.getElementById("cte-national-map-canvas");
+        if (canvas) {
+            canvas.style.backgroundImage = `url(${defaultNationalMapBg})`;
+            localStorage.removeItem("cte-national-map-bg");
+            if (typeof toastr !== 'undefined') toastr.info("已恢复国家地图默认背景。");
         }
     },
 
@@ -266,7 +505,7 @@ const CTEEscape = {
         const keywordIndex = foundContent.indexOf(targetKeyword);
         
         if (keywordIndex === -1) {
-            listContainer.innerHTML = `<div style="text-align:center; color:#666; margin-top:50px;">未找到“${targetKeyword}”信息。</div>`;
+            listContainer.innerHTML = `<div style="text-align:center; color:#666; margin-top:50px;">未找到"${targetKeyword}"信息。</div>`;
             return;
         }
 
@@ -350,7 +589,7 @@ const CTEEscape = {
 
         this.isSelectingForSchedule = true;
         this.closeAllPopups();
-        this.toggleView('map');
+        this.toggleView('city-map');
         
         if (typeof toastr !== "undefined") toastr.info("请在地图上选择目的地以执行行程");
     },
@@ -490,6 +729,39 @@ const CTEEscape = {
     handleMapUpload(e) { const file = e.target.files[0]; if (!file) return; const reader = new FileReader(); reader.onload = (event) => { const mapCanvas = document.getElementById("cte-map-canvas"); if (mapCanvas) { mapCanvas.style.backgroundImage = `url(${event.target.result})`; if (typeof toastr !== 'undefined') toastr.success("地图背景更换成功！"); } }; reader.readAsDataURL(file); },
     handleResetBackground() { const mapCanvas = document.getElementById("cte-map-canvas"); if (mapCanvas) { mapCanvas.style.backgroundImage = `url(${defaultMapBg})`; if (typeof toastr !== 'undefined') toastr.info("已恢复原始地图背景。"); } },
     enablePinDragging() { const mapCanvas = document.getElementById("cte-map-canvas"); if (!mapCanvas) return; let activePin = null; let startX, startY, startLeft, startTop; let hasMoved = false; mapCanvas.addEventListener("mousedown", (e) => { const pin = e.target.closest(".cte-esport-pin"); if (!pin) return; e.preventDefault(); activePin = pin; hasMoved = false; startX = e.clientX; startY = e.clientY; startLeft = parseInt(activePin.style.left || 0); startTop = parseInt(activePin.style.top || 0); activePin.classList.add("dragging"); document.addEventListener("mousemove", onMouseMove); document.addEventListener("mouseup", onMouseUp); }); const onMouseMove = (e) => { if (!activePin) return; const dx = e.clientX - startX; const dy = e.clientY - startY; if (Math.abs(dx) > 3 || Math.abs(dy) > 3) { hasMoved = true; this.isDraggingPin = true; let newLeft = startLeft + dx; let newTop = startTop + dy; newLeft = Math.max(0, Math.min(newLeft, 800)); newTop = Math.max(0, Math.min(newTop, 800)); activePin.style.left = `${newLeft}px`; activePin.style.top = `${newTop}px`; } }; const onMouseUp = () => { if (activePin) { activePin.classList.remove("dragging"); activePin = null; } document.removeEventListener("mousemove", onMouseMove); document.removeEventListener("mouseup", onMouseUp); setTimeout(() => { this.isDraggingPin = false; }, 50); }; },
+    
+    showPopup(id) { const keepInteriorOpen = (id === 'cte-profile-modal'); document.querySelectorAll(".cte-esport-popup").forEach(p => { if (keepInteriorOpen) { if (p.id !== 'popup-interior' && p.id !== 'popup-cte') { p.classList.remove("active"); } } else { p.classList.remove("active"); } }); const popup = document.getElementById(id); if (popup) { popup.classList.add("active"); if (id === 'cte-profile-modal' || id === 'cte-participant-modal') { popup.style.zIndex = 2000; } else { popup.style.zIndex = 1000; } } },
+    closeAllPopups() { document.querySelectorAll(".cte-esport-popup").forEach(p => { p.classList.remove("active"); p.style.zIndex = ""; }); },
+    toggleFloor(floorId, btn) { const panel = document.getElementById(floorId); if(!panel) return; document.querySelectorAll(".cte-floor-panel").forEach(p => { if(p.id !== floorId) p.style.display = "none"; }); document.querySelectorAll(".cte-floor-btn").forEach(b => b.classList.remove("active")); if (panel.style.display === "block") { panel.style.display = "none"; btn.classList.remove("active"); } else { panel.style.display = "block"; btn.classList.add("active"); } },
+    
+    // [修改] 主题应用逻辑 - 增加 cardBg 变量
+    applyTheme(theme) { 
+        const root = document.getElementById("cte-esport-root"); 
+        if (!root) return; 
+        
+        const themes = [ 
+            // Theme 0: Dark (Original)
+            { bg: '#121212', panel: '#1e1e1e', gold: '#c5a065', text: '#e0e0e0', cardBg: 'rgba(255, 255, 255, 0.05)', scrollLayerBg: '#000000' }, 
+            // Theme 1: Blue/White
+            { bg: '#f4f7f6', panel: '#ffffff', gold: '#5d9cec', text: '#333333', cardBg: '#ffffff', scrollLayerBg: '#ffffff' }, 
+            // Theme 2: Pink/White
+            { bg: '#fff0f3', panel: '#ffffff', gold: '#f06292', text: '#4a2c36', cardBg: '#ffffff', scrollLayerBg: '#ffffff' } 
+        ]; 
+        
+        const t = themes[theme] || themes[0]; 
+        
+        root.style.setProperty('--cte-bg-dark', t.bg); 
+        root.style.setProperty('--cte-panel-bg', t.panel); 
+        root.style.setProperty('--cte-accent-gold', t.gold); 
+        root.style.setProperty('--cte-text-main', t.text); 
+        // 应用卡片背景色变量
+        root.style.setProperty('--cte-card-bg', t.cardBg);
+        // 应用滚动层背景色变量
+        root.style.setProperty('--cte-scroll-layer-bg', t.scrollLayerBg);
+    },
+    
+    saveSettings() { localStorage.setItem("cte-esport-settings", JSON.stringify(this.settings)); },
+    loadSettings() { try { const data = localStorage.getItem("cte-esport-settings"); if (data) this.settings = JSON.parse(data); } catch(e) {} },
 
     bindEvents() {
         const panel = document.getElementById("cte-esport-panel");
@@ -547,25 +819,40 @@ const CTEEscape = {
             }
         };
 
-        // --- New: 绑定行程表按钮 ---
+        // --- 绑定行程表按钮 ---
         const btnSchedule = document.getElementById("cte-btn-schedule");
         if (btnSchedule) btnSchedule.onclick = () => this.toggleView('schedule');
 
         const btnRefresh = document.getElementById("cte-btn-refresh-schedule");
         if(btnRefresh) btnRefresh.onclick = () => this.refreshSchedule();
 
-        // --- New: 绑定"查看地图"按钮 ---
+        // --- 绑定"查看京港地图"按钮 ---
         const btnBackToMap = document.getElementById("cte-btn-back-to-map");
-        if(btnBackToMap) btnBackToMap.onclick = () => this.toggleView('map');
+        if(btnBackToMap) btnBackToMap.onclick = () => this.toggleView('city-map');
 
-        // --- New: 绑定人员确认按钮 ---
+        // --- 绑定人员确认按钮 ---
         const btnConfirmParticipants = document.getElementById("cte-confirm-participants");
         if(btnConfirmParticipants) btnConfirmParticipants.onclick = () => this.confirmParticipants();
 
-        // --- New: 绑定行程执行按钮 ---
+        // --- 绑定行程执行按钮 ---
         const btnExecuteSchedule = document.getElementById("cte-travel-execute-schedule");
         if(btnExecuteSchedule) btnExecuteSchedule.onclick = () => this.finalizeScheduleExecution();
 
+        // --- 绑定"前往外部大地图"按钮 ---
+        const btnGoNational = document.getElementById("cte-btn-go-national");
+        if(btnGoNational) btnGoNational.onclick = () => this.toggleView('national-map');
+        
+        // --- 绑定"返回京港市"按钮 ---
+        const btnBackToCity = document.getElementById("cte-btn-back-to-city");
+        if(btnBackToCity) btnBackToCity.onclick = () => this.toggleView('city-map');
+        
+        // --- 绑定国家地图背景上传 ---
+        const nationalBgUpload = document.getElementById("cte-national-bg-upload");
+        if(nationalBgUpload) nationalBgUpload.addEventListener("change", (e) => this.handleNationalMapUpload(e));
+        
+        // --- 绑定国家地图背景重置 ---
+        const btnResetNationalBg = document.getElementById("cte-btn-reset-national-bg");
+        if(btnResetNationalBg) btnResetNationalBg.onclick = () => this.handleResetNationalBg();
 
         // ... 保持原有的绑定 ...
         const yesRadio = document.getElementById("meet_yes");
@@ -613,40 +900,7 @@ const CTEEscape = {
                 if (input && input.value.trim()) this.prepareTravel(input.value.trim());
             };
         }
-    },
-
-    showPopup(id) { const keepInteriorOpen = (id === 'cte-profile-modal'); document.querySelectorAll(".cte-esport-popup").forEach(p => { if (keepInteriorOpen) { if (p.id !== 'popup-interior' && p.id !== 'popup-cte') { p.classList.remove("active"); } } else { p.classList.remove("active"); } }); const popup = document.getElementById(id); if (popup) { popup.classList.add("active"); if (id === 'cte-profile-modal' || id === 'cte-participant-modal') { popup.style.zIndex = 2000; } else { popup.style.zIndex = 1000; } } },
-    closeAllPopups() { document.querySelectorAll(".cte-esport-popup").forEach(p => { p.classList.remove("active"); p.style.zIndex = ""; }); },
-    toggleFloor(floorId, btn) { const panel = document.getElementById(floorId); if(!panel) return; document.querySelectorAll(".cte-floor-panel").forEach(p => { if(p.id !== floorId) p.style.display = "none"; }); document.querySelectorAll(".cte-floor-btn").forEach(b => b.classList.remove("active")); if (panel.style.display === "block") { panel.style.display = "none"; btn.classList.remove("active"); } else { panel.style.display = "block"; btn.classList.add("active"); } },
-    
-    // [修改] 主题应用逻辑 - 增加 cardBg 变量
-    applyTheme(theme) { 
-        const root = document.getElementById("cte-esport-root"); 
-        if (!root) return; 
-        
-        const themes = [ 
-            // Theme 0: Dark (Original)
-            { bg: '#121212', panel: '#1e1e1e', gold: '#c5a065', text: '#e0e0e0', cardBg: 'rgba(255, 255, 255, 0.05)', scrollLayerBg: '#000000' }, 
-            // Theme 1: Blue/White
-            { bg: '#f4f7f6', panel: '#ffffff', gold: '#5d9cec', text: '#333333', cardBg: '#ffffff', scrollLayerBg: '#ffffff' }, 
-            // Theme 2: Pink/White
-            { bg: '#fff0f3', panel: '#ffffff', gold: '#f06292', text: '#4a2c36', cardBg: '#ffffff', scrollLayerBg: '#ffffff' } 
-        ]; 
-        
-        const t = themes[theme] || themes[0]; 
-        
-        root.style.setProperty('--cte-bg-dark', t.bg); 
-        root.style.setProperty('--cte-panel-bg', t.panel); 
-        root.style.setProperty('--cte-accent-gold', t.gold); 
-        root.style.setProperty('--cte-text-main', t.text); 
-        // 应用卡片背景色变量
-        root.style.setProperty('--cte-card-bg', t.cardBg);
-        // 应用滚动层背景色变量
-        root.style.setProperty('--cte-scroll-layer-bg', t.scrollLayerBg);
-    },
-    
-    saveSettings() { localStorage.setItem("cte-esport-settings", JSON.stringify(this.settings)); },
-    loadSettings() { try { const data = localStorage.getItem("cte-esport-settings"); if (data) this.settings = JSON.parse(data); } catch(e) {} }
+    }
 };
 
 (function() {
