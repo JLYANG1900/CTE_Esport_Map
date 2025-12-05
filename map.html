@@ -15,9 +15,7 @@
                 <!-- 新增：返回地图按钮 -->
                 <button class="cte-esport-icon-btn" id="cte-btn-map-home" title="返回地图">🗺️</button>
 
-                <button class="cte-esport-icon-btn" id="cte-btn-reset-bg" title="恢复原始背景">🔄</button>
-                <label for="cte-bg-upload" class="cte-esport-icon-btn" title="更换地图背景" style="display:flex; align-items:center; justify-content:center;">🖼️</label>
-                <input type="file" id="cte-bg-upload" accept="image/*" style="display: none;">
+                <!-- 已移除：恢复背景与上传背景按钮 (移动到底部) -->
                 
                 <button class="cte-esport-icon-btn" id="cte-btn-theme" title="切换主题">🎨</button>
                 <button class="cte-esport-icon-btn" id="cte-btn-close" title="关闭">✕</button>
@@ -72,11 +70,14 @@
                     </div>
                 </div>
                 
-                <!-- 前往外部大地图按钮 (悬浮在京港市地图上) -->
-                <div class="cte-go-national-btn-container">
-                    <button class="cte-go-national-btn" id="cte-btn-go-national">
-                        🌏 前往外部大地图
-                    </button>
+                <!-- 已移除：旧的悬浮外部地图按钮 -->
+
+                <!-- 新增：底部功能控制区 (类似外部大地图界面) -->
+                <div class="cte-national-controls" style="margin-top: 20px; padding-bottom: 30px;">
+                    <button class="cte-action-btn" id="cte-btn-go-national">🌏 前往外部大地图</button>
+                    <label for="cte-bg-upload" class="cte-action-btn" style="cursor:pointer;">🖼️ 更换地图背景</label>
+                    <input type="file" id="cte-bg-upload" accept="image/*" style="display: none;">
+                    <button class="cte-action-btn" id="cte-btn-reset-bg">🔄 恢复原始背景</button>
                 </div>
             </div>
 
