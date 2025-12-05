@@ -4,9 +4,17 @@
         <div class="cte-esport-header">
             <h2 class="cte-esport-title">CTE E-SPORTS MAP</h2>
             <div class="cte-esport-controls">
-                <!-- 行程表按钮 -->
-                <button class="cte-esport-icon-btn" id="cte-btn-schedule" title="查看今日行程">📅</button>
+                <!-- 战队经理按钮 -->
+                <button class="cte-esport-icon-btn" id="cte-btn-manager" title="战队管理终端">🎮</button>
                 
+                <!-- 新增：心跳管理按钮 -->
+                <button class="cte-esport-icon-btn" id="cte-btn-heartbeat" title="心跳/活动管理" style="color: #FF69B4; border-color: #FF69B4;">
+                    <i class="fa-solid fa-heart"></i>
+                </button>
+
+                <!-- 新增：返回地图按钮 -->
+                <button class="cte-esport-icon-btn" id="cte-btn-map-home" title="返回地图">🗺️</button>
+
                 <button class="cte-esport-icon-btn" id="cte-btn-reset-bg" title="恢复原始背景">🔄</button>
                 <label for="cte-bg-upload" class="cte-esport-icon-btn" title="更换地图背景" style="display:flex; align-items:center; justify-content:center;">🖼️</label>
                 <input type="file" id="cte-bg-upload" accept="image/*" style="display: none;">
@@ -109,22 +117,119 @@
                 </div>
             </div>
 
-            <!-- Layer C: 行程表层 (默认隐藏) -->
-            <div class="cte-esport-scroll-layer" id="cte-layer-schedule" style="display:none; padding: 20px;">
-                <div class="cte-schedule-container">
-                    <div class="cte-schedule-header">
-                        <h3>今日行程安排</h3>
-                        <p style="font-size: 12px; color: var(--cte-text-sub);">数据来源：最新聊天记录 &lt;status_top&gt;</p>
-                        <!-- 控制按钮组 (查看地图 + 刷新数据) -->
-                        <div class="cte-schedule-controls" style="display: flex; justify-content: center; gap: 10px; margin: 10px auto;">
-                            <button class="cte-action-btn" id="cte-btn-back-to-map" style="width: auto;">🗺️ 查看地图</button>
-                            <button class="cte-action-btn" id="cte-btn-refresh-schedule" style="width: auto;">🔄 刷新数据</button>
-                        </div>
+            <!-- Layer C: 心跳管理层 (独立粉色风格) -->
+            <div class="cte-esport-scroll-layer" id="cte-layer-heartbeat" style="display:none;">
+                <div class="cte-hb-container">
+                    <div class="cte-hb-header">
+                        <h1><i class="fa-solid fa-heart"></i> 色情活动管理界面 <i class="fa-solid fa-heart"></i></h1>
                     </div>
-                    <div class="cte-timeline" id="cte-schedule-list">
-                        <!-- JS 将在此处生成列表项 -->
-                        <div style="text-align:center; color:#666; margin-top:50px;">
-                            暂无数据。<br>请确保上一条回复包含 &lt;status_top&gt;...今日安排...&lt;/status_top&gt;
+                    <div class="cte-hb-content">
+                        <div class="cte-hb-section-title">
+                            <i class="fa-solid fa-calendar-days"></i> 可安排的私密活动
+                        </div>
+                        <div class="cte-hb-grid" id="cte-hb-activity-grid">
+                            <!-- JS Generated Activities -->
+                        </div>
+                        <p style="text-align: center; margin-top: 20px; font-size: 0.9rem; color: #888;">还是不够吗？更多PLAY等待更新！ <i class="fa-solid fa-face-wink"></i></p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Layer D: 电竞经理终端层 -->
+            <div class="cte-esport-scroll-layer" id="cte-layer-manager" style="display:none; background:#000;">
+                <div class="cte-rpg-container">
+                    <!-- 1. 侧边栏 -->
+                    <div class="cte-rpg-sidebar">
+                        <div class="cte-rpg-logo"><span>G</span></div>
+                        <button class="cte-rpg-nav-btn active" data-mode="TERMINAL" title="终端/行程"><i class="fa-solid fa-terminal"></i></button>
+                        <button class="cte-rpg-nav-btn" data-mode="CLUB" title="运营"><i class="fa-solid fa-building"></i></button>
+                        <button class="cte-rpg-nav-btn" data-mode="ROSTER" title="阵容"><i class="fa-solid fa-users"></i></button>
+                        <button class="cte-rpg-nav-btn" data-mode="TACTICS" title="战术"><i class="fa-solid fa-chess-board"></i></button>
+                        <button class="cte-rpg-nav-btn" data-mode="LEAGUE" title="联赛"><i class="fa-solid fa-trophy"></i></button>
+                    </div>
+                    
+                    <!-- 2. 主内容区 -->
+                    <div class="cte-rpg-main">
+                        <!-- 顶部 HUD -->
+                        <div class="cte-rpg-hud">
+                            <div style="font-family:'Cinzel',serif; font-weight:bold; color:var(--cte-accent-gold); letter-spacing:2px;">CTE OS v10.1</div>
+                            <div class="cte-rpg-res-group">
+                                <div class="cte-rpg-res-item">
+                                    <div class="cte-rpg-res-icon" style="color:#DDB753"><i class="fa-solid fa-coins"></i></div>
+                                    <div><span class="cte-rpg-res-val">2.4M</span><span class="cte-rpg-res-label">资金</span></div>
+                                </div>
+                                <div class="cte-rpg-res-item">
+                                    <div class="cte-rpg-res-icon" style="color:#F472B6"><i class="fa-solid fa-heart"></i></div>
+                                    <div><span class="cte-rpg-res-val">824K</span><span class="cte-rpg-res-label">粉丝数</span></div>
+                                </div>
+                                <div class="cte-rpg-res-item">
+                                    <div class="cte-rpg-res-icon" style="color:#60A5FA"><i class="fa-solid fa-fire"></i></div>
+                                    <div><span class="cte-rpg-res-val">High</span><span class="cte-rpg-res-label">士气</span></div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- 视图内容容器 -->
+                        <div id="cte-rpg-content-area" style="flex:1; position:relative; overflow:hidden;">
+                            
+                            <!-- 视图 1: Terminal (现在包含行程表) -->
+                            <div class="cte-rpg-view cte-rpg-terminal-wrapper" id="cte-rpg-view-terminal" style="display:flex;">
+                                <div id="cte-schedule-log-container" class="cte-timeline" style="border:none; padding:20px;">
+                                    <!-- 行程数据将通过JS生成在此处 -->
+                                </div>
+                                <div class="cte-rpg-input-area" style="justify-content: flex-end;">
+                                    <button id="cte-btn-refresh-schedule-term" class="cte-action-btn" style="width: auto; padding: 5px 20px;">
+                                        🔄 刷新最新行程数据
+                                    </button>
+                                </div>
+                            </div>
+
+                            <!-- 视图 2: Club -->
+                            <div class="cte-rpg-view" id="cte-rpg-view-club">
+                                <h2 style="font-family:'Playfair Display'; color:var(--cte-accent-gold); border-bottom:1px solid #333; padding-bottom:10px;">Club Operations</h2>
+                                <div style="display:grid; grid-template-columns: 2fr 1fr; gap:20px; margin-top:20px;">
+                                    <div class="cte-rpg-card" style="height:200px; display:flex; align-items:center; justify-content:center; color:#666;">
+                                        [战队运营功能开发中...]
+                                    </div>
+                                    <div class="cte-rpg-card">
+                                        <h3 style="font-size:14px; color:#fff;">Sponsors</h3>
+                                        <ul style="list-style:none; padding:0; margin-top:10px; font-size:12px; color:#ccc;">
+                                            <li style="padding:5px 0; border-bottom:1px solid rgba(255,255,255,0.1);">万城娱乐 <span style="float:right; color:var(--cte-accent-gold);">TITLE</span></li>
+                                            <li style="padding:5px 0; border-bottom:1px solid rgba(255,255,255,0.1);">盛华集团 <span style="float:right; color:#ffd700;">GOLD</span></li>
+                                        </ul>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- 视图 3: Roster -->
+                            <div class="cte-rpg-view" id="cte-rpg-view-roster">
+                                <h2 style="font-family:'Playfair Display'; color:var(--cte-accent-gold); border-bottom:1px solid #333; padding-bottom:10px; margin-bottom:20px;">Active Roster</h2>
+                                <div id="cte-rpg-roster-grid" class="cte-rpg-roster-grid">
+                                    <!-- JS Generated -->
+                                </div>
+                            </div>
+
+                            <!-- 视图 4: Tactics -->
+                            <div class="cte-rpg-view" id="cte-rpg-view-tactics">
+                                <h2 style="font-family:'Playfair Display'; color:var(--cte-accent-gold);">Tactical Room</h2>
+                                <p style="color: #666; font-size:12px; margin-top:5px;">BP SIMULATION // RESEARCH</p>
+                                <div class="cte-rpg-card" style="margin-top:20px; padding:30px; text-align:center;">
+                                    <i class="fa-solid fa-chess-board" style="font-size:40px; color:#333; margin-bottom:10px;"></i>
+                                    <p>战术板功能正在开发中...</p>
+                                </div>
+                            </div>
+                            
+                            <!-- 视图 5: League (Updated) -->
+                            <div class="cte-rpg-view" id="cte-rpg-view-league">
+                                <h2 style="font-family:'Playfair Display'; color:var(--cte-accent-gold);">Season Schedule</h2>
+                                <!-- 动态内容容器 -->
+                                <div class="cte-rpg-card" style="margin-top:20px;">
+                                    <div id="cte-league-content" style="padding:15px; color:#ccc; line-height:1.6; font-family:'Inter', sans-serif;">
+                                        Loading Schedule...
+                                    </div>
+                                </div>
+                            </div>
+
                         </div>
                     </div>
                 </div>
@@ -468,6 +573,21 @@
                         </div>
                     </div>
                     <button class="cte-action-btn" id="cte-profile-go-btn">🚀 前往此处</button>
+                </div>
+
+                <!-- Heartbeat Specific Modal (Moved from Scroll Layer for correct positioning) -->
+                <div id="cte-hb-modal" class="cte-hb-modal">
+                    <div class="cte-hb-modal-content">
+                        <h2 id="cte-hb-modal-title" style="margin: 0 0 10px 0;">为活动 [活动名称] 分配成员</h2>
+                        <p style="color: #666; font-size: 0.9rem;">请选择要参与的成员（可多选）</p>
+                        <div class="cte-hb-member-list" id="cte-hb-member-list">
+                            <!-- JS Generated Members -->
+                        </div>
+                        <div style="margin-top: 15px; display: flex; justify-content: center; gap: 10px;">
+                            <button class="cte-hb-assign-button" id="cte-hb-confirm-btn">确认安排</button>
+                            <button class="cte-hb-close-button" id="cte-hb-cancel-btn">取消</button>
+                        </div>
+                    </div>
                 </div>
 
             </div>
