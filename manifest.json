@@ -1,12 +1,13 @@
 {
     "display_name": "CTE Esport Map & Manager RPG",
     "author": "JLYANG1900",
-    "version": "2.0.0",
-    "description": "CTE战队完全扩展包 - 包含交互式基地地图、京港国家地图、心跳活动以及复古未来主义风格的战队经理RPG模拟器。",
+    "version": "2.0.1",
+    "description": "CTE战队完全扩展包 - 包含交互式基地地图、京港国家地图、心跳活动以及复古未来主义风格的战队经理RPG模拟器。BUG修复。",
     "js": "index.js",
     "css": "style.css",
     "html": "map.html"
 }
+
 
 
 
