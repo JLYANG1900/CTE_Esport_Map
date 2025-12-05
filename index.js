@@ -1,4 +1,5 @@
-// --- CTE Esport Map 核心逻辑 (v9.0 国家地图整合版) ---
+
+// --- CTE Esport Map 核心逻辑 (v3.0 最终修复版) ---
 
 const extensionName = "cte-esport-map";
 const defaultMapBg = "https://files.catbox.moe/hjurjz.png";
@@ -12,6 +13,84 @@ const LOCATION_NPC_DEFAULTS = {
     "小吃街": "粉丝",
     "default": ""
 };
+
+// --- RPG 数据模型 ---
+const RPG_STATE = {
+    currentMode: 'TERMINAL', 
+    resources: { funds: 2450900, fans: 824000, morale: 85 },
+    roster: [
+        { id: 'qin_shu', ign: 'Qshot', realName: '秦述', role: 'ADC', potential: 'S', isStar: true, stats: { mechanics: 96, macro: 90 }, status: { desire: 0, affection: 0 } },
+        { id: 'si_luo', ign: 'SOLO', realName: '司洛', role: 'JUG', potential: 'S', isStar: true, stats: { mechanics: 98, macro: 85 }, status: { desire: 0, affection: 0 } },
+        { id: 'lu_yan', ign: 'DeerYan', realName: '鹿言', role: 'MID', potential: 'S', isStar: true, stats: { mechanics: 90, macro: 95 }, status: { desire: 0, affection: 0 } },
+        { id: 'zhou_jinning', ign: 'JinNa', realName: '周锦宁', role: 'TOP', potential: 'S', isStar: true, stats: { mechanics: 94, macro: 87 }, status: { desire: 0, affection: 0 } },
+        { id: 'wei_xingze', ign: 'STARS', realName: '魏星泽', role: 'SUP', potential: 'S', isStar: true, stats: { mechanics: 93, macro: 88 }, status: { desire: 0, affection: 0 } },
+        { id: 'chen_xu', ign: 'ChaseX', realName: '谌绪', role: 'MID', potential: 'A', isStar: false, stats: { mechanics: 92, macro: 80 }, status: { desire: 0, affection: 0 } },
+        { id: 'meng_minghe', ign: 'Hades', realName: '孟明赫', role: 'ADC', potential: 'A', isStar: false, stats: { mechanics: 91, macro: 75 }, status: { desire: 0, affection: 0 } },
+        { id: 'qi_xie', ign: 'KnifeQX', realName: '亓谢', role: 'JUG', potential: 'A', isStar: false, stats: { mechanics: 95, macro: 80 }, status: { desire: 0, affection: 0 } },
+        { id: 'wei_yuehua', ign: 'Moon', realName: '魏月华', role: 'COACH', potential: 'S', isStar: false, stats: { mechanics: 90, macro: 99 }, status: { desire: 0, affection: 0 } },
+        { id: 'sang_luofan', ign: 'Lovan', realName: '桑洛凡', role: 'COACH', potential: 'S', isStar: false, stats: { mechanics: 90, macro: 95 }, status: { desire: 0, affection: 0 } }
+    ],
+    leagueScheduleText: "暂无赛事安排..."
+};
+
+// --- Heartbeat Management Data ---
+const HEARTBEAT_ACTIVITIES = [
+    { name: "办公室的游戏", icon: "fa-couch", desc: "在落地窗前，享受一场禁忌的桌上盛宴。" },
+    { name: "浴室水蒸气", icon: "fa-shower", desc: "在湿热的雾气中，探索彼此身体的每一寸。" },
+    { name: "深夜卧室私语", icon: "fa-bed", desc: "用最温柔的方式，陪伴彼此度过漫漫长夜。" },
+    { name: "角色扮演Play", icon: "fa-masks-theater", desc: "尝试不同的身份，解锁不一样的刺激体验。" },
+    { name: "镜前诱惑", icon: "fa-wand-magic-sparkles", desc: "让他看清自己为你疯狂的模样，是最好的催情剂。" },
+    { name: "专属女仆", icon: "fa-broom", desc: "换上女仆装，用羽毛轻轻挑逗他全身。" },
+    { name: "厨房幻想", icon: "fa-utensils", desc: "将奶油涂满全身，让他用舌头为你清洁。" },
+    { name: "深夜停车场车震", icon: "fa-car-side", desc: "在狭小的密闭空间里，你只能跨坐在他身上。" },
+    { name: "落地窗前", icon: "fa-city", desc: "赤身裸体压在窗前看风景，好像让窗外的景色格外美。" },
+    { name: "电竞桌下口交", icon: "fa-gamepad", desc: "他的手和眼都必须继续游戏哦。" },
+    { name: "校园活动", icon: "fa-graduation-cap", desc: "和他一起穿上谌绪的高中校服吧！" },
+    { name: "健身房的汗水游戏", icon: "fa-dumbbell", desc: "好像有人做卧推时没有穿内裤呢……" },
+    { name: "按摩室SPA混浴", icon: "fa-hot-tub-person", desc: "在氤氲的热气中，肌肤相亲的触感格外清晰。" },
+    { name: "私人影院", icon: "fa-film", desc: "昏暗的灯光下，屏幕上的画面远不如身边的你诱人。" },
+    { name: "试衣间的秘密", icon: "fa-shirt", desc: "门帘之外是喧嚣的人群，门帘之内是压抑的喘息。" },
+    { name: "豪华游艇", icon: "fa-ship", desc: "在无边无际的大海上，没有人能听见你的求救。" },
+    { name: "图书馆角落", icon: "fa-book-open", desc: "要是被图书管理员听见会怎么样呢？" },
+    { name: "摩天轮顶点", icon: "fa-dharmachakra", desc: "传说在最高点结合的恋人，会永远在一起。" },
+    { name: "钢琴上的奏鸣曲", icon: "fa-music", desc: "凌乱的音符，用身体谱写出只属于今夜的乐章。" },
+    { name: "露营帐篷", icon: "fa-campground", desc: "森林的虫鸣鸟叫，都成为了这场欢爱的伴奏。" },
+    { name: "天台的夜风", icon: "fa-wind", desc: "城市的霓虹灯在脚下闪烁，我们在风中彻底沉沦。" },
+    { name: "酒吧后巷", icon: "fa-wine-glass-empty", desc: "酒精麻痹了神经，却放大了感官的刺激。" },
+    { name: "镜中双面", icon: "fa-clone", desc: "强迫你在镜前看着自己沉沦的模样，羞耻感爆棚。" },
+    { name: "丝巾蒙眼", icon: "fa-eye-slash", desc: "剥夺了视觉后，每一次触碰都变成了未知的战栗。" },
+    { name: "精油按摩", icon: "fa-bottle-droplet", desc: "温热的精油滑过肌肤，指尖的游走让理智瞬间蒸发。" },
+    { name: "冰火两重天", icon: "fa-temperature-half", desc: "冰块的寒冷与口腔的温热交替，极致的感官刺激。" },
+    { name: "领带束缚", icon: "fa-user-tie", desc: "那条平时系在颈间的领带，此刻成为了掌控的枷锁。" },
+    { name: "甜蜜盛宴", icon: "fa-spoon", desc: "蜂蜜涂抹在敏感带上，成为一道待品尝的甜点。" },
+    { name: "耳机隔离", icon: "fa-headphones", desc: "只有对方能听到指令，旁人看来只是一场静默的狂欢。" },
+    { name: "高跟鞋女王", icon: "fa-shoe-prints", desc: "冰冷的鞋跟划过胸膛，让他臣服在你的脚下。" },
+    { name: "私房摄影", icon: "fa-camera", desc: "镜头记录下每一个淫乱的瞬间，你们是彼此专属的模特。" },
+    { name: "书房禁地", icon: "fa-book", desc: "在充满墨香的桌案上，进行一场背德的授课。" },
+    { name: "楼梯激情", icon: "fa-stairs", desc: "利用台阶的高低差，探索前所未有的深入角度。" },
+    { name: "红绳束缚", icon: "fa-link", desc: "错综复杂的红绳将对方悬在半空，像一只待宰的羔羊。" },
+    { name: "泳池派对", icon: "fa-water", desc: "水波荡漾掩盖了水下的动作，清凉与燥热的碰撞。" },
+    { name: "私人诊所", icon: "fa-user-doctor", desc: "“病人”需要接受全方位的身体检查，尤其是那里。" },
+    { name: "引擎盖热度", icon: "fa-fire", desc: "刚刚熄火的引擎盖还发烫，正如现在的我们。" },
+    { name: "你的礼物", icon: "fa-gift", desc: "除了红色的丝带，你身上一丝不挂，等他拆封。" },
+    { name: "早安咬", icon: "fa-sun", desc: "在晨光中用口舌唤醒他，美好的一天从这里开始。" },
+    { name: "电车痴汉", icon: "fa-train-subway", desc: "拥挤的车厢里，没人知道我们紧贴的身体间发生了什么。" },
+    { name: "电梯惊魂", icon: "fa-elevator", desc: "在这几十秒的上升时间里，争分夺秒地索取。" },
+    { name: "野外丛林", icon: "fa-tree", desc: "远离文明的束缚，回归最原始的野性本能，天为被地为床。" }
+];
+
+const HEARTBEAT_MEMBERS = [
+    { name: '秦述', avatar: 'https://files.catbox.moe/c2khbl.jpeg' },
+    { name: '司洛', avatar: 'https://files.catbox.moe/pohz52.jpeg' },
+    { name: '鹿言', avatar: 'https://files.catbox.moe/parliq.jpeg' },
+    { name: '周锦宁', avatar: 'https://files.catbox.moe/1loxsn.jpeg' },
+    { name: '魏星泽', avatar: 'https://files.catbox.moe/syo0ze.jpeg' },
+    { name: '孟明赫', avatar: 'https://files.catbox.moe/m446ro.jpeg' },
+    { name: '亓谢', avatar: 'https://files.catbox.moe/ev2g1l.png' },
+    { name: '谌绪', avatar: 'https://files.catbox.moe/9tnuva.png' },
+    { name: '桑洛凡', avatar: 'https://files.catbox.moe/syudzu.png' },
+    { name: '魏月华', avatar: 'https://files.catbox.moe/auqnct.jpeg' }
+];
 
 const CTE_CHARACTERS = {
     "wei_yuehua": { name: "魏月华", age: "27", role: "CTE战队教练", personality: "严肃、冷酷、认真、严谨", desc: "房间里堆满了战术复盘的录像带和笔记本，空气中弥漫着淡淡的咖啡香。这里是战队的大脑中枢，每一个战术决策都诞生于此。(头像图片来自角色卡原作者耶耶)", avatar: "https://files.catbox.moe/auqnct.jpeg", destination: "CTE基地-魏月华房间" },
@@ -27,7 +106,6 @@ const CTE_CHARACTERS = {
     "user": { name: "你", age: "??", role: "CTE战队新成员/访客", personality: "自定义", desc: "这是属于你的私人空间。你可以按照自己的喜好布置它。虽然现在还很空旷，但未来这里会充满你与CTE的故事。", avatar: userPlaceholderAvatar, destination: "CTE基地-你的房间" }
 };
 
-// 国家地图城市数据
 const NATIONAL_CITIES = [
     { id: 'jinggang', name: '京港', icon: 'fa-landmark-dome', top: '50%', left: '50%', info: '<strong><i class="fa-solid fa-crown"></i> 权力漩涡:</strong> 首都，政治经济文化中心，权贵聚集，国际化大都市，夜生活极度繁华。摩天大楼与历史建筑交错，霓虹灯下的金融街与老城区并存。', isCapital: true },
     { id: 'langjing', name: '琅京', icon: 'fa-gem', top: '80%', left: '20%', info: '<strong><i class="fa-solid fa-coins"></i> 豪门金库:</strong> 全国第二大城市，金融与地产重镇，豪门世家聚集。宽阔大道、豪宅林立，老钱家族与新贵共存。钰明珠宝总部所在地。' },
@@ -39,44 +117,32 @@ const NATIONAL_CITIES = [
 ];
 
 const CTEEscape = {
-    settings: {
-        theme: 0,
-        buttonPos: null
-    },
+    settings: { theme: 0, buttonPos: null },
     panelLoaded: false,
-    
-    // 行程相关状态
     tempTripData: { destination: null, companion: null, npc: null },
-    
-    // New Schedule State
     isSelectingForSchedule: false,
     currentScheduleItem: null,
     tempScheduleParticipants: [],
-
     isDraggingPin: false,
-    isDraggingNationalCity: false, // 新增：国家城市拖拽状态
+    isDraggingNationalCity: false,
     currentProfileId: null,
-    
-    // 当前视图状态: 'city-map' | 'national-map' | 'schedule'
     currentView: 'city-map',
-    
-    // 国家地图出行数据
     nationalTripData: { cityId: null, cityName: null },
+    currentHeartbeatActivity: null,
 
     async init() {
         console.log("🏆 [CTE Esport] 插件正在启动...");
         this.loadSettings();
         this.injectToggleButton();
         await this.loadHTML();
-        
         if (this.panelLoaded) {
             this.bindEvents();
+            this.bindRPGEvents();
             this.enablePinDragging();
             this.applyTheme(this.settings.theme);
             this.loadUserAvatar();
             this.initNationalMap();
             this.loadNationalMapBg();
-            
             window.addEventListener('resize', () => {
                 const btn = document.getElementById("cte-esport-toggle-btn");
                 if (btn) this.constrainButtonToScreen(btn);
@@ -88,37 +154,24 @@ const CTEEscape = {
         const winWidth = window.innerWidth;
         const winHeight = window.innerHeight;
         if (this.settings.buttonPos && this.settings.buttonPos.top && this.settings.buttonPos.left) {
-            const left = parseInt(this.settings.buttonPos.left);
-            const top = parseInt(this.settings.buttonPos.top);
-            if (left >= 0 && left < (winWidth - 20) && top >= 0 && top < (winHeight - 20)) {
-                return `top: ${top}px; left: ${left}px; right: auto;`;
-            }
+            return `top: ${this.settings.buttonPos.top}; left: ${this.settings.buttonPos.left}; right: auto;`;
         }
-        const isMobile = winWidth <= 768;
-        if (isMobile) {
-            const centerX = (winWidth / 2) - 20;
-            const centerY = (winHeight / 2) - 20;
-            return `top: ${centerY}px; left: ${centerX}px; right: auto;`;
-        } else {
-            return "top: 10px; right: 340px;";
-        }
+        return window.innerWidth <= 768 ? 
+            `top: ${(winHeight/2)-20}px; left: ${(winWidth/2)-20}px; right: auto;` : 
+            "top: 10px; right: 340px;";
     },
 
     constrainButtonToScreen(btn) {
         const rect = btn.getBoundingClientRect();
         const winWidth = window.innerWidth;
         const winHeight = window.innerHeight;
-        let newLeft = rect.left;
-        let newTop = rect.top;
-        let adjusted = false;
+        let newLeft = rect.left, newTop = rect.top, adjusted = false;
         if (rect.right > winWidth) { newLeft = winWidth - rect.width - 10; adjusted = true; }
         if (rect.bottom > winHeight) { newTop = winHeight - rect.height - 10; adjusted = true; }
         if (rect.left < 0) { newLeft = 10; adjusted = true; }
         if (rect.top < 0) { newTop = 10; adjusted = true; }
         if (adjusted) {
-            btn.style.left = newLeft + 'px';
-            btn.style.top = newTop + 'px';
-            btn.style.right = 'auto';
+            btn.style.left = newLeft + 'px'; btn.style.top = newTop + 'px'; btn.style.right = 'auto';
             this.settings.buttonPos = { top: newTop + "px", left: newLeft + "px" };
             this.saveSettings();
         }
@@ -131,11 +184,8 @@ const CTEEscape = {
         btn.innerHTML = "🏆";
         btn.title = "打开 CTE 战队地图";
         const posStyle = this.calculateSafePosition();
-        btn.style.cssText = `
-            position: fixed; ${posStyle} z-index: 2147483647; width: 40px; height: 40px; display: flex; align-items: center; justify-content: center;
-            font-size: 24px; cursor: pointer; filter: drop-shadow(0 0 2px black); transition: transform 0.2s; user-select: none;
-            background: rgba(0,0,0,0.2); border-radius: 50%;
-        `;
+        btn.style.cssText = `position: fixed; ${posStyle} z-index: 2147483647; width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; font-size: 24px; cursor: pointer; filter: drop-shadow(0 0 2px black); transition: transform 0.2s; user-select: none; background: rgba(0,0,0,0.2); border-radius: 50%;`;
+        
         let isButtonDragging = false;
         if (typeof $ !== "undefined" && $.fn.draggable) {
             $(btn).draggable({
@@ -149,12 +199,8 @@ const CTEEscape = {
             });
         }
         btn.addEventListener("click", (e) => {
-            e.stopPropagation();
-            if (isButtonDragging) { e.preventDefault(); return; }
-            this.togglePanel();
+            if (!isButtonDragging) this.togglePanel();
         });
-        btn.addEventListener("mouseover", () => btn.style.transform = "scale(1.1)");
-        btn.addEventListener("mouseout", () => btn.style.transform = "scale(1)");
         document.body.appendChild(btn);
     },
 
@@ -169,27 +215,19 @@ const CTEEscape = {
             document.body.appendChild(container.firstElementChild);
             this.panelLoaded = true;
         } catch (e) {
-            console.error("❌ [CTE Esport] HTML 加载失败:", e);
-            if (typeof toastr !== "undefined") {
-                toastr.error("地图文件加载失败，请检查 map.html 是否存在。", "CTE Map Error");
-            }
+            console.error("❌ HTML Load Failed:", e);
         }
     },
 
     fixPanelPosition(panel) {
-        const isMobile = window.innerWidth <= 768 || window.innerHeight <= 600;
-        if (isMobile) {
-            const padding = 10;
-            panel.style.top = padding + 'px';
-            panel.style.left = padding + 'px';
-            panel.style.width = (window.innerWidth - padding * 2) + 'px';
-            panel.style.height = (window.innerHeight - padding * 2) + 'px';
+        if (window.innerWidth <= 768) {
+            panel.style.top = '10px'; panel.style.left = '10px';
+            panel.style.width = (window.innerWidth - 20) + 'px';
+            panel.style.height = (window.innerHeight - 20) + 'px';
             panel.style.transform = 'none';
         } else {
-            panel.style.top = '50%';
-            panel.style.left = '50%';
-            panel.style.width = '90vh';
-            panel.style.height = '90vh';
+            panel.style.top = '50%'; panel.style.left = '50%';
+            panel.style.width = '90vh'; panel.style.height = '90vh';
             panel.style.transform = 'translate(-50%, -50%)';
         }
     },
@@ -197,712 +235,760 @@ const CTEEscape = {
     togglePanel() {
         const panel = document.getElementById("cte-esport-panel");
         if (!panel) return;
-        const currentDisplay = window.getComputedStyle(panel).display;
-        if (currentDisplay === "none") {
+        if (window.getComputedStyle(panel).display === "none") {
             this.fixPanelPosition(panel);
             panel.style.display = "flex";
             panel.style.opacity = "0";
-            
-            // 默认打开时重置为京港市地图视图
-            this.toggleView('city-map'); 
-            
-            setTimeout(() => {
-                panel.style.opacity = "1"; 
-                panel.style.transition = "opacity 0.2s"; 
-            }, 10);
+            this.toggleView('city-map');
+            this.updateDynamicData(); 
+            setTimeout(() => { panel.style.opacity = "1"; panel.style.transition = "opacity 0.2s"; }, 10);
         } else {
             panel.style.display = "none";
-            // 关闭时重置所有状态
-            this.isSelectingForSchedule = false; 
+            this.isSelectingForSchedule = false;
             this.closeAllPopups();
         }
     },
 
     toggleView(viewName) {
-        const cityMapLayer = document.getElementById("cte-layer-map");
-        const nationalMapLayer = document.getElementById("cte-layer-national-map");
-        const scheduleLayer = document.getElementById("cte-layer-schedule");
+        const layers = {
+            'city-map': document.getElementById("cte-layer-map"),
+            'national-map': document.getElementById("cte-layer-national-map"),
+            'manager': document.getElementById("cte-layer-manager"),
+            'heartbeat': document.getElementById("cte-layer-heartbeat")
+        };
         
-        // 隐藏所有层
-        if(cityMapLayer) cityMapLayer.style.display = 'none';
-        if(nationalMapLayer) nationalMapLayer.style.display = 'none';
-        if(scheduleLayer) scheduleLayer.style.display = 'none';
+        Object.values(layers).forEach(el => { if(el) el.style.display = 'none'; });
         
+        if (layers[viewName]) layers[viewName].style.display = (viewName === 'manager' ? 'flex' : 'block');
         this.currentView = viewName;
         
-        if (viewName === 'city-map') {
-            if(cityMapLayer) cityMapLayer.style.display = 'block';
-        } else if (viewName === 'national-map') {
-            if(nationalMapLayer) nationalMapLayer.style.display = 'block';
-        } else if (viewName === 'schedule') {
-            if(scheduleLayer) scheduleLayer.style.display = 'block';
-            this.refreshSchedule();
+        if (viewName === 'manager') this.renderRPGView('TERMINAL');
+        if (viewName === 'heartbeat') this.renderHeartbeatView();
+    },
+
+    bindRPGEvents() {
+        const btnManager = document.getElementById("cte-btn-manager");
+        if(btnManager) btnManager.onclick = () => this.toggleView('manager');
+
+        const btnHeartbeat = document.getElementById("cte-btn-heartbeat");
+        if(btnHeartbeat) btnHeartbeat.onclick = () => this.toggleView('heartbeat');
+
+        document.querySelectorAll(".cte-rpg-nav-btn").forEach(btn => {
+            btn.onclick = () => this.renderRPGView(btn.getAttribute("data-mode"));
+        });
+        
+        const btnRefreshTerm = document.getElementById("cte-btn-refresh-schedule-term");
+        if(btnRefreshTerm) btnRefreshTerm.onclick = () => this.refreshSchedule();
+        
+        const rosterGrid = document.getElementById("cte-rpg-roster-grid");
+        if (rosterGrid) {
+            rosterGrid.addEventListener("click", (e) => {
+                // Heartbeat Shortcut Action
+                const hbBtn = e.target.closest(".cte-heartbeat-shortcut");
+                if (hbBtn) {
+                    e.stopPropagation();
+                    this.toggleView('heartbeat');
+                    return;
+                }
+
+                // Standard Roster Actions
+                const btn = e.target.closest(".cte-rpg-action-icon");
+                if (btn) this.handleRosterAction(btn.getAttribute("data-action"), btn.getAttribute("data-name"));
+            });
+        }
+        
+        // Heartbeat Specific Events
+        const hbCancel = document.getElementById("cte-hb-cancel-btn");
+        if(hbCancel) hbCancel.onclick = () => this.closeHeartbeatModal();
+        
+        const hbConfirm = document.getElementById("cte-hb-confirm-btn");
+        if(hbConfirm) hbConfirm.onclick = () => this.confirmHeartbeatAssignment();
+    },
+    
+    // --- Heartbeat Logic ---
+    renderHeartbeatView() {
+        const grid = document.getElementById("cte-hb-activity-grid");
+        if(!grid) return;
+        grid.innerHTML = '';
+        
+        HEARTBEAT_ACTIVITIES.forEach(act => {
+            const card = document.createElement("div");
+            card.className = "cte-hb-activity-card";
+            card.innerHTML = `
+                <div class="cte-hb-activity-icon"><i class="fa-solid ${act.icon}"></i></div>
+                <div class="cte-hb-activity-name">${act.name}</div>
+                <div class="cte-hb-activity-description">${act.desc}</div>
+                <button class="cte-hb-assign-button">安排成员</button>
+            `;
+            card.querySelector("button").onclick = () => this.openHeartbeatModal(act);
+            grid.appendChild(card);
+        });
+    },
+
+    openHeartbeatModal(activity) {
+        this.currentHeartbeatActivity = activity;
+        const modal = document.getElementById("cte-hb-modal");
+        const title = document.getElementById("cte-hb-modal-title");
+        const list = document.getElementById("cte-hb-member-list");
+        
+        if(!modal || !list) return;
+        
+        title.innerText = `为活动「${activity.name}」分配成员`;
+        list.innerHTML = '';
+        
+        HEARTBEAT_MEMBERS.forEach(m => {
+            const item = document.createElement("div");
+            item.className = "cte-hb-member-item";
+            item.setAttribute("data-name", m.name);
+            item.innerHTML = `
+                <div class="cte-hb-member-avatar" style="background-image: url('${m.avatar}')"></div>
+                <div class="cte-hb-member-name">${m.name}</div>
+            `;
+            item.onclick = () => item.classList.toggle('selected');
+            list.appendChild(item);
+        });
+        
+        modal.classList.add("active");
+    },
+
+    closeHeartbeatModal() {
+        document.getElementById("cte-hb-modal").classList.remove("active");
+    },
+
+    confirmHeartbeatAssignment() {
+        const selected = document.querySelectorAll("#cte-hb-member-list .cte-hb-member-item.selected");
+        if(selected.length === 0) {
+            if(typeof toastr !== "undefined") toastr.warning("请至少选择一位成员！");
+            return;
+        }
+        
+        const names = Array.from(selected).map(el => el.getAttribute("data-name")).join("、");
+        const act = this.currentHeartbeatActivity;
+        
+        // Construct injection text
+        const msg = `{{user}}邀请 ${names} 做爱。玩法：${act.name}，${act.desc}`;
+        
+        this.closeHeartbeatModal();
+        this.togglePanel(); // Close main panel
+        
+        const ta = document.getElementById('send_textarea');
+        if (ta) { 
+            ta.value = msg; 
+            ta.dispatchEvent(new Event('input', { bubbles: true })); 
+            ta.focus(); 
+        }
+        
+        if(typeof toastr !== "undefined") toastr.success(`已安排：${act.name} (${names})`);
+    },
+    // --- End Heartbeat Logic ---
+
+    handleRosterAction(action, name) {
+        const msg = action === 'talk' ? `{{user}} 邀请 ${name} 找个地方聊聊。` : `{{user}} 邀请 ${name} 去单独训练。`;
+        this.togglePanel();
+        const ta = document.getElementById('send_textarea');
+        if (ta) { ta.value = msg; ta.dispatchEvent(new Event('input', { bubbles: true })); ta.focus(); }
+    },
+
+    renderRPGView(mode) {
+        RPG_STATE.currentMode = mode;
+        document.querySelectorAll(".cte-rpg-nav-btn").forEach(btn => {
+            btn.classList.toggle("active", btn.getAttribute("data-mode") === mode);
+        });
+        document.querySelectorAll(".cte-rpg-view").forEach(v => v.style.display = "none");
+        const target = document.getElementById(`cte-rpg-view-${mode.toLowerCase()}`);
+        if(target) target.style.display = (mode === 'TERMINAL') ? 'flex' : 'block';
+
+        this.updateDynamicData();
+        if(mode === 'TERMINAL') this.renderTerminal(); 
+        if(mode === 'ROSTER') this.renderRoster();
+        if(mode === 'LEAGUE') this.renderLeague();
+    },
+
+    // --- 核心修复：双轨制数据读取 + 数组遍历 ---
+    updateDynamicData() {
+        let chatContext = [];
+        let ST = null;
+
+        try {
+            if (typeof window.SillyTavern !== 'undefined') ST = window.SillyTavern;
+            else if (typeof window.parent !== 'undefined' && typeof window.parent.SillyTavern !== 'undefined') ST = window.parent.SillyTavern;
+        } catch(e) { console.log("[CTE-DEBUG] ST access failed:", e); }
+
+        if (!ST) return;
+
+        try {
+            const context = ST.getContext();
+            chatContext = context.chat;
+        } catch(e) {}
+
+        // 1. 解析 Top 栏 (日程)
+        if (chatContext && chatContext.length > 0) {
+            for (let i = chatContext.length - 1; i >= 0; i--) {
+                const mes = chatContext[i].mes || "";
+                const match = mes.match(/<status_top>([\s\S]*?)<\/status_top>/i);
+                if (match) { 
+                    const scheduleMatch = match[1].match(/最近赛事安排[：:]\s*(.*?)(?:\s+[\|｜]|$|\n)/);
+                    if (scheduleMatch) RPG_STATE.leagueScheduleText = scheduleMatch[1].trim();
+                    break; 
+                }
+            }
+        }
+
+        // 2. 深度扫描 stat_data (MVU) - 处理数组结构
+        let statDataRaw = null;
+        let foundLocation = "None";
+
+        try {
+            // 优先检查 Extension Settings (最标准位置)
+            const extSettings = ST.extension_settings || {};
+            const extVars = extSettings.variables || {};
+            if (extVars.global && extVars.global['stat_data']) statDataRaw = extVars.global['stat_data'];
+            else if (extVars.local && extVars.local['stat_data']) statDataRaw = extVars.local['stat_data'];
+
+            // 如果设置里没有，遍历消息历史 (Message Layer)
+            if (!statDataRaw && chatContext && chatContext.length > 0) {
+                console.log(`[CTE-DEBUG] Scanning ${chatContext.length} messages for variables...`);
+                
+                for (let i = chatContext.length - 1; i >= 0; i--) {
+                    const msg = chatContext[i];
+                    let candidateVars = null;
+
+                    // 兼容不同版本的变量存储位置
+                    if (msg.variables) candidateVars = msg.variables;
+                    else if (msg.data && msg.data.variables) candidateVars = msg.data.variables;
+
+                    if (candidateVars) {
+                        // [重要修复] 检查是对象还是数组
+                        if (Array.isArray(candidateVars)) {
+                            // 遍历数组寻找 stat_data
+                            for (const v of candidateVars) {
+                                if (v && v['stat_data']) {
+                                    statDataRaw = v['stat_data'];
+                                    foundLocation = `Msg[${i}].Array`;
+                                    break;
+                                }
+                            }
+                        } else if (typeof candidateVars === 'object') {
+                            // 是对象，直接检查属性
+                            if (candidateVars['stat_data']) {
+                                statDataRaw = candidateVars['stat_data'];
+                                foundLocation = `Msg[${i}].Object`;
+                            }
+                        }
+                    }
+                    if (statDataRaw) break; // 找到了就退出循环
+                }
+            }
+
+            // 如果找到了原始数据，解析并应用
+            if (statDataRaw) {
+                console.log(`[CTE-DEBUG] Success! Found stat_data in ${foundLocation}`);
+                const statData = typeof statDataRaw === 'string' ? JSON.parse(statDataRaw) : statDataRaw;
+                
+                if (statData && statData.MainCharacters) {
+                    RPG_STATE.roster.forEach(player => {
+                        const charData = statData.MainCharacters[player.realName];
+                        if (charData) {
+                            if (charData['欲望'] !== undefined) player.status.desire = parseInt(charData['欲望']);
+                            if (charData['好感'] !== undefined) player.status.affection = parseInt(charData['好感']);
+                            else if (charData['好感度'] !== undefined) player.status.affection = parseInt(charData['好感度']);
+                        }
+                    });
+                    return; // MVU 成功，不再执行文本回退
+                }
+            } else {
+                console.log("[CTE-DEBUG] MVU scan finished. No stat_data found.");
+            }
+
+        } catch(e) {
+            console.warn("[CTE-DEBUG] MVU Scan Error:", e);
+        }
+
+        // 3. 回退到文本解析 (Plan B)
+        // 注意：MVU 模式下通常无效，因为文本被隐藏了
+        console.log("[CTE-DEBUG] Attempting text fallback...");
+        if (chatContext && chatContext.length > 0) {
+            for (let i = chatContext.length - 1; i >= 0; i--) {
+                const mes = chatContext[i].mes || "";
+                const match = mes.match(/<status_bottom1>([\s\S]*?)<\/status_bottom1>/i);
+                if (match) {
+                    const bottomContent = match[1].trim();
+                    RPG_STATE.roster.forEach(player => {
+                        const charBlockRegex = new RegExp(`<${player.realName}>([\\s\\S]*?)<\\/${player.realName}>`, 'i');
+                        const charMatch = bottomContent.match(charBlockRegex);
+                        if (charMatch) {
+                            const block = charMatch[1];
+                            const desireMatch = block.match(/欲望[：:]\s*(\d+)%?/);
+                            if (desireMatch) player.status.desire = parseInt(desireMatch[1]);
+                            const affMatch = block.match(/好感度[：:]\s*(\d+)%?/);
+                            if (affMatch) player.status.affection = parseInt(affMatch[1]);
+                        }
+                    });
+                    console.log("[CTE-DEBUG] Text fallback success");
+                    break;
+                }
+            }
         }
     },
 
-    // --- 初始化国家地图 ---
+    renderTerminal() { this.refreshSchedule(); },
+
+    renderRoster() {
+        const grid = document.getElementById("cte-rpg-roster-grid");
+        if(!grid) return;
+        grid.innerHTML = '';
+
+        RPG_STATE.roster.forEach(player => {
+            const charData = CTE_CHARACTERS[player.id];
+            const avatarUrl = charData ? charData.avatar : userPlaceholderAvatar;
+            
+            // Logic for High Desire Warning
+            let warningHTML = '';
+            if (player.status.desire > 80) {
+                warningHTML = `
+                <div class="cte-rpg-warning-box">
+                    <span><i class="fa-solid fa-triangle-exclamation"></i> 欲望值过高，请及时处理</span>
+                    <button class="cte-heartbeat-shortcut" data-action="heartbeat" title="处理欲望"><i class="fa-solid fa-heart"></i></button>
+                </div>
+                `;
+            }
+
+            const card = document.createElement("div");
+            card.className = "cte-rpg-card cte-rpg-player-card";
+            card.innerHTML = `
+                <div style="position:absolute; top:5px; right:5px; color:${player.potential === 'S' ? '#a855f7' : '#c5a065'}; font-size:12px; font-weight:bold;">${player.isStar ? '<i class="fa-solid fa-crown"></i>' : ''} POT: ${player.potential}</div>
+                <div style="display:flex; gap:15px;">
+                    <div style="display:flex; flex-direction:column; align-items:center;">
+                        <div class="cte-rpg-avatar-box" style="border: 2px solid ${player.potential === 'S' ? '#a855f7' : '#333'}; overflow:hidden;">
+                            <img src="${avatarUrl}" style="width:100%; height:100%; object-fit:cover;">
+                            <div class="cte-rpg-role-tag">${player.role}</div>
+                        </div>
+                    </div>
+                    <div style="flex:1;">
+                        <div style="display:flex; justify-content:space-between; align-items:flex-end; margin-bottom:5px;">
+                            <div><div style="font-family:'Cinzel', serif; font-size:16px; color:#fff; font-weight:bold;">${player.ign}</div><div style="font-size:12px; color:#888;">${player.realName}</div></div>
+                            <div style="text-align:right;"><div style="font-size:18px; color:#c5a065; font-family:monospace;">${Math.floor((player.stats.mechanics + player.stats.macro)/2)}</div><div style="font-size:8px; color:#666;">OVR</div></div>
+                        </div>
+                        <div class="cte-rpg-stat-row">
+                            <div class="cte-rpg-stat-bar-container"><div class="label" style="display:flex; justify-content:space-between;"><span>欲望</span> <span style="color:#ec4899;">${player.status.desire}%</span></div><div class="bar-bg"><div class="bar-fill" style="width:${player.status.desire}%; background:#ec4899; box-shadow:0 0 5px #ec4899;"></div></div></div>
+                            <div class="cte-rpg-stat-bar-container"><div class="label" style="display:flex; justify-content:space-between;"><span>好感度</span> <span style="color:#c5a065;">${player.status.affection}%</span></div><div class="bar-bg"><div class="bar-fill" style="width:${player.status.affection}%; background:#c5a065; box-shadow:0 0 5px #c5a065;"></div></div></div>
+                        </div>
+                        ${warningHTML} 
+                    </div>
+                </div>
+                <div class="cte-rpg-card-footer"><button class="cte-rpg-action-icon" data-action="talk" data-name="${player.realName}" title="Talk"><i class="fa-solid fa-comment"></i></button><button class="cte-rpg-action-icon" data-action="train" data-name="${player.realName}" title="Train"><i class="fa-solid fa-bolt"></i></button></div>`;
+            grid.appendChild(card);
+        });
+    },
+
+    renderLeague() {
+        const container = document.getElementById("cte-league-content");
+        if(container) container.innerHTML = `<div style="display:flex; align-items:center; gap:15px; margin-bottom:15px;"><div style="width:60px; height:60px; background:var(--cte-bg-dark); border:1px solid var(--cte-accent-gold); display:flex; align-items:center; justify-content:center; font-size:24px;">🏆</div><div><h3 style="color:#fff; font-family:var(--cte-font-serif); font-size:18px;">NEXT MATCH</h3><p style="color:var(--cte-accent-gold); font-family:monospace; font-size:14px;">${RPG_STATE.leagueScheduleText}</p></div></div><div style="border-top:1px dashed #333; padding-top:10px; font-size:12px; color:#666;">> 战术分析组正在收集中...<br>> 胜率预测: 计算中...</div>`;
+    },
+
     initNationalMap() {
         const mapContainer = document.getElementById("cte-national-map-canvas");
-        const infoContent = document.getElementById("cte-national-info-content");
-        
         if (!mapContainer) return;
-        
-        // 清空并生成城市图标
         const citiesContainer = mapContainer.querySelector('.cte-national-cities');
         if (!citiesContainer) return;
-        
         citiesContainer.innerHTML = '';
-        
         NATIONAL_CITIES.forEach(city => {
             const cityEl = document.createElement('div');
             cityEl.className = 'cte-national-city' + (city.isCapital ? ' capital' : '');
             cityEl.id = `national-city-${city.id}`;
-            cityEl.style.top = city.top;
-            cityEl.style.left = city.left;
+            cityEl.style.top = city.top; cityEl.style.left = city.left;
             cityEl.setAttribute('data-city-id', city.id);
-            
-            cityEl.innerHTML = `
-                <i class="fa-solid ${city.icon}"></i>
-                <span class="cte-national-city-name">${city.name}</span>
-            `;
-            
-            // 修改：添加拖拽状态检查，防止拖拽结束时触发点击事件
-            cityEl.addEventListener('click', (e) => {
-                if (this.isDraggingNationalCity) return;
-                this.handleNationalCityClick(city);
-            });
-            
+            cityEl.innerHTML = `<i class="fa-solid ${city.icon}"></i><span class="cte-national-city-name">${city.name}</span>`;
+            cityEl.addEventListener('click', () => { if (!this.isDraggingNationalCity) this.handleNationalCityClick(city); });
             citiesContainer.appendChild(cityEl);
         });
-
-        // 启用国家地图城市拖拽
         this.enableNationalCityDragging();
     },
     
-    // --- 新增：国家地图城市拖拽逻辑 ---
     enableNationalCityDragging() {
         const mapCanvas = document.getElementById("cte-national-map-canvas");
         if (!mapCanvas) return;
-
-        let activeCity = null;
-        let startX, startY, startLeft, startTop;
-
+        let activeCity = null, startX, startY, startLeft, startTop;
         mapCanvas.addEventListener("mousedown", (e) => {
             const city = e.target.closest(".cte-national-city");
             if (!city) return;
-            e.preventDefault();
-            
-            activeCity = city;
-            this.isDraggingNationalCity = false;
-            
-            startX = e.clientX;
-            startY = e.clientY;
-            
-            // 获取当前位置 (转换为px以便拖拽计算)
-            startLeft = city.offsetLeft;
-            startTop = city.offsetTop;
-            
-            activeCity.style.transition = 'none'; // 临时禁用过渡动画
-            activeCity.classList.add("dragging");
-            
-            document.addEventListener("mousemove", onMouseMove);
-            document.addEventListener("mouseup", onMouseUp);
+            e.preventDefault(); activeCity = city; this.isDraggingNationalCity = false;
+            startX = e.clientX; startY = e.clientY; startLeft = city.offsetLeft; startTop = city.offsetTop;
+            activeCity.style.transition = 'none'; activeCity.classList.add("dragging");
+            document.addEventListener("mousemove", onMouseMove); document.addEventListener("mouseup", onMouseUp);
         });
-
         const onMouseMove = (e) => {
             if (!activeCity) return;
-            const dx = e.clientX - startX;
-            const dy = e.clientY - startY;
-
-            // 阈值检测：移动超过3px才视为拖拽
+            const dx = e.clientX - startX, dy = e.clientY - startY;
             if (Math.abs(dx) > 3 || Math.abs(dy) > 3) {
                 this.isDraggingNationalCity = true;
-                
-                let newLeft = startLeft + dx;
-                let newTop = startTop + dy;
-                
-                // 边界限制
-                const parentRect = mapCanvas.getBoundingClientRect();
-                newLeft = Math.max(0, Math.min(newLeft, parentRect.width));
-                newTop = Math.max(0, Math.min(newTop, parentRect.height));
-                
-                activeCity.style.left = `${newLeft}px`;
-                activeCity.style.top = `${newTop}px`;
+                const rect = mapCanvas.getBoundingClientRect();
+                activeCity.style.left = Math.max(0, Math.min(startLeft + dx, rect.width)) + 'px';
+                activeCity.style.top = Math.max(0, Math.min(startTop + dy, rect.height)) + 'px';
             }
         };
-
         const onMouseUp = () => {
-            if (activeCity) {
-                activeCity.classList.remove("dragging");
-                activeCity.style.transition = ''; // 恢复过渡动画
-                activeCity = null;
-            }
-            document.removeEventListener("mousemove", onMouseMove);
-            document.removeEventListener("mouseup", onMouseUp);
-            
-            // 延迟重置拖拽标志，确保点击事件能读取到正确的状态
-            setTimeout(() => {
-                this.isDraggingNationalCity = false;
-            }, 50);
+            if (activeCity) { activeCity.classList.remove("dragging"); activeCity.style.transition = ''; activeCity = null; }
+            document.removeEventListener("mousemove", onMouseMove); document.removeEventListener("mouseup", onMouseUp);
+            setTimeout(() => this.isDraggingNationalCity = false, 50);
         };
     },
     
-    // --- 加载国家地图背景 ---
-    loadNationalMapBg() {
-        const savedBg = localStorage.getItem("cte-national-map-bg");
-        const canvas = document.getElementById("cte-national-map-canvas");
-        if (canvas) {
-            canvas.style.backgroundImage = `url(${savedBg || defaultNationalMapBg})`;
-        }
-    },
-    
-    // --- 处理国家地图城市点击 ---
+    loadNationalMapBg() { const bg = localStorage.getItem("cte-national-map-bg"); const el = document.getElementById("cte-national-map-canvas"); if(el) el.style.backgroundImage = `url(${bg || defaultNationalMapBg})`; },
     handleNationalCityClick(city) {
-        const infoPanel = document.getElementById("cte-national-info-content");
-        const goButton = document.getElementById("cte-national-go-btn");
-        
-        if (city.isCapital) {
-            // 点击京港 - 返回京港市地图
-            this.toggleView('city-map');
-            if (typeof toastr !== "undefined") toastr.info("已返回京港市地图");
-            return;
-        }
-        
-        // 显示城市情报
-        if (infoPanel) {
-            infoPanel.innerHTML = `
-                <h2><i class="fa-solid fa-scroll"></i> ${city.name} - 城市简述</h2>
-                <ul><li>${city.info}</li></ul>
-            `;
-        }
-        
-        // 显示前往按钮
-        if (goButton) {
-            goButton.style.display = 'block';
-            goButton.innerHTML = `🚀 前往${city.name}`;
-            goButton.onclick = () => this.prepareNationalTravel(city);
-        }
-        
-        // 存储当前选中城市
+        if (city.isCapital) { this.toggleView('city-map'); if (typeof toastr !== "undefined") toastr.info("已返回京港市地图"); return; }
+        const info = document.getElementById("cte-national-info-content");
+        if(info) info.innerHTML = `<h2><i class="fa-solid fa-scroll"></i> ${city.name} - 城市简述</h2><ul><li>${city.info}</li></ul>`;
+        const btn = document.getElementById("cte-national-go-btn");
+        if(btn) { btn.style.display = 'block'; btn.innerHTML = `🚀 前往${city.name}`; btn.onclick = () => this.prepareNationalTravel(city); }
         this.nationalTripData = { cityId: city.id, cityName: city.name };
     },
     
-    // --- 准备国家地图出行 ---
     prepareNationalTravel(city) {
-        // 显示出行确认弹窗（复用现有的旅行系统）
-        this.tempTripData = {
-            destination: city.name,
-            companion: null,
-            npc: null
-        };
+        this.tempTripData = { destination: city.name, companion: null, npc: null };
+        const title = document.getElementById("cte-travel-dest-name"); if(title) title.innerText = city.name;
+        const npcInput = document.getElementById("cte-npc-input"); if(npcInput) { npcInput.style.display = "none"; npcInput.value = ""; }
+        const ph = document.getElementById("cte-npc-placeholder-text"); if(ph) ph.innerText = "当地人";
+        const noRad = document.getElementById("meet_no"); if(noRad) noRad.checked = true;
         
-        // 更新 UI 标题
-        const modalTitle = document.getElementById("cte-travel-dest-name");
-        if(modalTitle) modalTitle.innerText = city.name;
-        
-        // NPC 设置
-        const npcInput = document.getElementById("cte-npc-input");
-        const placeholderText = document.getElementById("cte-npc-placeholder-text");
-        const noRadio = document.getElementById("meet_no");
-
-        if (noRadio) noRadio.checked = true;
-        if (npcInput) {
-            npcInput.style.display = "none";
-            npcInput.value = "";
-        }
-        if (placeholderText) {
-            placeholderText.innerText = "当地人";
-        }
-
-        // 显示普通模式
-        const standardModeDiv = document.getElementById("cte-travel-mode-standard");
-        const scheduleModeDiv = document.getElementById("cte-travel-mode-schedule");
-        
-        if(standardModeDiv) standardModeDiv.style.display = "block";
-        if(scheduleModeDiv) scheduleModeDiv.style.display = "none";
-        
+        const std = document.getElementById("cte-travel-mode-standard"), sch = document.getElementById("cte-travel-mode-schedule");
+        if(std) std.style.display = "block"; if(sch) sch.style.display = "none";
         this.showPopup("cte-travel-modal");
     },
     
-    // --- 国家地图背景上传 ---
-    handleNationalMapUpload(e) {
-        const file = e.target.files[0];
-        if (!file) return;
-        const reader = new FileReader();
-        reader.onload = (event) => {
-            const canvas = document.getElementById("cte-national-map-canvas");
-            if (canvas) {
-                canvas.style.backgroundImage = `url(${event.target.result})`;
-                localStorage.setItem("cte-national-map-bg", event.target.result);
-                if (typeof toastr !== 'undefined') toastr.success("国家地图背景更换成功！");
-            }
-        };
-        reader.readAsDataURL(file);
-    },
-    
-    // --- 重置国家地图背景 ---
-    handleResetNationalBg() {
-        const canvas = document.getElementById("cte-national-map-canvas");
-        if (canvas) {
-            canvas.style.backgroundImage = `url(${defaultNationalMapBg})`;
-            localStorage.removeItem("cte-national-map-bg");
-            if (typeof toastr !== 'undefined') toastr.info("已恢复国家地图默认背景。");
-        }
-    },
+    handleNationalMapUpload(e) { const f = e.target.files[0]; if(!f)return; const r = new FileReader(); r.onload=(ev)=>{ const el=document.getElementById("cte-national-map-canvas"); if(el){ el.style.backgroundImage = `url(${ev.target.result})`; localStorage.setItem("cte-national-map-bg", ev.target.result); if(typeof toastr!=='undefined') toastr.success("背景更换成功"); }}; r.readAsDataURL(f); },
+    handleResetNationalBg() { const el=document.getElementById("cte-national-map-canvas"); if(el){ el.style.backgroundImage = `url(${defaultNationalMapBg})`; localStorage.removeItem("cte-national-map-bg"); if(typeof toastr!=='undefined') toastr.info("恢复默认背景"); } },
 
-    // --- REWRITTEN: 解析聊天记录并刷新行程 ---
     refreshSchedule() {
-        const listContainer = document.getElementById("cte-schedule-list");
-        if (!listContainer) return;
-        listContainer.innerHTML = '';
-
-        // 1. 获取聊天上下文
+        const container = document.getElementById("cte-schedule-log-container");
+        if (!container) return;
+        container.innerHTML = '';
+        
         let chatContext = [];
         try {
-            if (window.SillyTavern && window.SillyTavern.getContext) {
-                chatContext = window.SillyTavern.getContext().chat;
-            }
-        } catch(e) { console.log("Context not available"); }
+            if (typeof window.SillyTavern !== 'undefined') chatContext = window.SillyTavern.getContext().chat;
+            else if (typeof window.parent !== 'undefined' && window.parent.SillyTavern) chatContext = window.parent.SillyTavern.getContext().chat;
+        } catch(e) {}
 
-        // 模拟数据 (当 ST 上下文不存在时用于测试)
-        if (!chatContext || chatContext.length === 0) {
-            console.log("Using Mock Data for Testing");
-            chatContext = [{
-                mes: `<status_top>
-时间：2025年3月1日 | 星期五 | 10:32 | 训练日
-地点：京港 | CTE战队基地 | 三楼主训练室
-今日安排：10:00 - 12:00 个人训练（进行中）
-12:00 - 13:00 午餐 & 休息
-13:00 - 15:00 团队训练赛
-15:00 - 16:00 复盘分析
-16:00 - 19:00 团队训练赛
-19:00 - 20:00 晚餐 & 休息
-20:00 - 22:00 个人自由训练
-22:00 - 结束训练
-最近赛事安排：2025年5月 MSI季中冠军赛（准备中）
-</status_top>`
-            }];
-        }
+        if (!chatContext || chatContext.length === 0) return; 
 
-        // 2. 倒序查找包含 <status_top> 的消息
-        let foundContent = null;
+        let content = null;
         for (let i = chatContext.length - 1; i >= 0; i--) {
             const mes = chatContext[i].mes || "";
             const match = mes.match(/<status_top>([\s\S]*?)<\/status_top>/i);
-            if (match) {
-                foundContent = match[1].trim();
-                break;
-            }
+            if (match) { content = match[1].trim(); break; }
         }
 
-        if (!foundContent) {
-            listContainer.innerHTML = '<div style="text-align:center; color:#666; margin-top:50px;">暂无行程数据，请确保上一条回复包含 &lt;status_top&gt;...&lt;/status_top&gt;</div>';
-            return;
-        }
+        if (!content) { container.innerHTML = '<div style="text-align:center; color:#666; margin-top:20px;">> NO SCHEDULE DATA FOUND</div>'; return; }
 
-        // 3. 筛选 "今日安排" 之后的内容
-        const targetKeyword = "今日安排";
-        const keywordIndex = foundContent.indexOf(targetKeyword);
-        
-        if (keywordIndex === -1) {
-            listContainer.innerHTML = `<div style="text-align:center; color:#666; margin-top:50px;">未找到"${targetKeyword}"信息。</div>`;
-            return;
-        }
+        let dateStr = "UNKNOWN DATE";
+        const dMatch = content.match(/时间[:：]\s*(.*?)(?:\s+[\|｜]|$|\n)/);
+        if (dMatch) dateStr = dMatch[1].trim();
 
-        let scheduleContent = foundContent.substring(keywordIndex + targetKeyword.length);
-        scheduleContent = scheduleContent.replace(/^[:：\s]+/, '').trim();
+        const kw = "今日安排";
+        const idx = content.indexOf(kw);
+        if (idx === -1) return;
 
-        // 4. 解析行数据
-        const lines = scheduleContent.split('\n').map(l => l.trim()).filter(l => l);
-        let hasItems = false;
+        let sched = content.substring(idx + kw.length).replace(/^[:：\s]+/, '').trim();
+        const header = document.createElement("div");
+        header.style.marginBottom = "20px"; header.style.color = "var(--cte-accent-gold)"; header.style.fontFamily = "var(--cte-font-mono)";
+        header.innerHTML = `> DATE: ${dateStr}<br>----------------------------------------`;
+        container.appendChild(header);
 
-        lines.forEach(line => {
-            const match = line.match(/^(\d{1,2}:\d{2}(?:\s*-\s*(?:结束训练|\d{1,2}:\d{2}))?)\s+(.*)$/);
-            
-            if (match) {
-                hasItems = true;
-                const timeStr = match[1];
-                const contentStr = match[2];
-                
-                const itemDiv = document.createElement("div");
-                itemDiv.className = "cte-timeline-item";
-                itemDiv.innerHTML = `
-                    <div class="cte-timeline-card">
-                        <div class="cte-timeline-content">
-                            <span style="font-weight:bold; margin-right:10px;">${timeStr}</span>${contentStr}
-                        </div>
-                        <button class="cte-schedule-exec-btn">⚡ 执行行程</button>
-                    </div>
-                `;
-                
-                itemDiv.querySelector("button").onclick = () => this.initiateScheduleExecution(`${timeStr} ${contentStr}`);
-                
-                listContainer.appendChild(itemDiv);
+        sched.split('\n').map(l=>l.trim()).filter(l=>l).forEach(line => {
+            const m = line.match(/^(\d{1,2}:\d{2}(?:\s*-\s*(?:结束训练|\d{1,2}:\d{2}))?)\s+(.*)$/);
+            if (m) {
+                const item = document.createElement("div");
+                item.className = "cte-timeline-item";
+                // 修改：将硬编码的 #ddd 改为 var(--cte-text-main)，以适应浅色主题
+                item.innerHTML = `<div class="cte-timeline-card"><div class="cte-timeline-content"><span style="font-weight:bold; margin-right:10px; color:var(--cte-accent-gold); font-family:monospace;">${m[1]}</span><span style="color:var(--cte-text-main);">${m[2]}</span></div><button class="cte-schedule-exec-btn">执行</button></div>`;
+                item.querySelector("button").onclick = () => this.initiateScheduleExecution(`${m[1]} ${m[2]}`);
+                container.appendChild(item);
             }
         });
-
-        if (!hasItems) {
-            listContainer.innerHTML = '<div style="text-align:center; color:#666; margin-top:50px;">未解析到有效的行程条目。</div>';
-        }
     },
 
-    // --- Phase 1: 开始执行行程 (选择人员) ---
-    initiateScheduleExecution(scheduleItemText) {
-        this.currentScheduleItem = scheduleItemText;
-        this.tempScheduleParticipants = []; // 重置
-        
-        // 填充人员列表
-        const listDiv = document.getElementById("cte-participant-list");
-        if (listDiv) {
-            listDiv.innerHTML = "";
-            const roster = ["{{user}}", "秦述", "司洛", "鹿言", "魏星泽", "周锦宁", "谌绪", "孟明赫", "亓谢", "魏月华", "桑洛凡"];
-            
-            roster.forEach(name => {
-                const lbl = document.createElement("label");
-                lbl.className = "cte-participant-checkbox";
-                const isUser = name === "{{user}}";
-                const displayName = isUser ? "我 ({{user}})" : name;
-                
-                lbl.innerHTML = `<input type="checkbox" value="${name}" ${isUser ? 'checked' : ''}> ${displayName}`;
-                listDiv.appendChild(lbl);
+    initiateScheduleExecution(item) {
+        this.currentScheduleItem = item;
+        this.tempScheduleParticipants = [];
+        const list = document.getElementById("cte-participant-list");
+        if(list) {
+            list.innerHTML = "";
+            ["{{user}}", "秦述", "司洛", "鹿言", "魏星泽", "周锦宁", "谌绪", "孟明赫", "亓谢", "魏月华", "桑洛凡"].forEach(n => {
+                const l = document.createElement("label"); l.className = "cte-participant-checkbox";
+                l.innerHTML = `<input type="checkbox" value="${n}" ${n==="{{user}}"?'checked':''}> ${n==="{{user}}"?"我 ({{user}})":n}`;
+                list.appendChild(l);
             });
         }
-
         this.showPopup("cte-participant-modal");
     },
 
-    // --- Phase 2: 确认人员并跳转地图 ---
     confirmParticipants() {
-        const modal = document.getElementById("cte-participant-modal");
-        const checkboxes = modal.querySelectorAll("input[type='checkbox']:checked");
-        const customInput = document.getElementById("cte-custom-participant");
+        const cbs = document.querySelectorAll("#cte-participant-list input:checked");
+        const cust = document.getElementById("cte-custom-participant");
+        this.tempScheduleParticipants = Array.from(cbs).map(c=>c.value);
+        if(cust && cust.value.trim()) this.tempScheduleParticipants.push(cust.value.trim());
         
-        this.tempScheduleParticipants = Array.from(checkboxes).map(cb => cb.value);
-        if (customInput && customInput.value.trim()) {
-            this.tempScheduleParticipants.push(customInput.value.trim());
-        }
-
-        if (this.tempScheduleParticipants.length === 0) {
-            if (typeof toastr !== "undefined") toastr.warning("请至少选择一名人员");
-            return;
-        }
-
+        if(this.tempScheduleParticipants.length === 0) { if(typeof toastr !== "undefined") toastr.warning("请选择人员"); return; }
+        
         this.isSelectingForSchedule = true;
         this.closeAllPopups();
         this.toggleView('city-map');
-        
-        if (typeof toastr !== "undefined") toastr.info("请在地图上选择目的地以执行行程");
+        if(typeof toastr !== "undefined") toastr.info("请在地图上选择目的地");
     },
 
-    // --- Phase 3: 准备行程 (区分模式) ---
-    prepareTravel(destination) {
-        // 1. 初始化临时数据
-        this.tempTripData = {
-            destination: destination,
-            companion: null,
-            npc: null
-        };
-
-        // 2. 更新 UI 标题
-        const modalTitle = document.getElementById("cte-travel-dest-name");
-        if(modalTitle) modalTitle.innerText = destination;
+    prepareTravel(dest) {
+        this.tempTripData = { destination: dest, companion: null, npc: null };
+        const title = document.getElementById("cte-travel-dest-name"); if(title) title.innerText = dest;
+        let defNPC = "";
+        for(const k in LOCATION_NPC_DEFAULTS) if(dest.includes(k)) defNPC = LOCATION_NPC_DEFAULTS[k];
         
-        // 3. NPC 默认逻辑
-        let defaultNPC = "";
-        if (destination.includes("极光电竞馆")) defaultNPC = LOCATION_NPC_DEFAULTS["极光电竞馆"];
-        else if (destination.includes("万达广场")) defaultNPC = LOCATION_NPC_DEFAULTS["万达广场"];
-        else if (destination.includes("百步街")) defaultNPC = LOCATION_NPC_DEFAULTS["百步街"];
-        else if (destination.includes("小吃街")) defaultNPC = LOCATION_NPC_DEFAULTS["小吃街"];
-        
-        const npcInput = document.getElementById("cte-npc-input");
-        const placeholderText = document.getElementById("cte-npc-placeholder-text");
-        const noRadio = document.getElementById("meet_no");
+        const npcIn = document.getElementById("cte-npc-input");
+        const ph = document.getElementById("cte-npc-placeholder-text");
+        const noRad = document.getElementById("meet_no");
+        if(noRad) noRad.checked = true;
+        if(npcIn) { npcIn.style.display = "none"; npcIn.value = defNPC; }
+        if(ph) ph.innerText = defNPC ? defNPC.split("、")[0] : "NPC";
 
-        if (noRadio) noRadio.checked = true;
-        if (npcInput) {
-            npcInput.style.display = "none";
-            npcInput.value = defaultNPC;
-        }
-        if (placeholderText) {
-            placeholderText.innerText = defaultNPC ? defaultNPC.split("、")[0] : "NPC";
-        }
+        const std = document.getElementById("cte-travel-mode-standard");
+        const sch = document.getElementById("cte-travel-mode-schedule");
+        const prev = document.getElementById("cte-schedule-preview-text");
 
-        // --- 4. 模式切换逻辑 ---
-        const standardModeDiv = document.getElementById("cte-travel-mode-standard");
-        const scheduleModeDiv = document.getElementById("cte-travel-mode-schedule");
-        const previewText = document.getElementById("cte-schedule-preview-text");
-
-        if (this.isSelectingForSchedule) {
-            // [行程模式]
-            if(standardModeDiv) standardModeDiv.style.display = "none";
-            if(scheduleModeDiv) scheduleModeDiv.style.display = "block";
-            
-            // 构建预览文本 - 人名高亮逻辑
-            const people = this.tempScheduleParticipants.map(p => p === "{{user}}" ? "我" : p).join(", ");
-            if(previewText) {
-                // 使用 var(--cte-accent-gold) 确保颜色随主题变化
-                previewText.innerHTML = `<span style="color: var(--cte-accent-gold); font-weight: bold;">${people}</span> -> ${destination} <br><span style="font-size: 0.9em; opacity: 0.8;">(${this.currentScheduleItem})</span>`;
+        if(this.isSelectingForSchedule) {
+            if(std) std.style.display = "none";
+            if(sch) sch.style.display = "block";
+            if(prev) {
+                const pp = this.tempScheduleParticipants.map(p=>p==="{{user}}"?"我":p).join(", ");
+                prev.innerHTML = `<span style="color:var(--cte-accent-gold); font-weight:bold;">${pp}</span> -> ${dest}<br><span style="font-size:0.9em; opacity:0.8;">(${this.currentScheduleItem})</span>`;
             }
-
         } else {
-            // [普通模式]
-            if(standardModeDiv) standardModeDiv.style.display = "block";
-            if(scheduleModeDiv) scheduleModeDiv.style.display = "none";
+            if(std) std.style.display = "block";
+            if(sch) sch.style.display = "none";
         }
-
         this.showPopup("cte-travel-modal");
     },
 
-    // --- Phase 4: 最终执行行程 ---
     finalizeScheduleExecution() {
-        const destination = this.tempTripData.destination;
-        const participants = this.tempScheduleParticipants.join(", ");
-        const item = this.currentScheduleItem;
+        const yes = document.getElementById("meet_yes");
+        const npcIn = document.getElementById("cte-npc-input");
+        let npcTxt = "";
+        if(yes && yes.checked) npcTxt = `，在目的地遇见了${npcIn.value.trim()||"神秘人"}`;
         
-        const yesRadio = document.getElementById("meet_yes");
-        const npcInput = document.getElementById("cte-npc-input");
-        let npcText = "";
-        if (yesRadio && yesRadio.checked) {
-            const val = npcInput.value.trim() || "神秘人";
-            npcText = `，在目的地遇见了${val}`;
-        }
-
-        const outputText = `${participants} 前往${destination}执行行程：${item}${npcText}。`;
-
-        const textarea = document.getElementById('send_textarea');
-        if (textarea) {
-            textarea.value = outputText;
-            textarea.dispatchEvent(new Event('input', { bubbles: true }));
-            textarea.focus();
-        }
-
-        this.closeAllPopups();
-        this.isSelectingForSchedule = false; 
+        const msg = `${this.tempScheduleParticipants.join(", ")} 前往${this.tempTripData.destination}执行行程：${this.currentScheduleItem}${npcTxt}。`;
+        this.togglePanel();
+        const ta = document.getElementById('send_textarea');
+        if(ta) { ta.value = msg; ta.dispatchEvent(new Event('input', {bubbles:true})); ta.focus(); }
+        
+        this.isSelectingForSchedule = false;
         this.tempScheduleParticipants = [];
-        this.currentScheduleItem = null;
-
-        if (typeof toastr !== 'undefined') toastr.success("行程指令已生成");
+        if(typeof toastr !== 'undefined') toastr.success("行程指令已生成");
     },
 
-    // --- Existing Functions ---
-    showActivityPopup(companionName = null) {
-        this.tempTripData.companion = companionName;
-        const yesRadio = document.getElementById("meet_yes");
-        const npcInput = document.getElementById("cte-npc-input");
-        if (yesRadio && yesRadio.checked) {
-            this.tempTripData.npc = npcInput.value.trim() || "神秘人"; 
-        } else {
-            this.tempTripData.npc = null;
-        }
+    showActivityPopup(comp=null) {
+        this.tempTripData.companion = comp;
+        const yes = document.getElementById("meet_yes");
+        const npcIn = document.getElementById("cte-npc-input");
+        this.tempTripData.npc = (yes && yes.checked) ? (npcIn.value.trim()||"神秘人") : null;
         this.showPopup("cte-activity-modal");
     },
 
-    finalizeTrip(activity) {
+    finalizeTrip(act) {
         this.togglePanel();
         const { destination, companion, npc } = this.tempTripData;
-        const userPlaceholder = "{{user}}"; 
-        let outputText = "";
-        if (companion) outputText = `${userPlaceholder} 邀请 ${companion} 前往 ${destination}`;
-        else outputText = `${userPlaceholder} 决定独自前往${destination}`;
-        outputText += `，打算去${activity}`;
-        if (npc) outputText += `。在那里，意外遇见了${npc}。`;
-        else outputText += `。`;
-
-        const textarea = document.getElementById('send_textarea');
-        if (textarea) {
-            textarea.value = outputText;
-            textarea.dispatchEvent(new Event('input', { bubbles: true }));
-            textarea.focus();
-        }
-        if (typeof toastr !== 'undefined') toastr.success(`行程已确认`);
+        let msg = companion ? `{{user}} 邀请 ${companion} 前往 ${destination}` : `{{user}} 决定独自前往${destination}`;
+        msg += `，打算去${act}${npc ? "。在那里，意外遇见了"+npc : ""}。`;
         
-        const companionInput = document.getElementById("cte-companion-input");
-        if(companionInput) companionInput.value = "";
-        const customActInput = document.getElementById("cte-custom-act-input");
-        if(customActInput) customActInput.value = "";
+        const ta = document.getElementById('send_textarea');
+        if(ta) { ta.value = msg; ta.dispatchEvent(new Event('input', {bubbles:true})); ta.focus(); }
+        if(typeof toastr !== 'undefined') toastr.success("行程已确认");
     },
 
-    showCharacterProfile(charId) { const data = CTE_CHARACTERS[charId]; if (!data) return; this.currentProfileId = charId; const isUser = charId === 'user'; document.getElementById("cte-profile-name").innerText = data.name; document.getElementById("cte-profile-age").innerText = data.age; document.getElementById("cte-profile-role").innerText = data.role; document.getElementById("cte-profile-personality").innerText = data.personality; document.getElementById("cte-profile-desc").innerText = data.desc; const imgEl = document.getElementById("cte-profile-img"); const avatarWrapper = document.querySelector(".cte-profile-avatar-wrapper"); const deleteBtn = document.getElementById("cte-avatar-delete-btn"); if (isUser) { const savedAvatar = localStorage.getItem("cte-user-avatar"); imgEl.src = savedAvatar || data.avatar; avatarWrapper.classList.add("cte-user-avatar-glow"); deleteBtn.style.display = savedAvatar ? "block" : "none"; } else { imgEl.src = data.avatar; avatarWrapper.classList.remove("cte-user-avatar-glow"); deleteBtn.style.display = "none"; } const goBtn = document.getElementById("cte-profile-go-btn"); goBtn.onclick = () => { this.prepareTravel(data.destination); }; this.showPopup("cte-profile-modal"); },
-    handleAvatarUpload(e) { const file = e.target.files[0]; if (!file) return; const reader = new FileReader(); reader.onload = (event) => { const base64 = event.target.result; localStorage.setItem("cte-user-avatar", base64); const imgEl = document.getElementById("cte-profile-img"); if (imgEl) imgEl.src = base64; const deleteBtn = document.getElementById("cte-avatar-delete-btn"); if (deleteBtn) deleteBtn.style.display = "block"; if (typeof toastr !== 'undefined') toastr.success("头像上传成功！"); }; reader.readAsDataURL(file); },
-    deleteUserAvatar() { localStorage.removeItem("cte-user-avatar"); const imgEl = document.getElementById("cte-profile-img"); if (imgEl) imgEl.src = CTE_CHARACTERS['user'].avatar; const deleteBtn = document.getElementById("cte-avatar-delete-btn"); if (deleteBtn) deleteBtn.style.display = "none"; if (typeof toastr !== 'undefined') toastr.info("头像已重置"); },
-    loadUserAvatar() { const saved = localStorage.getItem("cte-user-avatar"); if (saved) console.log("Detected custom user avatar."); },
-    handleMapUpload(e) { const file = e.target.files[0]; if (!file) return; const reader = new FileReader(); reader.onload = (event) => { const mapCanvas = document.getElementById("cte-map-canvas"); if (mapCanvas) { mapCanvas.style.backgroundImage = `url(${event.target.result})`; if (typeof toastr !== 'undefined') toastr.success("地图背景更换成功！"); } }; reader.readAsDataURL(file); },
-    handleResetBackground() { const mapCanvas = document.getElementById("cte-map-canvas"); if (mapCanvas) { mapCanvas.style.backgroundImage = `url(${defaultMapBg})`; if (typeof toastr !== 'undefined') toastr.info("已恢复原始地图背景。"); } },
-    enablePinDragging() { const mapCanvas = document.getElementById("cte-map-canvas"); if (!mapCanvas) return; let activePin = null; let startX, startY, startLeft, startTop; let hasMoved = false; mapCanvas.addEventListener("mousedown", (e) => { const pin = e.target.closest(".cte-esport-pin"); if (!pin) return; e.preventDefault(); activePin = pin; hasMoved = false; startX = e.clientX; startY = e.clientY; startLeft = parseInt(activePin.style.left || 0); startTop = parseInt(activePin.style.top || 0); activePin.classList.add("dragging"); document.addEventListener("mousemove", onMouseMove); document.addEventListener("mouseup", onMouseUp); }); const onMouseMove = (e) => { if (!activePin) return; const dx = e.clientX - startX; const dy = e.clientY - startY; if (Math.abs(dx) > 3 || Math.abs(dy) > 3) { hasMoved = true; this.isDraggingPin = true; let newLeft = startLeft + dx; let newTop = startTop + dy; newLeft = Math.max(0, Math.min(newLeft, 800)); newTop = Math.max(0, Math.min(newTop, 800)); activePin.style.left = `${newLeft}px`; activePin.style.top = `${newTop}px`; } }; const onMouseUp = () => { if (activePin) { activePin.classList.remove("dragging"); activePin = null; } document.removeEventListener("mousemove", onMouseMove); document.removeEventListener("mouseup", onMouseUp); setTimeout(() => { this.isDraggingPin = false; }, 50); }; },
-    
-    showPopup(id) { const keepInteriorOpen = (id === 'cte-profile-modal'); document.querySelectorAll(".cte-esport-popup").forEach(p => { if (keepInteriorOpen) { if (p.id !== 'popup-interior' && p.id !== 'popup-cte') { p.classList.remove("active"); } } else { p.classList.remove("active"); } }); const popup = document.getElementById(id); if (popup) { popup.classList.add("active"); if (id === 'cte-profile-modal' || id === 'cte-participant-modal') { popup.style.zIndex = 2000; } else { popup.style.zIndex = 1000; } } },
-    closeAllPopups() { document.querySelectorAll(".cte-esport-popup").forEach(p => { p.classList.remove("active"); p.style.zIndex = ""; }); },
-    toggleFloor(floorId, btn) { const panel = document.getElementById(floorId); if(!panel) return; document.querySelectorAll(".cte-floor-panel").forEach(p => { if(p.id !== floorId) p.style.display = "none"; }); document.querySelectorAll(".cte-floor-btn").forEach(b => b.classList.remove("active")); if (panel.style.display === "block") { panel.style.display = "none"; btn.classList.remove("active"); } else { panel.style.display = "block"; btn.classList.add("active"); } },
-    
-    // [修改] 主题应用逻辑 - 增加 cardBg 变量
-    applyTheme(theme) { 
-        const root = document.getElementById("cte-esport-root"); 
-        if (!root) return; 
+    showCharacterProfile(id) {
+        const d = CTE_CHARACTERS[id]; if(!d) return;
+        this.currentProfileId = id;
+        const isU = id==='user';
+        ["name","age","role","personality","desc"].forEach(k=>document.getElementById(`cte-profile-${k}`).innerText = d[k]);
         
-        const themes = [ 
-            // Theme 0: Dark (Original)
-            { bg: '#121212', panel: '#1e1e1e', gold: '#c5a065', text: '#e0e0e0', cardBg: 'rgba(255, 255, 255, 0.05)', scrollLayerBg: '#000000' }, 
-            // Theme 1: Blue/White
-            { bg: '#f4f7f6', panel: '#ffffff', gold: '#5d9cec', text: '#333333', cardBg: '#ffffff', scrollLayerBg: '#ffffff' }, 
-            // Theme 2: Pink/White
-            { bg: '#fff0f3', panel: '#ffffff', gold: '#f06292', text: '#4a2c36', cardBg: '#ffffff', scrollLayerBg: '#ffffff' } 
-        ]; 
+        const img = document.getElementById("cte-profile-img");
+        const delBtn = document.getElementById("cte-avatar-delete-btn");
+        const wrap = document.querySelector(".cte-profile-avatar-wrapper");
         
-        const t = themes[theme] || themes[0]; 
-        
-        root.style.setProperty('--cte-bg-dark', t.bg); 
-        root.style.setProperty('--cte-panel-bg', t.panel); 
-        root.style.setProperty('--cte-accent-gold', t.gold); 
-        root.style.setProperty('--cte-text-main', t.text); 
-        // 应用卡片背景色变量
-        root.style.setProperty('--cte-card-bg', t.cardBg);
-        // 应用滚动层背景色变量
-        root.style.setProperty('--cte-scroll-layer-bg', t.scrollLayerBg);
-    },
-    
-    saveSettings() { localStorage.setItem("cte-esport-settings", JSON.stringify(this.settings)); },
-    loadSettings() { try { const data = localStorage.getItem("cte-esport-settings"); if (data) this.settings = JSON.parse(data); } catch(e) {} },
-
-    bindEvents() {
-        const panel = document.getElementById("cte-esport-panel");
-        if (!panel) return;
-        const closeBtn = panel.querySelector("#cte-btn-close");
-        if(closeBtn) closeBtn.onclick = () => this.togglePanel();
-        const themeBtn = panel.querySelector("#cte-btn-theme");
-        if(themeBtn) themeBtn.onclick = () => { this.settings.theme = (this.settings.theme + 1) % 3; this.applyTheme(this.settings.theme); this.saveSettings(); };
-        const uploadInput = document.getElementById("cte-bg-upload");
-        if (uploadInput) uploadInput.addEventListener("change", (e) => this.handleMapUpload(e));
-        const resetBtn = document.getElementById("cte-btn-reset-bg");
-        if (resetBtn) resetBtn.onclick = () => this.handleResetBackground();
-        const avatarInput = document.getElementById("cte-user-avatar-input");
-        if (avatarInput) avatarInput.addEventListener("change", (e) => this.handleAvatarUpload(e));
-        const deleteAvatarBtn = document.getElementById("cte-avatar-delete-btn");
-        if (deleteAvatarBtn) deleteAvatarBtn.onclick = () => this.deleteUserAvatar();
-
-        const mapCanvas = panel.querySelector("#cte-map-canvas");
-        if(mapCanvas) {
-            mapCanvas.onclick = (e) => {
-                if (this.isDraggingPin) { e.stopPropagation(); return; }
-                if (e.target.id === "cte-map-canvas") this.closeAllPopups();
-                const pin = e.target.closest(".cte-esport-pin");
-                if (pin) {
-                    e.stopPropagation();
-                    const popupId = pin.getAttribute("data-popup");
-                    this.showPopup(popupId);
-                }
-            };
+        if(isU) {
+            const saved = localStorage.getItem("cte-user-avatar");
+            img.src = saved || d.avatar;
+            wrap.classList.add("cte-user-avatar-glow");
+            delBtn.style.display = "block";
+        } else {
+            img.src = d.avatar;
+            wrap.classList.remove("cte-user-avatar-glow");
+            delBtn.style.display = "none";
         }
+        
+        const go = document.getElementById("cte-profile-go-btn");
+        go.onclick = () => this.prepareTravel(d.destination);
+        this.showPopup("cte-profile-modal");
+    },
 
-        panel.onclick = (e) => {
-            const target = e.target;
-            
-            if (target.matches(".cte-close-btn")) {
-                const popup = target.closest(".cte-esport-popup");
-                popup.classList.remove("active");
-                // 如果关闭的是行程确认框，取消行程模式状态
-                if(popup.id === 'cte-travel-modal') this.isSelectingForSchedule = false; 
-            }
-            
-            const profileTarget = target.getAttribute("data-profile") || target.closest("[data-profile]")?.getAttribute("data-profile");
-            if (profileTarget) { this.showCharacterProfile(profileTarget); return; }
-            if (target.getAttribute("data-action") === "interior") this.showPopup("popup-interior");
-            if (target.getAttribute("data-action") === "back-base") this.showPopup("popup-cte");
-            const floorBtn = target.closest(".cte-floor-btn");
-            if (floorBtn) { this.toggleFloor(floorBtn.getAttribute("data-target"), floorBtn); }
-            
-            // 地点跳转按钮
-            const travelDest = target.getAttribute("data-travel") || target.closest("[data-travel]")?.getAttribute("data-travel");
-            if (travelDest) {
-                if (!target.closest("#cte-travel-modal")) {
-                    this.prepareTravel(travelDest);
-                }
+    handleAvatarUpload(e) {
+        const f = e.target.files[0]; if(!f) return;
+        const r = new FileReader();
+        r.onload = (ev) => {
+            const b64 = ev.target.result;
+            localStorage.setItem("cte-user-avatar", b64);
+            document.getElementById("cte-profile-img").src = b64;
+            document.getElementById("cte-avatar-delete-btn").style.display = "block";
+            if(typeof toastr !== 'undefined') toastr.success("头像上传成功");
+        };
+        r.readAsDataURL(f);
+    },
+
+    deleteUserAvatar() {
+        localStorage.removeItem("cte-user-avatar");
+        document.getElementById("cte-profile-img").src = CTE_CHARACTERS['user'].avatar;
+        document.getElementById("cte-avatar-delete-btn").style.display = "none";
+        if(typeof toastr !== 'undefined') toastr.info("头像已重置");
+    },
+    loadUserAvatar() {}, 
+    
+    handleMapUpload(e) { const f = e.target.files[0]; if(!f) return; const r = new FileReader(); r.onload=(ev)=>{ const el=document.getElementById("cte-map-canvas"); if(el){ el.style.backgroundImage=`url(${ev.target.result})`; if(typeof toastr!=='undefined') toastr.success("背景更换成功"); }}; r.readAsDataURL(f); },
+    handleResetBackground() { const el=document.getElementById("cte-map-canvas"); if(el){ el.style.backgroundImage=`url(${defaultMapBg})`; if(typeof toastr!=='undefined') toastr.info("背景已重置"); } },
+    
+    enablePinDragging() {
+        const cvs = document.getElementById("cte-map-canvas"); if(!cvs) return;
+        let actPin=null, sx, sy, sl, st;
+        cvs.addEventListener("mousedown", (e) => {
+            const p = e.target.closest(".cte-esport-pin"); if(!p) return;
+            e.preventDefault(); actPin=p; this.isDraggingPin=false;
+            sx=e.clientX; sy=e.clientY; sl=parseInt(p.style.left||0); st=parseInt(p.style.top||0);
+            p.classList.add("dragging");
+            document.addEventListener("mousemove", mm); document.addEventListener("mouseup", mu);
+        });
+        const mm = (e) => {
+            if(!actPin) return;
+            const dx=e.clientX-sx, dy=e.clientY-sy;
+            if(Math.abs(dx)>3 || Math.abs(dy)>3) {
+                this.isDraggingPin=true;
+                actPin.style.left = Math.max(0, Math.min(800, sl+dx))+'px';
+                actPin.style.top = Math.max(0, Math.min(800, st+dy))+'px';
             }
         };
+        const mu = () => {
+            if(actPin){ actPin.classList.remove("dragging"); actPin=null; }
+            document.removeEventListener("mousemove", mm); document.removeEventListener("mouseup", mu);
+            setTimeout(()=>this.isDraggingPin=false, 50);
+        };
+    },
 
-        // --- 绑定行程表按钮 ---
-        const btnSchedule = document.getElementById("cte-btn-schedule");
-        if (btnSchedule) btnSchedule.onclick = () => this.toggleView('schedule');
-
-        const btnRefresh = document.getElementById("cte-btn-refresh-schedule");
-        if(btnRefresh) btnRefresh.onclick = () => this.refreshSchedule();
-
-        // --- 绑定"查看京港地图"按钮 ---
-        const btnBackToMap = document.getElementById("cte-btn-back-to-map");
-        if(btnBackToMap) btnBackToMap.onclick = () => this.toggleView('city-map');
-
-        // --- 绑定人员确认按钮 ---
-        const btnConfirmParticipants = document.getElementById("cte-confirm-participants");
-        if(btnConfirmParticipants) btnConfirmParticipants.onclick = () => this.confirmParticipants();
-
-        // --- 绑定行程执行按钮 ---
-        const btnExecuteSchedule = document.getElementById("cte-travel-execute-schedule");
-        if(btnExecuteSchedule) btnExecuteSchedule.onclick = () => this.finalizeScheduleExecution();
-
-        // --- 绑定"前往外部大地图"按钮 ---
-        const btnGoNational = document.getElementById("cte-btn-go-national");
-        if(btnGoNational) btnGoNational.onclick = () => this.toggleView('national-map');
-        
-        // --- 绑定"返回京港市"按钮 ---
-        const btnBackToCity = document.getElementById("cte-btn-back-to-city");
-        if(btnBackToCity) btnBackToCity.onclick = () => this.toggleView('city-map');
-        
-        // --- 绑定国家地图背景上传 ---
-        const nationalBgUpload = document.getElementById("cte-national-bg-upload");
-        if(nationalBgUpload) nationalBgUpload.addEventListener("change", (e) => this.handleNationalMapUpload(e));
-        
-        // --- 绑定国家地图背景重置 ---
-        const btnResetNationalBg = document.getElementById("cte-btn-reset-national-bg");
-        if(btnResetNationalBg) btnResetNationalBg.onclick = () => this.handleResetNationalBg();
-
-        // ... 保持原有的绑定 ...
-        const yesRadio = document.getElementById("meet_yes");
-        const noRadio = document.getElementById("meet_no");
-        const npcInput = document.getElementById("cte-npc-input");
-        if (yesRadio && noRadio && npcInput) {
-            yesRadio.addEventListener("change", () => { if (yesRadio.checked) npcInput.style.display = "block"; });
-            noRadio.addEventListener("change", () => { if (noRadio.checked) npcInput.style.display = "none"; });
-        }
-
-        const btnAlone = document.getElementById("cte-travel-alone");
-        if (btnAlone) btnAlone.onclick = () => this.showActivityPopup(null);
-        
-        const btnCompanion = document.getElementById("cte-travel-companion");
-        const inputCompanion = document.getElementById("cte-companion-input");
-        if (btnCompanion) {
-            btnCompanion.onclick = () => {
-                const name = inputCompanion.value.trim();
-                if (!name) { if (typeof toastr !== "undefined") toastr.warning("请输入同伴名字"); return; }
-                this.showActivityPopup(name);
-            };
-        }
-        
-        const actBtns = document.querySelectorAll(".cte-activity-btn");
-        actBtns.forEach(btn => {
-            btn.onclick = (e) => {
-                const act = e.target.getAttribute("data-act");
-                this.finalizeTrip(act);
-            };
+    showPopup(id) {
+        const keep = (id==='cte-profile-modal');
+        document.querySelectorAll(".cte-esport-popup").forEach(p => {
+            if(keep) { if(p.id!=='popup-interior' && p.id!=='popup-cte') p.classList.remove("active"); }
+            else p.classList.remove("active");
         });
-        
-        const confirmCustomAct = document.getElementById("cte-confirm-custom-act");
-        const customActInput = document.getElementById("cte-custom-act-input");
-        if (confirmCustomAct && customActInput) {
-            confirmCustomAct.onclick = () => {
-                const val = customActInput.value.trim();
-                if (val) this.finalizeTrip(val);
-            };
-        }
+        const p = document.getElementById(id);
+        if(p) { p.classList.add("active"); p.style.zIndex = (id.includes('modal')) ? 2000 : 1000; }
+    },
+    closeAllPopups() { document.querySelectorAll(".cte-esport-popup").forEach(p => { p.classList.remove("active"); p.style.zIndex = ""; }); },
+    toggleFloor(fid, btn) {
+        const p = document.getElementById(fid); if(!p) return;
+        document.querySelectorAll(".cte-floor-panel").forEach(x => { if(x.id!==fid) x.style.display="none"; });
+        document.querySelectorAll(".cte-floor-btn").forEach(b => b.classList.remove("active"));
+        if(p.style.display==="block") { p.style.display="none"; btn.classList.remove("active"); }
+        else { p.style.display="block"; btn.classList.add("active"); }
+    },
 
-        const customBtn = document.getElementById("cte-btn-custom-go");
-        if (customBtn) {
-            customBtn.onclick = () => {
-                const input = document.getElementById("cte-custom-input");
-                if (input && input.value.trim()) this.prepareTravel(input.value.trim());
-            };
+    applyTheme(t) {
+        const r = document.getElementById("cte-esport-root"); if(!r) return;
+        const th = [
+            { bg:'#121212', p:'#1e1e1e', g:'#c5a065', t:'#e0e0e0', c:'rgba(255,255,255,0.05)', s:'#000000' },
+            { bg:'#f4f7f6', p:'#ffffff', g:'#5d9cec', t:'#333333', c:'#ffffff', s:'#ffffff' },
+            { bg:'#fff0f3', p:'#ffffff', g:'#f06292', t:'#4a2c36', c:'#ffffff', s:'#ffffff' }
+        ][t] || th[0];
+        
+        r.style.setProperty('--cte-bg-dark', th.bg); r.style.setProperty('--cte-panel-bg', th.p);
+        r.style.setProperty('--cte-accent-gold', th.g); r.style.setProperty('--cte-text-main', th.t);
+        r.style.setProperty('--cte-card-bg', th.c); r.style.setProperty('--cte-scroll-layer-bg', th.s);
+
+        // Update Input Area Background based on theme
+        const inputArea = document.querySelector(".cte-rpg-input-area");
+        if(inputArea) {
+            if(t === 1) inputArea.style.backgroundColor = "rgba(225, 245, 254, 0.95)"; // Light blue
+            else if(t === 2) inputArea.style.backgroundColor = "rgba(252, 228, 236, 0.95)"; // Light pink
+            else inputArea.style.backgroundColor = "rgba(0,0,0,0.8)"; // Default dark
         }
+    },
+
+    saveSettings() { localStorage.setItem("cte-esport-settings", JSON.stringify(this.settings)); },
+    loadSettings() { try { const d=localStorage.getItem("cte-esport-settings"); if(d) this.settings=JSON.parse(d); } catch(e){} },
+
+    bindEvents() {
+        const p = document.getElementById("cte-esport-panel"); if(!p) return;
+        p.querySelector("#cte-btn-close").onclick = () => this.togglePanel();
+        p.querySelector("#cte-btn-theme").onclick = () => { this.settings.theme=(this.settings.theme+1)%3; this.applyTheme(this.settings.theme); this.saveSettings(); };
+        
+        document.getElementById("cte-bg-upload").addEventListener("change", (e)=>this.handleMapUpload(e));
+        document.getElementById("cte-btn-reset-bg").onclick = () => this.handleResetBackground();
+        document.getElementById("cte-user-avatar-input").addEventListener("change", (e)=>this.handleAvatarUpload(e));
+        document.getElementById("cte-avatar-delete-btn").onclick = () => this.deleteUserAvatar();
+        
+        p.querySelector("#cte-btn-map-home").onclick = () => this.toggleView('city-map');
+        p.querySelector("#cte-btn-back-to-city").onclick = () => this.toggleView('city-map');
+        p.querySelector("#cte-btn-go-national").onclick = () => this.toggleView('national-map');
+        
+        document.getElementById("cte-national-bg-upload").addEventListener("change", (e)=>this.handleNationalMapUpload(e));
+        document.getElementById("cte-btn-reset-national-bg").onclick = () => this.handleResetNationalBg();
+
+        const cvs = p.querySelector("#cte-map-canvas");
+        if(cvs) cvs.onclick = (e) => {
+            if(this.isDraggingPin) { e.stopPropagation(); return; }
+            if(e.target.id==="cte-map-canvas") this.closeAllPopups();
+            const pin = e.target.closest(".cte-esport-pin");
+            if(pin) { e.stopPropagation(); this.showPopup(pin.getAttribute("data-popup")); }
+        };
+
+        p.onclick = (e) => {
+            const t = e.target;
+            if(t.matches(".cte-close-btn")) {
+                t.closest(".cte-esport-popup").classList.remove("active");
+                if(t.closest("#cte-travel-modal")) this.isSelectingForSchedule = false;
+            }
+            
+            const pid = t.getAttribute("data-profile") || t.closest("[data-profile]")?.getAttribute("data-profile");
+            if(pid) { this.showCharacterProfile(pid); return; }
+            
+            if(t.getAttribute("data-action")==="interior") this.showPopup("popup-interior");
+            if(t.getAttribute("data-action")==="back-base") this.showPopup("popup-cte");
+            
+            const fb = t.closest(".cte-floor-btn");
+            if(fb) this.toggleFloor(fb.getAttribute("data-target"), fb);
+            
+            const td = t.getAttribute("data-travel") || t.closest("[data-travel]")?.getAttribute("data-travel");
+            if(td && !t.closest("#cte-travel-modal")) this.prepareTravel(td);
+        };
+
+        document.getElementById("cte-confirm-participants").onclick = () => this.confirmParticipants();
+        document.getElementById("cte-travel-execute-schedule").onclick = () => this.finalizeScheduleExecution();
+        
+        const yr = document.getElementById("meet_yes"), nr = document.getElementById("meet_no"), ni = document.getElementById("cte-npc-input");
+        if(yr) { yr.addEventListener("change", ()=>ni.style.display="block"); nr.addEventListener("change", ()=>ni.style.display="none"); }
+        
+        document.getElementById("cte-travel-alone").onclick = () => this.showActivityPopup(null);
+        document.getElementById("cte-travel-companion").onclick = () => {
+            const n = document.getElementById("cte-companion-input").value.trim();
+            if(!n) { if(typeof toastr!=="undefined") toastr.warning("请输入名字"); return; }
+            this.showActivityPopup(n);
+        };
+        
+        document.querySelectorAll(".cte-activity-btn").forEach(b => b.onclick = (e) => this.finalizeTrip(e.target.getAttribute("data-act")));
+        document.getElementById("cte-confirm-custom-act").onclick = () => {
+            const v = document.getElementById("cte-custom-act-input").value.trim();
+            if(v) this.finalizeTrip(v);
+        };
+        document.getElementById("cte-btn-custom-go").onclick = () => {
+            const v = document.getElementById("cte-custom-input").value.trim();
+            if(v) this.prepareTravel(v);
+        };
     }
 };
 
-(function() {
-    CTEEscape.init();
-})();
+(function() { CTEEscape.init(); })();
