@@ -1,11 +1,12 @@
 {
-    "display_name": "CTE Esport Map",
+    "display_name": "CTE Esport Map & Manager RPG",
     "author": "JLYANG1900",
-    "version": "1.4.0",
-    "description": "CTE战队基地地图扩展 - 包含完整地点信息与交互式旅行功能。v1.4更新：新增国家地图视图，可探索京港之外的世界，支持跨城市出行。",
+    "version": "2.0.0",
+    "description": "CTE战队完全扩展包 - 包含交互式基地地图、京港国家地图、心跳活动以及复古未来主义风格的战队经理RPG模拟器。",
     "js": "index.js",
     "css": "style.css",
     "html": "map.html"
 }
+
 
 
