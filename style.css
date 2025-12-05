@@ -1,6 +1,8 @@
-/* --- CTE Esport Map 样式表 (v9.0 国家地图整合版) --- */
 
-@import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;700&family=Noto+Serif+SC:wght@400;700&family=Zhi+Mang+Xing&display=swap');
+/* --- CTE Esport Map 样式表 (v2.1 行程终端整合版) --- */
+
+@import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700&family=Inter:wght@300;400;600&family=JetBrains+Mono:wght@300;400&family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=Noto+Serif+SC:wght@400;700&family=Zhi+Mang+Xing&display=swap');
+@import url('https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css');
 
 #cte-esport-root {
     --cte-bg-dark: #121212;
@@ -13,6 +15,17 @@
     --cte-btn-text-hover: #000;
     --cte-card-bg: rgba(255, 255, 255, 0.05);
     --cte-scroll-layer-bg: #000000;
+    
+    /* RPG 新增变量 */
+    --cte-void-950: #050505;
+    --cte-void-900: #0A0A0A;
+    --cte-void-800: #121212;
+    --cte-gold-100: #F9F1D8;
+    --cte-gold-400: #DDB753;
+    --cte-gold-500: #D4AF37;
+    --cte-font-serif: 'Playfair Display', serif;
+    --cte-font-mono: 'JetBrains Mono', monospace;
+    --cte-font-display: 'Cinzel', serif;
 }
 
 /* 主面板 */
@@ -174,7 +187,7 @@
 
 /* ========================================
    前往外部大地图按钮
-======================================== */
+======================================= */
 .cte-go-national-btn-container {
     position: absolute;
     bottom: 20px;
@@ -213,7 +226,7 @@
 ======================================== */
 .cte-national-scroll-layer {
     background-color: #1a1a1a;
-    background-image: url('data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="100" height="100" viewBox="0 0 100 100"%3E%3Cg fill-rule="evenodd"%3E%3Cg fill="%23303030" fill-opacity="0.4"%3E%3Cpath opacity=".5" d="M96 95h4v1h-4v4h-1v-4h-9v4h-1v-4h-9v4h-1v-4h-9v4h-1v-4h-9v4h-1v-4h-9v4h-1v-4h-9v4h-1v-4H0v-1h15v-9H0v-1h15v-9H0v-1h15v-9H0v-1h15v-9H0v-1h15v-9H0v-1h15v-9H0v-1h15v-9H0v-1h15V0h1v15h9V0h1v15h9V0h1v15h9V0h1v15h9V0h1v15h9V0h1v15h9V0h1v15h9V0h1v15h4v1h-4v9h4v1h-4v9h4v1h-4v9h4v1h-4v9h4v1h-4v9h4v1h-4v9h4v1h-4v9z"/%3E%3C/g%3E%3C/g%3E%3C/svg%3E');
+    background-image: url('data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="100" height="100" viewBox="0 0 100 100"%3E%3Cg fill-rule="evenodd"%3E%3Cg fill="%23303030" fill-opacity="0.4"%3E%3Cpath opacity=".5" d="M96 95h4v1h-4v4h-1v-4h-9v4h-1v-4h-9v4h-1v-4h-9v4h-1v-4h-9v4h-1v-4H0v-1h15v-9H0v-1h15v-9H0v-1h15v-9H0v-1h15v-9H0v-1h15v-9H0v-1h15v-9H0v-1h15v-9H0v-1h15V0h1v15h9V0h1v15h9V0h1v15h9V0h1v15h9V0h1v15h9V0h1v15h9V0h1v15h9V0h1v15h9V0h1v15h4v1h-4v9h4v1h-4v9h4v1h-4v9h4v1h-4v9h4v1h-4v9h4v1h-4v9z"/%3E%3C/g%3E%3C/g%3E%3C/svg%3E');
 }
 
 .cte-national-container {
@@ -261,10 +274,7 @@
     background-image: 
         linear-gradient(rgba(255,255,255,0.03) 1px, transparent 1px),
         linear-gradient(90deg, rgba(255,255,255,0.03) 1px, transparent 1px);
-    
-    /* 修复：改为 cover 以确保背景图填满容器，而不是原本的 10% */
     background-size: cover; 
-    
     box-shadow: 0 0 30px rgba(0,0,0,0.5), inset 0 0 100px rgba(0,0,0,0.3);
     background-position: center;
     background-repeat: no-repeat;
@@ -757,39 +767,18 @@
     }
 }
 
-/* --- Schedule View Styles --- */
+/* --- Schedule / Terminal View Styles --- */
 
-.cte-schedule-container {
-    max-width: 800px;
-    margin: 0 auto;
-    color: var(--cte-text-main);
-}
-
-.cte-schedule-header {
-    text-align: center;
-    border-bottom: 1px solid var(--cte-accent-gold);
-    padding-bottom: 20px;
-    margin-bottom: 20px;
-}
-
-.cte-schedule-header h3 {
-    font-family: 'Cormorant Garamond', serif;
-    font-size: 2rem;
-    color: var(--cte-accent-gold);
-    margin: 0 0 5px 0;
-    text-shadow: 0 0 10px rgba(197, 160, 101, 0.3);
-}
-
-/* Timeline */
 .cte-timeline {
+    /* Updated for Terminal View integration */
     padding: 20px 0 20px 40px;
     border-left: 2px solid var(--cte-border-color);
 }
 
 .cte-timeline-item {
     position: relative;
-    margin-bottom: 30px;
-    animation: ctePopIn 0.3s ease-out;
+    margin-bottom: 20px;
+    animation: fadeIn 0.3s ease-out;
 }
 
 .cte-timeline-item::before {
@@ -806,39 +795,38 @@
 }
 
 .cte-timeline-card {
-    background: var(--cte-card-bg);
-    border: 1px solid var(--cte-border-color);
+    background: rgba(255,255,255,0.03);
+    border: 1px solid rgba(212, 175, 55, 0.2);
     border-left: 3px solid var(--cte-accent-gold);
-    padding: 15px;
-    border-radius: 4px;
-    transition: transform 0.2s, box-shadow 0.2s;
+    padding: 12px;
+    border-radius: 0 4px 4px 0;
+    transition: transform 0.2s, background 0.2s;
     display: flex;
     justify-content: space-between;
     align-items: center;
+    font-family: var(--cte-font-mono);
 }
 
 .cte-timeline-card:hover {
     transform: translateX(5px);
-    box-shadow: 0 5px 15px rgba(0,0,0,0.5);
     background: rgba(255, 255, 255, 0.08);
 }
 
 .cte-timeline-content {
-    font-size: 1.1em;
+    font-size: 13px;
     color: var(--cte-text-main); 
     flex: 1;
     margin-right: 15px;
 }
 
 .cte-schedule-exec-btn {
-    font-size: 12px;
-    padding: 5px 10px;
+    font-size: 10px;
+    padding: 4px 10px;
     background: transparent;
     border: 1px solid var(--cte-accent-gold);
     color: var(--cte-accent-gold);
     cursor: pointer;
-    border-radius: 20px;
-    white-space: nowrap;
+    text-transform: uppercase;
     transition: all 0.2s;
 }
 
@@ -875,4 +863,439 @@
 .cte-participant-checkbox input {
     margin-right: 8px;
     accent-color: var(--cte-accent-gold);
+}
+
+/* ==========================================================================
+   RPG MANAGER STYLES
+   ========================================================================== */
+
+/* RPG 容器 */
+.cte-rpg-container {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    background: var(--cte-bg-dark);
+    font-family: var(--cte-font-sans);
+    color: var(--cte-gold-100);
+}
+
+/* 侧边栏 */
+.cte-rpg-sidebar {
+    width: 80px;
+    height: 100%;
+    border-right: 1px solid rgba(212, 175, 55, 0.1);
+    background: rgba(18, 18, 18, 0.8);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding-top: 20px;
+    gap: 20px;
+    z-index: 20;
+}
+
+.cte-rpg-logo {
+    width: 40px;
+    height: 40px;
+    border: 1px solid var(--cte-accent-gold);
+    transform: rotate(45deg);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 20px;
+    box-shadow: 0 0 10px rgba(212, 175, 55, 0.2);
+}
+.cte-rpg-logo span {
+    transform: rotate(-45deg);
+    font-family: var(--cte-font-display);
+    font-weight: bold;
+    color: var(--cte-accent-gold);
+    font-size: 20px;
+}
+
+.cte-rpg-nav-btn {
+    width: 50px;
+    height: 50px;
+    background: transparent;
+    border: none;
+    color: #666;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 20px;
+    cursor: pointer;
+    transition: all 0.3s;
+    position: relative;
+    border-radius: 4px;
+}
+.cte-rpg-nav-btn:hover { color: var(--cte-accent-gold); background: rgba(255,255,255,0.05); }
+.cte-rpg-nav-btn.active { color: var(--cte-accent-gold); text-shadow: 0 0 8px rgba(212,175,55,0.6); }
+.cte-rpg-nav-btn.active::before {
+    content: '';
+    position: absolute;
+    left: -15px;
+    width: 3px;
+    height: 100%;
+    background: var(--cte-accent-gold);
+}
+
+/* 主内容区 */
+.cte-rpg-main {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    position: relative;
+    overflow: hidden;
+}
+
+/* 顶部 HUD */
+.cte-rpg-hud {
+    height: 60px;
+    border-bottom: 1px solid rgba(212, 175, 55, 0.1);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 20px;
+    background: rgba(0,0,0,0.3);
+}
+
+.cte-rpg-res-group { display: flex; gap: 30px; }
+.cte-rpg-res-item { display: flex; gap: 10px; align-items: center; }
+.cte-rpg-res-icon { 
+    width: 30px; height: 30px; 
+    border-radius: 50%; 
+    background: #1a1a1a; 
+    border: 1px solid rgba(255,255,255,0.1); 
+    display: flex; align-items: center; justify-content: center; 
+    font-size: 14px;
+}
+.cte-rpg-res-val { font-family: var(--cte-font-mono); font-size: 14px; font-weight: bold; }
+.cte-rpg-res-label { font-size: 9px; text-transform: uppercase; color: #666; display: block;}
+
+/* 终端视图 (Now Schedule) */
+.cte-rpg-terminal-wrapper {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    /* 修改：使用变量代替硬编码渐变，以支持白底主题 */
+    background: var(--cte-scroll-layer-bg);
+    position: relative;
+}
+
+.cte-rpg-input-area {
+    padding: 20px;
+    background: rgba(0,0,0,0.8);
+    border-top: 1px solid rgba(212, 175, 55, 0.1);
+    display: flex;
+    gap: 10px;
+}
+
+/* 阵容卡片视图 */
+.cte-rpg-view { display: none; padding: 20px; overflow-y: auto; height: 100%; box-sizing: border-box;}
+.cte-rpg-roster-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 15px;
+}
+
+.cte-rpg-card {
+    background: rgba(255,255,255,0.03);
+    border: 1px solid rgba(212, 175, 55, 0.2);
+    padding: 15px;
+    position: relative;
+    transition: all 0.3s;
+}
+.cte-rpg-card:hover {
+    border-color: var(--cte-accent-gold);
+    background: rgba(255,255,255,0.05);
+}
+/* 卡片装饰角 */
+.cte-rpg-card::before { content: ''; position: absolute; top: 0; left: 0; width: 6px; height: 6px; border-top: 1px solid var(--cte-accent-gold); border-left: 1px solid var(--cte-accent-gold); }
+.cte-rpg-card::after { content: ''; position: absolute; bottom: 0; right: 0; width: 6px; height: 6px; border-bottom: 1px solid var(--cte-accent-gold); border-right: 1px solid var(--cte-accent-gold); }
+
+.cte-rpg-avatar-box {
+    width: 60px; height: 60px;
+    border: 1px solid #333;
+    display: flex; align-items: center; justify-content: center;
+    position: relative;
+    margin-bottom: 10px;
+}
+.cte-rpg-role-tag {
+    position: absolute; bottom: -5px; 
+    background: #000; color: var(--cte-accent-gold); 
+    font-family: var(--cte-font-mono); font-size: 9px; 
+    padding: 0 4px; border: 1px solid var(--cte-accent-gold);
+}
+
+.cte-rpg-stat-row { margin-top: 10px; display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.cte-rpg-stat-bar-container .label { font-size: 10px; color: #666; text-transform: uppercase; margin-bottom: 2px; display: flex; justify-content: space-between; }
+.cte-rpg-stat-bar-container .bar-bg { width: 100%; height: 3px; background: #222; }
+.cte-rpg-stat-bar-container .bar-fill { height: 100%; box-shadow: 0 0 5px currentColor; }
+
+.cte-rpg-card-footer {
+    border-top: 1px solid rgba(255,255,255,0.1);
+    margin-top: 10px;
+    padding-top: 5px;
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+}
+.cte-rpg-action-icon {
+    background: none; border: none; color: #555; cursor: pointer; transition: color 0.2s;
+}
+.cte-rpg-action-icon:hover { color: var(--cte-accent-gold); }
+
+@keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
+
+/* ==========================================================================
+   HEARTBEAT MANAGEMENT STYLES (PINK THEME ISOLATION)
+   Namespace: #cte-layer-heartbeat
+   ========================================================================== */
+
+#cte-layer-heartbeat {
+    background-color: #F0F8FF !important; /* Force light blue background */
+    font-family: 'Noto Sans SC', sans-serif;
+    color: #333 !important;
+}
+
+#cte-layer-heartbeat .cte-hb-container {
+    width: 100%;
+    max-width: 800px;
+    background: #fff;
+    border-radius: 20px;
+    box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+    overflow: hidden;
+    border: 5px solid #FFD1DC;
+    margin: 20px auto;
+}
+
+#cte-layer-heartbeat .cte-hb-header {
+    background-color: #FFB6C1;
+    padding: 15px 20px;
+    text-align: center;
+    border-bottom: 5px solid #FFD1DC;
+}
+
+#cte-layer-heartbeat .cte-hb-header h1 {
+    font-family: 'Noto Sans SC', sans-serif;
+    font-weight: 700;
+    color: #fff;
+    font-size: clamp(1.5rem, 4vw, 2rem);
+    margin: 0;
+    text-shadow: 2px 2px 4px rgba(0,0,0,0.2);
+}
+
+#cte-layer-heartbeat .cte-hb-content {
+    padding: 20px;
+}
+
+#cte-layer-heartbeat .cte-hb-section-title {
+    font-family: 'Noto Sans SC', sans-serif;
+    font-weight: 700;
+    color: #E75480;
+    font-size: clamp(1.2rem, 3vw, 1.5rem);
+    margin-bottom: 15px;
+    border-bottom: 3px dashed #FFD1DC;
+    padding-bottom: 5px;
+    display: flex;
+    align-items: center;
+}
+
+#cte-layer-heartbeat .cte-hb-section-title i {
+    margin-right: 10px;
+}
+
+#cte-layer-heartbeat .cte-hb-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 15px;
+}
+
+#cte-layer-heartbeat .cte-hb-activity-card {
+    background-color: #FFF0F5;
+    border-radius: 15px;
+    padding: 15px;
+    border: 2px solid #FFD1DC;
+    text-align: center;
+    transition: transform 0.3s, box-shadow 0.3s;
+}
+
+#cte-layer-heartbeat .cte-hb-activity-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 15px rgba(231, 84, 128, 0.2);
+}
+
+#cte-layer-heartbeat .cte-hb-activity-icon {
+    font-size: 2.5rem;
+    color: #E75480;
+    margin-bottom: 10px;
+}
+
+#cte-layer-heartbeat .cte-hb-activity-name {
+    font-weight: bold;
+    color: #555;
+    margin-bottom: 10px;
+}
+
+#cte-layer-heartbeat .cte-hb-activity-description {
+    font-size: 0.85rem;
+    color: #777;
+    margin-bottom: 15px;
+    min-height: 3em;
+}
+
+#cte-layer-heartbeat .cte-hb-assign-button {
+    padding: 8px 15px;
+    background-color: #FF69B4;
+    color: white;
+    border: none;
+    border-radius: 20px;
+    cursor: pointer;
+    font-weight: bold;
+    transition: background-color 0.3s;
+}
+
+#cte-layer-heartbeat .cte-hb-assign-button:hover {
+    background-color: #E75480;
+}
+
+/* Heartbeat Modal Styles (Now Global/UI Layer) */
+.cte-hb-modal {
+    display: none;
+    position: absolute; /* Relative to #cte-esport-panel */
+    z-index: 2000;
+    inset: 0;
+    background-color: rgba(0,0,0,0.5);
+    justify-content: center;
+    align-items: center;
+    pointer-events: auto; /* Required as UI layer has pointer-events: none */
+}
+
+.cte-hb-modal.active {
+    display: flex;
+}
+
+.cte-hb-modal-content {
+    background-color: #fff;
+    padding: 20px;
+    border: 5px solid #FFD1DC;
+    border-radius: 20px;
+    width: 90%;
+    max-width: 500px;
+    text-align: center;
+    animation: fadeIn 0.5s;
+    color: #333;
+}
+
+.cte-hb-modal h2 {
+    font-family: 'Noto Sans SC', sans-serif;
+    color: #E75480;
+}
+
+.cte-hb-member-list {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 15px;
+    margin-top: 20px;
+    margin-bottom: 20px;
+}
+
+.cte-hb-member-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    cursor: pointer;
+    transition: transform 0.2s;
+}
+
+.cte-hb-member-item:hover {
+    transform: scale(1.05);
+}
+
+.cte-hb-member-avatar {
+    width: 70px;
+    height: 70px;
+    border-radius: 50%;
+    border: 3px solid #FFD1DC;
+    transition: border-color 0.2s, box-shadow 0.2s;
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    background-color: #eee;
+}
+
+.cte-hb-member-item.selected .cte-hb-member-avatar {
+    border-color: #FF69B4;
+    box-shadow: 0 0 0 3px rgba(255, 105, 180, 0.3);
+}
+
+.cte-hb-member-name {
+    margin-top: 5px;
+    font-size: 0.8rem;
+    color: #666;
+    font-weight: bold;
+}
+
+.cte-hb-member-item.selected .cte-hb-member-name {
+    color: #E75480;
+}
+
+.cte-hb-close-button {
+    margin-top: 0;
+    padding: 8px 20px;
+    background-color: #aaa;
+    color: white;
+    border: none;
+    border-radius: 20px;
+    cursor: pointer;
+}
+
+/* ==========================================================================
+   RPG ALERT STYLES (Added)
+   ========================================================================== */
+
+.cte-rpg-warning-box {
+    margin-top: 10px;
+    background: rgba(236, 72, 153, 0.15); /* Pinkish background */
+    border: 1px solid #ec4899;
+    border-radius: 4px;
+    padding: 5px 10px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    font-size: 11px;
+    color: #ec4899;
+    animation: pulseWarning 2s infinite;
+}
+
+.cte-rpg-warning-box span {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.cte-heartbeat-shortcut {
+    background: #ec4899;
+    color: white;
+    border: none;
+    border-radius: 50%;
+    width: 24px;
+    height: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    font-size: 12px;
+    transition: transform 0.2s;
+}
+
+.cte-heartbeat-shortcut:hover {
+    transform: scale(1.1);
+    background: #db2777;
+}
+
+@keyframes pulseWarning {
+    0% { box-shadow: 0 0 0 0 rgba(236, 72, 153, 0.4); }
+    70% { box-shadow: 0 0 0 6px rgba(236, 72, 153, 0); }
+    100% { box-shadow: 0 0 0 0 rgba(236, 72, 153, 0); }
 }
