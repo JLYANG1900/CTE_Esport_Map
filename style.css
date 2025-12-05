@@ -1,8 +1,6 @@
-
 /* --- CTE Esport Map 样式表 (v2.1 行程终端整合版) --- */
 
 @import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700&family=Inter:wght@300;400;600&family=JetBrains+Mono:wght@300;400&family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=Noto+Serif+SC:wght@400;700&family=Zhi+Mang+Xing&display=swap');
-@import url('https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css');
 
 #cte-esport-root {
     --cte-bg-dark: #121212;
@@ -1298,4 +1296,55 @@
     0% { box-shadow: 0 0 0 0 rgba(236, 72, 153, 0.4); }
     70% { box-shadow: 0 0 0 6px rgba(236, 72, 153, 0); }
     100% { box-shadow: 0 0 0 0 rgba(236, 72, 153, 0); }
+}
+
+/* --- Mobile Optimization for Heartbeat Modal --- */
+@media (max-width: 480px) {
+    /* 1. Modal Container Constraints */
+    .cte-hb-modal-content {
+        max-height: 85vh;       /* Limit height to 85% of viewport */
+        overflow-y: auto;       /* Enable internal scrolling */
+        width: 95%;             /* Use more horizontal space */
+        padding: 10px 15px;     /* Reduce padding */
+        display: flex;          /* Use flex column to handle scrolling better */
+        flex-direction: column;
+    }
+
+    /* 2. Header & Text Compactness */
+    .cte-hb-modal-content h2 {
+        font-size: 1.1rem;      /* Smaller title */
+        margin-bottom: 5px;     /* Less whitespace */
+    }
+    
+    .cte-hb-modal-content p {
+        font-size: 0.8rem;
+        margin-bottom: 10px;
+    }
+
+    /* 3. Grid/List Density */
+    .cte-hb-member-list {
+        gap: 8px;               /* Tighter gap between items */
+        margin: 10px 0;         /* Reduce vertical margins */
+        overflow-y: auto;       /* Ensure list is scrollable if needed */
+        flex-shrink: 1;         /* Allow list to shrink */
+    }
+
+    /* 4. Avatar Scaling */
+    .cte-hb-member-avatar {
+        width: 50px;            /* Shrink avatar size */
+        height: 50px;
+        border-width: 2px;      /* Thinner border */
+    }
+
+    .cte-hb-member-name {
+        font-size: 0.7rem;      /* Smaller text */
+        margin-top: 2px;
+    }
+    
+    /* 5. Action Buttons */
+    .cte-hb-close-button, 
+    .cte-hb-assign-button {
+        padding: 6px 15px;      /* Compact buttons */
+        font-size: 0.9rem;
+    }
 }
